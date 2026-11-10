@@ -58,7 +58,10 @@ for (const line of log.split("\n")) {
 for (const k of Object.keys(readbacks)) readbacks[k] = readbacks[k].trim();
 
 const deploy = steps.find((s) => s.label === "00-deploy") ?? {};
-const contractCommit = sh("git log -1 --format=%H -- contracts/agent_score.py") || null;
+// Only name a commit when the working copy of the contract is committed; otherwise the last
+// commit that touched it holds a different (older) source than the one deployed.
+const contractClean = sh("git status --porcelain contracts/agent_score.py") === "";
+const contractCommit = contractClean ? sh("git log -1 --format=%H -- contracts/agent_score.py") || null : null;
 const contract = readFileSync(`${dir}/CONTRACT`, "utf8").trim();
 const manifest = {
   project: "AgentScore",
@@ -118,11 +121,19 @@ const manifest = {
       evidence: "deployments/studionet/superseded/v4/",
       why: "Full demo ran (all 11 steps FINALIZED, 3/3 agree), but the read-back exposed a design flaw: 0x05e7 inherited 0xce41's losses only because 0xce41 had paid it, and anyone can pay anyone, so a 'paid' link let a bad wallet smear an honest one. The 'paid' kind was removed; only first-funding proofs anchored to the wallet's nonce-0 transaction remain. Step 09 on v4 also hit link_already_proven instead of the intended forgery check, because the pair had just been linked (operator ordering mistake).",
     },
+    {
+      address: "0x88F8cbBA953da2D934EDb94975F5281a3Cb06B91",
+      deploy_tx: "0x88b48e1d0cd4e7f82e4a5bdb50c2f4c6bb796c4bed61fe4d9a7aae97a5a146f1",
+      git_commit: "8f11d7d55ee1cddf6dd3fe5d197091bcbbe429ad",
+      evidence: "deployments/studionet/superseded/v5/ (full demo, 12/12 steps proof, own release manifest)",
+      why: "Worked as designed, replaced to (1) prove links on Base mainnet as well as Base Sepolia, reading transactions from the public Base RPC nodes instead of Blockscout, so Nansen-discovered mainnet funding can be verified; (2) add the exchange/faucet guard: v5 would have accepted a 'shared first funder' link between two strangers funded by the same faucet (a real case: both sides of Internet Court case 14 were funded by a faucet that had sent 18,881 transactions); (3) apply the user's new scoring table and require escrow for wallets with no history.",
+    },
   ],
   steps,
   readbacks,
   not_proven: [
     "Internet Court cases used here are the existing testnet cases on Base Sepolia, created by other parties; none of them is a deliberate fake-win or fresh-wallet scenario. Those two abuses are demonstrated in direct-mode tests, not on-chain.",
+    "No Base mainnet link has been proven live yet: that path (Nansen discovery, mainnet RPC verification) is covered by direct-mode tests and the prover's checks, and waits for a Nansen API key.",
     "StudioNet is a test network; scores move no funds.",
   ],
 };

@@ -9,7 +9,7 @@ wallet or inflated with fake wins.
 > The indexer, link builder, REST API, MCP server, skill, website and the GenLayer contract
 > ([contracts/agent_score.py](contracts/agent_score.py), design in [docs/DESIGN.md](docs/DESIGN.md))
 > work. The contract is live on **GenLayer StudioNet** at
-> `0x88F8cbBA953da2D934EDb94975F5281a3Cb06B91`, where it has judged real Internet Court cases
+> `0x07bf2207852FE8F47DDeE26C4f4F0B206D259e74`, where it has judged real Internet Court cases
 > from Base Sepolia. Every transaction is recorded in
 > [deployments/studionet/release-manifest.json](deployments/studionet/release-manifest.json).
 
@@ -25,6 +25,7 @@ wallet or inflated with fake wins.
 | Forge a funding link by citing a transaction that went the other way | rejected: `link_not_proven` |
 | Replay a proven link from the other side | rejected: `link_already_proven` |
 | Claim ownership from a plain payment | rejected: `unknown_link_kind` |
+| Record a real faucet (18,881 txs sent) as a wallet's owner | rejected: `funder_is_infrastructure` |
 
 Reproduce with `scripts/live-demo.sh` (deploys a fresh contract) or `scripts/live-demo.sh <address>`.
 
@@ -33,7 +34,20 @@ Reproduce with `scripts/live-demo.sh` (deploys a fresh contract) or `scripts/liv
 | Method | Who | What it does |
 |---|---|---|
 | `judge_cases([case, …])` | anyone | Reads up to 5 finalized Internet Court cases from Base Sepolia and has validators classify what each ruling means for each party. Final once stored. |
-| `prove_link(subject, other, kind, proof)` | anyone | Stores chain-verified proof that two wallets share an owner (`first_funded_by`, `shared_first_funder`: funding mined before the wallet's own nonce-0 transaction, so strangers can't create it). Permanent. |
+| `prove_link(subject, other, kind, proof)` | anyone | Stores chain-verified proof that two wallets share an owner (`first_funded_by`, `shared_first_funder`: funding mined before the wallet's own nonce-0 transaction, so strangers can't create it). Works on Base mainnet or Base Sepolia, read from the public Base RPC nodes. Funders that had sent over 1,000 transactions (exchanges, faucets) are rejected. Permanent. |
+
+### Where Nansen fits
+
+Nansen finds the links; GenLayer proves them. `packages/prover` asks Nansen's related-wallets
+endpoint for an agent's **First Funder on Base mainnet** (with the funding transaction) and its
+transactions endpoint for the agent's earliest transactions, checks the pair against the Base RPC
+node with the contract's own rules, and submits `prove_link`. Nansen's labels also drop exchange
+funders before anything is sent.
+
+```bash
+npm run prove --workspace @agentscore/prover -- --court            # dry run over every Internet Court party
+npm run prove --workspace @agentscore/prover -- 0xWALLET --submit  # submit provable links
+```
 | `get_score(wallet)` | view | Deterministic grade, approval limit, flags and counts from both registries. No LLM. |
 
 Validators only classify rulings (FAVORABLE / UNFAVORABLE / NEUTRAL / UNCLEAR, plus severity) and

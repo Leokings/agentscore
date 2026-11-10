@@ -35,6 +35,12 @@ CHILD=0x278d35035fb589195ed513507ce7e32021659250
 PARENT=0xba444be47ac0fb4738c6fcb33d19bc03e854b4b5
 CHILD_FUNDING_TX=0x0d59fe83671bf6cb6404cd21126ed282ece59a460a9be23eefe759146d82083c
 CHILD_FIRST_TX=0x3bff97209c095b6fbe30263bfd70cc563ea69ccc955f572228655104f195b676
+# 0x6e40 (party A of case 14) was first funded by 0x007a, a Base Sepolia faucet that had already
+# sent 18,881 transactions; it also funded the other side of case 14. Not an owner.
+FAUCET_CHILD=0x6e40ddb9d0f797400d896da2197f455fca0129f2
+FAUCET=0x007ab5199b6c57f7aa51bc3d0604a43505501a0c
+FAUCET_FUNDING_TX=0xfac6b5b2994da4275cc0653a5a485e493d4c98ef03a6d1a661537e80d209e035
+FAUCET_CHILD_FIRST_TX=0xcc21f1bf596c3679f10e3dd97e96798cf816879812bb54f61a1e14bd27594543
 # PARTY_B's own nonce-0 transaction sends funds to 0x05e7 (used for the forged claim below)
 OTHER=0x05e7ec36e5d31347b7aa90c7122a6d6e24fbe1a5
 PARTY_B_FIRST_TX=0xcb103c14e7867ed94ec1080c036946d6136514a3b6e361158f369b519a3ebfbc
@@ -55,6 +61,8 @@ tx 09-EXPECTED-forged-funding-direction "$C" prove_link "$PARTY_B" "$OTHER" firs
 tx 10-EXPECTED-replay-proven-link "$C" prove_link "$PARENT" "$CHILD" first_funded_by "{\"funding_tx\":\"$CHILD_FUNDING_TX\",\"other_first_tx\":\"$CHILD_FIRST_TX\"}"
 # A payment proves nothing about ownership (anyone can pay anyone), so the kind does not exist.
 tx 11-EXPECTED-payment-is-not-a-link "$C" prove_link "$PARTY_B" "$OTHER" paid "{\"payment_tx\":\"$PARTY_B_FIRST_TX\"}"
+# A real faucet cannot be recorded as an owner, so it cannot link the strangers it funded.
+tx 12-EXPECTED-faucet-is-not-an-owner "$C" prove_link "$FAUCET_CHILD" "$FAUCET" first_funded_by "{\"funding_tx\":\"$FAUCET_FUNDING_TX\",\"subject_first_tx\":\"$FAUCET_CHILD_FIRST_TX\"}"
 
 # --- Read-backs
 echo "--- get_stats";               read_view get_stats

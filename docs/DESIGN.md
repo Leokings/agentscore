@@ -1,7 +1,7 @@
 # AgentScore scoring contract: design for approval
 
-Status: **approved 2026-11-09; deployed on StudioNet 2026-11-10 at
-`0x88F8cbBA953da2D934EDb94975F5281a3Cb06B91`** (see `deployments/studionet/release-manifest.json`). Contract:
+Status: **approved 2026-11-09; v6 deployed on StudioNet 2026-11-10 at
+`0x07bf2207852FE8F47DDeE26C4f4F0B206D259e74`** (see `deployments/studionet/release-manifest.json`). Contract:
 [`contracts/agent_score.py`](../contracts/agent_score.py). This follows the checkpoints in
 `Genlayer/GENLAYER_PORTAL_SUBMISSION_GUIDE.md` (section 8).
 
@@ -43,7 +43,23 @@ These change the approved design. Sections below are kept as approved for refere
    - Only registered app-specific cases also ask `prevailing_role` (one of the roles, NONE or UNCLEAR).
 7. **CLI-friendly calldata.** The GenLayer CLI sends `0x…` strings as `Address` values, decodes JSON
    arguments, and turns 64-hex strings into integers. The contract accepts those forms.
-8. **Defaults taken where you had not decided:** scoring table as in section 4 (minus the closed-loop
+8. **v6: Nansen-found mainnet links, exchange/faucet guard, new scoring (2026-11-10).**
+   - Link proofs carry a `network`: `base-sepolia` (default) or `base` (mainnet). Transactions and
+     receipts are read in one batch from the public Base RPC nodes, not from Blockscout (Base
+     mainnet's Blockscout blocks automated requests).
+   - Nansen's role: its related-wallets endpoint names an agent's First Funder on Base mainnet and
+     the funding transaction, and its transactions endpoint gives the agent's earliest
+     transactions. `packages/prover` turns that into a proof, checks it against the RPC node with
+     the contract's exact rules, and submits it. The contract re-verifies on-chain.
+   - Exchange/faucet guard: a funder whose funding transaction has a nonce above 1,000 had already
+     sent over 1,000 transactions, so it is infrastructure and cannot link wallets
+     (`funder_is_infrastructure`). The nonce is part of the transaction itself, so every validator
+     sees the same number. A real example: both sides of Internet Court case 14 were funded by a
+     faucet that had sent 18,881 transactions; v5 would have accepted a link between them.
+   - Scoring (chosen by the user): start 50; +8 per genuine win (up to 5); losses −8 minor,
+     −20 material, −40 severe (own or inherited); −10 per fake win; A ≥ 80, B ≥ 65, C ≥ 50,
+     D ≥ 30, F below. No history: shown as C with an approval limit of $0 (escrow required).
+9. **Defaults taken where you had not decided:** scoring table as in section 4 (minus the closed-loop
    penalty), target network StudioNet, Nansen-only links shown as flags without affecting points.
 
 ## 1. Mechanism in one line

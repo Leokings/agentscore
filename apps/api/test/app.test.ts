@@ -32,7 +32,7 @@ describe("API", () => {
     const fake = {
       configured: true,
       contract: "0x0000000000000000000000000000000000000abc",
-      read: async () => ({ wallet: "", grade: "B", points: 70, approval_limit_usd: 1000, flags: ["FAKE_WINS"], counts: { ruled_cases: 3, wins: 2, loss_weight: 0 } }),
+      read: async () => ({ wallet: "", grade: "B", points: 70, approval_limit_usd: 1000, flags: ["FAKE_WINS"], counts: { ruled_cases: 3, wins: 2, loss_penalty: 0, inherited_penalty: 0 } }),
     } as unknown as ScoreReader;
     const scored = createApp(store, fake);
     const w = "0xce413FFE2628b60cdaF4413d63d7838B8d4309AC";

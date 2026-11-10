@@ -21,7 +21,7 @@ def test_true_verdict_means_party_a_prevailed(score, direct_vm):
     assert outcomes(record) == [("partyA", "FAVORABLE", "NONE"), ("partyB", "UNFAVORABLE", "MINOR")]
     assert [p["address"] for p in record["parties"]] == [A, B]
     assert score.get_score(A)["counts"]["wins"] == 1
-    assert score.get_score(B)["counts"]["loss_weight"] == 1
+    assert score.get_score(B)["counts"]["loss_penalty"] == 8
     assert score.get_stats() == {"judged_cases": 1}
 
 

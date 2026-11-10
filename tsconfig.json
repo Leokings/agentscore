@@ -4,6 +4,7 @@
     { "path": "packages/shared" },
     { "path": "packages/indexer" },
     { "path": "packages/links" },
+    { "path": "packages/prover" },
     { "path": "apps/api" },
     { "path": "apps/mcp" }
   ]

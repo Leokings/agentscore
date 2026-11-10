@@ -23,6 +23,14 @@ export interface NansenCounterparty {
   volume_out_usd: number;
 }
 
+export interface NansenTransaction {
+  chain: string;
+  method: string;
+  transaction_hash: string;
+  block_timestamp: string;
+  volume_usd?: number | null;
+}
+
 interface NansenPage<T> {
   data: T[];
   pagination?: { page: number; per_page: number; is_last_page: boolean };
@@ -79,6 +87,20 @@ export class NansenClient {
       body,
       NANSEN.credits.relatedWallets,
     );
+    return page.data ?? [];
+  }
+
+  /** The wallet's earliest transactions, oldest first (1 credit). */
+  async earliestTransactions(wallet: Address, chain: NansenChain, perPage = 10): Promise<NansenTransaction[]> {
+    const body = {
+      address: wallet,
+      chain,
+      date: { from: "2023-06-01", to: new Date().toISOString().slice(0, 10) },
+      hide_spam_token: true,
+      pagination: { page: 1, per_page: perPage },
+      order_by: [{ field: "block_timestamp", direction: "ASC" }],
+    };
+    const page = await this.post<NansenPage<NansenTransaction>>("/api/v1/profiler/address/transactions", body, NANSEN.credits.transactions);
     return page.data ?? [];
   }
 

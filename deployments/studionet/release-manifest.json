@@ -7,18 +7,18 @@
     "explorer": "https://genlayer-explorer.vercel.app"
   },
   "contract": {
-    "address": "0x88F8cbBA953da2D934EDb94975F5281a3Cb06B91",
+    "address": "0x07bf2207852FE8F47DDeE26C4f4F0B206D259e74",
     "file": "contracts/agent_score.py",
     "runner": "1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6",
-    "sha256": "0cac30f38dec84f4a73cf7b4dfc54dbf69e4c8d69dd08c31a13245b4910ca78e",
-    "git_blob": "a3f091b0c344eec000c12fa658cb9a3a837e7361",
-    "git_commit": "8f11d7d55ee1cddf6dd3fe5d197091bcbbe429ad",
-    "git_blob_at_commit": "a3f091b0c344eec000c12fa658cb9a3a837e7361",
-    "git_clean_for_contract": true,
+    "sha256": "0da68b9097994ca81fc428562634247c5b0a1d1c99367fcc049a21ad35afbb83",
+    "git_blob": "69e1a8d5de6248d87e828f469cbaf9f70aec4aab",
+    "git_commit": null,
+    "git_blob_at_commit": null,
+    "git_clean_for_contract": false,
     "constructor_args": [],
-    "deploy_tx": "0x88b48e1d0cd4e7f82e4a5bdb50c2f4c6bb796c4bed61fe4d9a7aae97a5a146f1",
+    "deploy_tx": "0xd51eca9436d7c6c19f79a638c40e3864d243273c16cdd79214e8409c796a73ee",
     "deployed_source_identical": true,
-    "deployed_sha256": "0cac30f38dec84f4a73cf7b4dfc54dbf69e4c8d69dd08c31a13245b4910ca78e"
+    "deployed_sha256": "0da68b9097994ca81fc428562634247c5b0a1d1c99367fcc049a21ad35afbb83"
   },
   "deployer": "0x797d3b25fb2cca0ff93f60df1910267f3822d655",
   "toolchain": {
@@ -59,12 +59,36 @@
       "deploy_tx": "0xb8c2c52657002b2337f77845ce36f4cb919bc653e5112d6d4fe0cb9ab53c29f5",
       "evidence": "deployments/studionet/superseded/v4/",
       "why": "Full demo ran (all 11 steps FINALIZED, 3/3 agree), but the read-back exposed a design flaw: 0x05e7 inherited 0xce41's losses only because 0xce41 had paid it, and anyone can pay anyone, so a 'paid' link let a bad wallet smear an honest one. The 'paid' kind was removed; only first-funding proofs anchored to the wallet's nonce-0 transaction remain. Step 09 on v4 also hit link_already_proven instead of the intended forgery check, because the pair had just been linked (operator ordering mistake)."
+    },
+    {
+      "address": "0x88F8cbBA953da2D934EDb94975F5281a3Cb06B91",
+      "deploy_tx": "0x88b48e1d0cd4e7f82e4a5bdb50c2f4c6bb796c4bed61fe4d9a7aae97a5a146f1",
+      "git_commit": "8f11d7d55ee1cddf6dd3fe5d197091bcbbe429ad",
+      "evidence": "deployments/studionet/superseded/v5/ (full demo, 12/12 steps proof, own release manifest)",
+      "why": "Worked as designed, replaced to (1) prove links on Base mainnet as well as Base Sepolia, reading transactions from the public Base RPC nodes instead of Blockscout, so Nansen-discovered mainnet funding can be verified; (2) add the exchange/faucet guard: v5 would have accepted a 'shared first funder' link between two strangers funded by the same faucet (a real case: both sides of Internet Court case 14 were funded by a faucet that had sent 18,881 transactions); (3) apply the user's new scoring table and require escrow for wallets with no history."
     }
   ],
   "steps": [
     {
       "label": "00-deploy",
-      "tx": "0x88b48e1d0cd4e7f82e4a5bdb50c2f4c6bb796c4bed61fe4d9a7aae97a5a146f1",
+      "tx": "0xd51eca9436d7c6c19f79a638c40e3864d243273c16cdd79214e8409c796a73ee",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x0cf3809a31B0c7E0742d126451aDE1977e3748D2": "idle",
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "agree",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "agree",
+        "0xD0eD149D26E76cf49fB588c970E608E44Dd4DAB8": "idle"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "01-judge-case15",
+      "tx": "0xfb35b9c1c6ff7e06da314a8c521d340a1d5d85124c4e3ce09f9f08a18ee28f43",
       "expected_failure": false,
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
@@ -72,67 +96,16 @@
       "leader_error": null,
       "votes": {
         "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "agree",
-        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "idle",
-        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree",
-        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree",
-        "0xe1626534791FC675ED813Cc2C89C427866526113": "agree"
-      },
-      "counts_as_proof": true
-    },
-    {
-      "label": "01-judge-case15",
-      "tx": "0x96616739a31cf86ccb2c45246d94aef6cee501c60d52a98f509a5eb83f2a1e57",
-      "expected_failure": false,
-      "status": "FINALIZED",
-      "consensus_result": "MAJORITY_AGREE",
-      "leader_execution": "SUCCESS",
-      "leader_error": null,
-      "votes": {
-        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "agree",
-        "0x29300188B54F5BFEE91542595611603b4B201008": "idle",
-        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "agree",
+        "0x0cf3809a31B0c7E0742d126451aDE1977e3748D2": "agree",
         "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "idle",
-        "0xD0eD149D26E76cf49fB588c970E608E44Dd4DAB8": "agree"
+        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree",
+        "0xf1EAD5E5f876eae701eF1881b42861079cd9A287": "idle"
       },
       "counts_as_proof": true
     },
     {
       "label": "02-judge-case16",
-      "tx": "0xd7e7708e61097d7bb55baeb6ad18f74c423268d1d3588ac8139d25253cb8f40b",
-      "expected_failure": false,
-      "status": "FINALIZED",
-      "consensus_result": "MAJORITY_AGREE",
-      "leader_execution": "SUCCESS",
-      "leader_error": null,
-      "votes": {
-        "0x29300188B54F5BFEE91542595611603b4B201008": "agree",
-        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "agree",
-        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "idle",
-        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "idle",
-        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree"
-      },
-      "counts_as_proof": true
-    },
-    {
-      "label": "03-judge-trade-case0",
-      "tx": "0x9efb07f21ac7078b791ac47e3e452739db3d7c94c33f62bfee432efd0cd9ed2e",
-      "expected_failure": false,
-      "status": "FINALIZED",
-      "consensus_result": "MAJORITY_AGREE",
-      "leader_execution": "SUCCESS",
-      "leader_error": null,
-      "votes": {
-        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "agree",
-        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "idle",
-        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree",
-        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "idle",
-        "0xf1EAD5E5f876eae701eF1881b42861079cd9A287": "agree"
-      },
-      "counts_as_proof": true
-    },
-    {
-      "label": "04-judge-trade-case1",
-      "tx": "0x87e376dad655f6f6123926ef03554c485d2e3ccbdde36b2beacacd9cb663092f",
+      "tx": "0x0068781f83090e45bdb960dc1f4226860ab39ccbe0769d2ab2b9dd5169b0d5f5",
       "expected_failure": false,
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
@@ -140,84 +113,118 @@
       "leader_error": null,
       "votes": {
         "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "idle",
-        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "agree",
-        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "agree",
-        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "idle",
-        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree"
-      },
-      "counts_as_proof": true
-    },
-    {
-      "label": "05-prove-link-first-funded",
-      "tx": "0x6bdd601e39f5887ed3ab2b35800cd9df6b0f70745ea8567e1c74adbb051f0cbc",
-      "expected_failure": false,
-      "status": "FINALIZED",
-      "consensus_result": "MAJORITY_AGREE",
-      "leader_execution": "SUCCESS",
-      "leader_error": null,
-      "votes": {
-        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "idle",
-        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "idle",
-        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "agree",
-        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "agree",
-        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree"
-      },
-      "counts_as_proof": true
-    },
-    {
-      "label": "06-EXPECTED-replay-judged-case",
-      "tx": "0x9569f958129980c338e6b8475965eee30cbade328e14ce9dc5115ef1d147d966",
-      "expected_failure": true,
-      "status": "FINALIZED",
-      "consensus_result": "MAJORITY_AGREE",
-      "leader_execution": "ERROR",
-      "leader_error": "[EXPECTED] case_already_judged",
-      "votes": {
-        "0x29300188B54F5BFEE91542595611603b4B201008": "agree",
-        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "idle",
-        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "idle",
-        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree",
-        "0xc675c2B7E1F066B7c1D2fe54EF7B76C91CdFa5F4": "agree"
-      },
-      "counts_as_proof": true
-    },
-    {
-      "label": "07-EXPECTED-not-an-internet-court-case",
-      "tx": "0x727746297edcbcab4fcaf576ea03bcbac51770482d6dedae16a973414a0efe40",
-      "expected_failure": true,
-      "status": "FINALIZED",
-      "consensus_result": "MAJORITY_AGREE",
-      "leader_execution": "ERROR",
-      "leader_error": "[EXPECTED] case_not_registered",
-      "votes": {
-        "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "agree",
-        "0x0cf3809a31B0c7E0742d126451aDE1977e3748D2": "agree",
-        "0x29300188B54F5BFEE91542595611603b4B201008": "idle",
+        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "agree",
+        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "idle",
         "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "agree",
         "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree"
       },
       "counts_as_proof": true
     },
     {
+      "label": "03-judge-trade-case0",
+      "tx": "0x776d713cef257939563f1be21c48af669c6acfbdd8a53ca4fe9c8a3919ada5d9",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "idle",
+        "0x29300188B54F5BFEE91542595611603b4B201008": "agree",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "agree",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "idle"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "04-judge-trade-case1",
+      "tx": "0xbae960147b2ba8ae813e93075b6d76335d4d31c115046cd4c785a713db2b191b",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "idle",
+        "0x29300188B54F5BFEE91542595611603b4B201008": "agree",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "agree",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0xc675c2B7E1F066B7c1D2fe54EF7B76C91CdFa5F4": "idle"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "05-prove-link-first-funded",
+      "tx": "0x04e85865b834c9e64fd673af596a301fe930a40253074a6255711eae187a6078",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x0cf3809a31B0c7E0742d126451aDE1977e3748D2": "idle",
+        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "agree",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "idle",
+        "0xf1EAD5E5f876eae701eF1881b42861079cd9A287": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "06-EXPECTED-replay-judged-case",
+      "tx": "0x1d77deb0167c2ca11f5c31ec5e9c03c15ae9a2ae2c25418430df5186435efe91",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] case_already_judged",
+      "votes": {
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "agree",
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "idle",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "agree",
+        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "idle",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "07-EXPECTED-not-an-internet-court-case",
+      "tx": "0x7c4980893357ab110c83c8ed7e311bad981b949a6c51d6c97a7c765455a50fd3",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] case_not_registered",
+      "votes": {
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "idle",
+        "0x29300188B54F5BFEE91542595611603b4B201008": "idle",
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "agree",
+        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "agree",
+        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
       "label": "08-EXPECTED-case-not-ruled",
-      "tx": "0x4503e2185b3683770cc0dbb0bb09fdfce9e6600d77a552e056f301e5cfed322c",
+      "tx": "0x72e335fdfbf6a5887dfd14b4760af2a2eacead693cfc1537bc9d4db3df608810",
       "expected_failure": true,
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "leader_execution": "ERROR",
       "leader_error": "[EXPECTED] case_not_ruled",
       "votes": {
-        "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "idle",
-        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "idle",
-        "0x29300188B54F5BFEE91542595611603b4B201008": "agree",
-        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree",
-        "0xe1626534791FC675ED813Cc2C89C427866526113": "agree"
+        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "idle",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "agree",
+        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "idle",
+        "0xe1626534791FC675ED813Cc2C89C427866526113": "agree",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "agree"
       },
       "counts_as_proof": true
     },
     {
       "label": "09-EXPECTED-forged-funding-direction",
-      "tx": "0xa2827cd2205a9e280403a46382e520136f48f93404ccd52b766f27694c7b28bb",
+      "tx": "0x751e2811e0631db164e6e081473ac11a4d55fc74f927bc5823dd32d38e3fba84",
       "expected_failure": true,
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
@@ -225,44 +232,61 @@
       "leader_error": "[EXPECTED] link_not_proven",
       "votes": {
         "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "agree",
-        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "agree",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "idle",
         "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "agree",
-        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "idle",
-        "0xf1EAD5E5f876eae701eF1881b42861079cd9A287": "idle"
+        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "idle",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree"
       },
       "counts_as_proof": true
     },
     {
       "label": "10-EXPECTED-replay-proven-link",
-      "tx": "0x9c1bd823479ac11ec2962299477f3bd75d7f47c92b8b021f0b81f37040b40a56",
+      "tx": "0x27ded907b7fdedfe8a89819a56db7b17a3415a47768bf8171ccf9a9301e2221a",
       "expected_failure": true,
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "leader_execution": "ERROR",
       "leader_error": "[EXPECTED] link_already_proven",
       "votes": {
-        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "idle",
-        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "agree",
-        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree",
-        "0xe1626534791FC675ED813Cc2C89C427866526113": "idle",
-        "0xf1EAD5E5f876eae701eF1881b42861079cd9A287": "agree"
+        "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "agree",
+        "0x29300188B54F5BFEE91542595611603b4B201008": "idle",
+        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "agree",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree"
       },
       "counts_as_proof": true
     },
     {
       "label": "11-EXPECTED-payment-is-not-a-link",
-      "tx": "0x831868ef8c75efb1d0e4d6ff9fc292da8b0c99483009474e67024adf43edd43c",
+      "tx": "0x4443f8f92db1177821bbe715a4676d7ed0f2f3353eaf89f9a97b1958651acf3c",
       "expected_failure": true,
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "leader_execution": "ERROR",
       "leader_error": "[EXPECTED] unknown_link_kind",
       "votes": {
-        "0x29300188B54F5BFEE91542595611603b4B201008": "idle",
-        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "idle",
-        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "agree",
-        "0xc675c2B7E1F066B7c1D2fe54EF7B76C91CdFa5F4": "agree",
-        "0xf1EAD5E5f876eae701eF1881b42861079cd9A287": "agree"
+        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "idle",
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "agree",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "agree",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "12-EXPECTED-faucet-is-not-an-owner",
+      "tx": "0xb36410a5bc98ff9c10e39e30868c0fb1a349f8fa646784755ac8f2b17c304013",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] funder_is_infrastructure",
+      "votes": {
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "agree",
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "agree",
+        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "agree",
+        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "idle",
+        "0xe1626534791FC675ED813Cc2C89C427866526113": "idle"
       },
       "counts_as_proof": true
     }
@@ -273,16 +297,17 @@
     "get_case 0x4f0e52342241539f5b4d1cc25dc4c6531049e44c": "{\n  case_id: 16,\n  case_type: 'Agreement',\n  parties: [\n    {\n      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',\n      outcome: 'FAVORABLE',\n      role: 'partyA',\n      severity: 'NONE'\n    },\n    {\n      address: '0xce413ffe2628b60cdaf4413d63d7838b8d4309ac',\n      outcome: 'UNFAVORABLE',\n      role: 'partyB',\n      severity: 'MINOR'\n    }\n  ]\n}",
     "get_case 0x778e3528940849432619142a8d7ac172486353bf": "{\n  case_id: 0,\n  case_type: 'TradeFxSettlement',\n  parties: [\n    {\n      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',\n      outcome: 'UNCLEAR',\n      role: 'exporter',\n      severity: 'NONE'\n    },\n    {\n      address: '0x942c20d078f7417ad67e96714310da8068850b77',\n      outcome: 'UNCLEAR',\n      role: 'importer',\n      severity: 'NONE'\n    }\n  ]\n}",
     "get_case 0xab772bb1d873ed851b6f1150100f085b36a1ca02": "{\n  case_id: 1,\n  case_type: 'TradeFxSettlement',\n  parties: [\n    {\n      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',\n      outcome: 'UNFAVORABLE',\n      role: 'exporter',\n      severity: 'MINOR'\n    },\n    {\n      address: '0x942c20d078f7417ad67e96714310da8068850b77',\n      outcome: 'FAVORABLE',\n      role: 'importer',\n      severity: 'NONE'\n    }\n  ]\n}",
-    "get_links 0x278d35035fb589195ed513507ce7e32021659250": "{\n  '0xba444be47ac0fb4738c6fcb33d19bc03e854b4b5': 'other wallet sent the subject its first funds'\n}",
+    "get_links 0x278d35035fb589195ed513507ce7e32021659250": "{\n  '0xba444be47ac0fb4738c6fcb33d19bc03e854b4b5': 'other wallet sent the subject its first funds (base-sepolia)'\n}",
     "get_links 0xce413ffe2628b60cdaf4413d63d7838b8d4309ac": "{}",
-    "get_score 0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87": "{\n  approval_limit_usd: 100,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_loss_weight: 0,\n    linked_wallets: 0,\n    loss_weight: 1,\n    ruled_cases: 4,\n    unclear: 1,\n    wins: 2\n  },\n  flags: [ 'UNCLEAR_RULINGS' ],\n  grade: 'C',\n  points: 55,\n  wallet: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87'\n}",
-    "get_score 0xce413ffe2628b60cdaf4413d63d7838b8d4309ac": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_loss_weight: 0,\n    linked_wallets: 0,\n    loss_weight: 2,\n    ruled_cases: 2,\n    unclear: 0,\n    wins: 0\n  },\n  flags: [],\n  grade: 'F',\n  points: 20,\n  wallet: '0xce413ffe2628b60cdaf4413d63d7838b8d4309ac'\n}",
-    "get_score 0x05e7ec36e5d31347b7aa90c7122a6d6e24fbe1a5": "{\n  approval_limit_usd: 100,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_loss_weight: 0,\n    linked_wallets: 0,\n    loss_weight: 0,\n    ruled_cases: 0,\n    unclear: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0x05e7ec36e5d31347b7aa90c7122a6d6e24fbe1a5'\n}",
-    "get_score 0x278d35035fb589195ed513507ce7e32021659250": "{\n  approval_limit_usd: 100,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_loss_weight: 0,\n    linked_wallets: 1,\n    loss_weight: 0,\n    ruled_cases: 0,\n    unclear: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0x278d35035fb589195ed513507ce7e32021659250'\n}",
-    "get_score 0xba444be47ac0fb4738c6fcb33d19bc03e854b4b5": "{\n  approval_limit_usd: 100,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_loss_weight: 0,\n    linked_wallets: 1,\n    loss_weight: 0,\n    ruled_cases: 0,\n    unclear: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0xba444be47ac0fb4738c6fcb33d19bc03e854b4b5'\n}"
+    "get_score 0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87": "{\n  approval_limit_usd: 100,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    linked_wallets: 0,\n    loss_penalty: 8,\n    ruled_cases: 4,\n    unclear: 1,\n    wins: 2\n  },\n  flags: [ 'UNCLEAR_RULINGS' ],\n  grade: 'C',\n  points: 58,\n  wallet: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87'\n}",
+    "get_score 0xce413ffe2628b60cdaf4413d63d7838b8d4309ac": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    linked_wallets: 0,\n    loss_penalty: 16,\n    ruled_cases: 2,\n    unclear: 0,\n    wins: 0\n  },\n  flags: [],\n  grade: 'D',\n  points: 34,\n  wallet: '0xce413ffe2628b60cdaf4413d63d7838b8d4309ac'\n}",
+    "get_score 0x05e7ec36e5d31347b7aa90c7122a6d6e24fbe1a5": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    linked_wallets: 0,\n    loss_penalty: 0,\n    ruled_cases: 0,\n    unclear: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0x05e7ec36e5d31347b7aa90c7122a6d6e24fbe1a5'\n}",
+    "get_score 0x278d35035fb589195ed513507ce7e32021659250": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    linked_wallets: 1,\n    loss_penalty: 0,\n    ruled_cases: 0,\n    unclear: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0x278d35035fb589195ed513507ce7e32021659250'\n}",
+    "get_score 0xba444be47ac0fb4738c6fcb33d19bc03e854b4b5": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    linked_wallets: 1,\n    loss_penalty: 0,\n    ruled_cases: 0,\n    unclear: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0xba444be47ac0fb4738c6fcb33d19bc03e854b4b5'\n}"
   },
   "not_proven": [
     "Internet Court cases used here are the existing testnet cases on Base Sepolia, created by other parties; none of them is a deliberate fake-win or fresh-wallet scenario. Those two abuses are demonstrated in direct-mode tests, not on-chain.",
+    "No Base mainnet link has been proven live yet: that path (Nansen discovery, mainnet RPC verification) is covered by direct-mode tests and the prover's checks, and waits for a Nansen API key.",
     "StudioNet is a test network; scores move no funds."
   ]
 }

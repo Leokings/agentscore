@@ -13,8 +13,10 @@ from typing import Any, NoReturn
 
 # --- External sources -------------------------------------------------------------------
 
+# Internet Court lives on Base Sepolia. Ownership links can be proven on Base Sepolia or on Base
+# mainnet, where agents' wallets have real history (and where Nansen finds the links).
 RPC_URL = "https://sepolia.base.org"
-BLOCKSCOUT_TX_URL = "https://base-sepolia.blockscout.com/api/v2/transactions/"
+NETWORK_RPC = {"base-sepolia": "https://sepolia.base.org", "base": "https://mainnet.base.org"}
 FACTORY = "0xd533cb0b52e85b3f506b6f0c28b8f6bc4e449dda"
 
 # 4-byte selectors (keccak256 of the signature), computed off-chain.
@@ -42,13 +44,24 @@ MAX_EVIDENCE_CHARS = 4000
 MAX_RESPONSE_BYTES = 64_000
 MAX_LINKS_PER_WALLET = 30
 MAX_CASES_PER_WALLET = 100
+# A funder that had already sent more than this many transactions when it funded a wallet is an
+# exchange, faucet or payout service, not an owner, so it cannot link wallets. The number comes
+# from the funding transaction's own nonce, so every validator sees the same value.
+MAX_FUNDER_NONCE = 1000
 
 # --- Judgment allowlists and the deterministic scoring table ----------------------------
 
 OUTCOMES = ("FAVORABLE", "UNFAVORABLE", "NEUTRAL", "UNCLEAR")
 SEVERITIES = ("MINOR", "MATERIAL", "SEVERE")
-SEVERITY_WEIGHT = {"MINOR": 1, "MATERIAL": 2, "SEVERE": 4}
-GRADE_TABLE = (("A", 80, 5000), ("B", 65, 1000), ("C", 50, 100), ("D", 35, 0))
+BASE_POINTS = 50
+WIN_POINTS = 8
+MAX_COUNTED_WINS = 5
+FAKE_WIN_PENALTY = 10
+LOSS_PENALTY = {"MINOR": 8, "MATERIAL": 20, "SEVERE": 40}
+# (grade, minimum points, approval limit in USD without escrow)
+GRADE_TABLE = (("A", 80, 5000), ("B", 65, 1000), ("C", 50, 100), ("D", 30, 0))
+# A wallet with no judged cases and no inherited losses is unknown: shown as C, but needs escrow.
+NO_HISTORY_GRADE, NO_HISTORY_LIMIT = "C", 0
 # Only first-funding evidence counts: it is anchored to the wallet's own nonce-0 transaction, so a
 # stranger cannot create it. (A plain payment can be sent to anyone, so it proves nothing about
 # ownership and was removed after the first live run.)
@@ -137,13 +150,9 @@ def _word(value: int) -> str:
 # --- Evidence fetchers (deterministic results, compared with strict equality) -----------
 
 
-def _rpc_batch(calls: list[tuple[str, str]]) -> list[str | None]:
-    """eth_call batch against Base Sepolia. Returns raw results, None for reverted calls."""
-    payload = [
-        {"jsonrpc": "2.0", "id": i + 1, "method": "eth_call", "params": [{"to": to, "data": "0x" + data}, "latest"]}
-        for i, (to, data) in enumerate(calls)
-    ]
-    res = gl.nondet.web.post(RPC_URL, body=json.dumps(payload), headers={"Content-Type": "application/json"})
+def _rpc_post(url: str, payload: list[dict[str, Any]]) -> dict[int, dict[str, Any]]:
+    """Sends one JSON-RPC batch and returns the responses by id. Fails closed on anything odd."""
+    res = gl.nondet.web.post(url, body=json.dumps(payload), headers={"Content-Type": "application/json"})
     if res.status >= 500 or res.status == 429:
         _transient(f"rpc_status_{res.status}")
     if res.status != 200:
@@ -158,11 +167,22 @@ def _rpc_batch(calls: list[tuple[str, str]]) -> list[str | None]:
     if not isinstance(items, list):
         _external("rpc_bad_response")
     by_id = {it.get("id"): it for it in items if isinstance(it, dict)}
+    for item in payload:
+        if item["id"] not in by_id:
+            _transient("rpc_missing_result")
+    return by_id
+
+
+def _rpc_batch(calls: list[tuple[str, str]]) -> list[str | None]:
+    """eth_call batch against Base Sepolia. Returns raw results, None for reverted calls."""
+    payload = [
+        {"jsonrpc": "2.0", "id": i + 1, "method": "eth_call", "params": [{"to": to, "data": "0x" + data}, "latest"]}
+        for i, (to, data) in enumerate(calls)
+    ]
+    by_id = _rpc_post(RPC_URL, payload)
     out: list[str | None] = []
     for i in range(len(calls)):
-        item = by_id.get(i + 1)
-        if item is None:
-            _transient("rpc_missing_result")
+        item = by_id[i + 1]
         result = item.get("result")
         valid = isinstance(result, str) and len(result) > 2 and len(result) % 2 == 0 and _is_hex(result, len(result) - 2)
         out.append(result.lower() if valid else None)
@@ -232,48 +252,40 @@ def _fetch_case(case: str) -> dict[str, Any]:
     return evidence
 
 
-def _fetch_tx(tx_hash: str) -> dict[str, Any]:
-    """Reads one Base Sepolia transaction from Blockscout, keeping only stable fields."""
-    res = gl.nondet.web.get(BLOCKSCOUT_TX_URL + tx_hash, headers={"Accept": "application/json"})
-    if res.status == 404:
-        _fail("link_tx_not_found")
-    if res.status >= 500 or res.status == 429:
-        _transient(f"blockscout_status_{res.status}")
-    if res.status != 200:
-        _external(f"blockscout_status_{res.status}")
-    body = res.body or b""
-    if len(body) > MAX_RESPONSE_BYTES:
-        _external("blockscout_response_too_large")
+def _hex_int(value: Any) -> int:
+    if not isinstance(value, str) or not value.startswith("0x") or len(value) > 66:
+        _external("rpc_bad_response")
     try:
-        tx = json.loads(body.decode("utf-8"))
-    except Exception:
-        _external("blockscout_bad_response")
-    if not isinstance(tx, dict) or str(tx.get("hash", "")).lower() != tx_hash:
-        _external("blockscout_bad_response")
-    if tx.get("status") != "ok" or tx.get("result") != "success":
-        _fail("link_tx_failed_or_pending")
-    sender = (tx.get("from") or {}).get("hash")
-    receiver = (tx.get("to") or {}).get("hash")
-    transfers = []
-    for t in tx.get("token_transfers") or []:
-        f, r = (t.get("from") or {}).get("hash"), (t.get("to") or {}).get("hash")
-        if _is_hex(f, 40) and _is_hex(r, 40):
-            transfers.append([f.lower(), r.lower()])
-    try:
-        value = int(tx.get("value") or "0")
-        nonce = int(tx.get("nonce"))
-        block = int(tx.get("block_number"))
-    except (TypeError, ValueError):
-        _external("blockscout_bad_response")
-    return {
-        "hash": tx_hash,
-        "from": sender.lower() if _is_hex(sender, 40) else "",
-        "to": receiver.lower() if _is_hex(receiver, 40) else "",
-        "value": value,
-        "nonce": nonce,
-        "block": block,
-        "token_transfers": sorted(transfers),
-    }
+        return int(value, 16)
+    except ValueError:
+        _external("rpc_bad_response")
+
+
+def _fetch_txs(network: str, hashes: list[str]) -> dict[str, dict[str, Any]]:
+    """Reads transactions and their receipts from a Base RPC node, keeping only stable fields."""
+    payload: list[dict[str, Any]] = []
+    for i, h in enumerate(hashes):
+        payload.append({"jsonrpc": "2.0", "id": 2 * i + 1, "method": "eth_getTransactionByHash", "params": [h]})
+        payload.append({"jsonrpc": "2.0", "id": 2 * i + 2, "method": "eth_getTransactionReceipt", "params": [h]})
+    by_id = _rpc_post(NETWORK_RPC[network], payload)
+    out: dict[str, dict[str, Any]] = {}
+    for i, h in enumerate(hashes):
+        tx, receipt = by_id[2 * i + 1].get("result"), by_id[2 * i + 2].get("result")
+        if tx is None:
+            _fail("link_tx_not_found")
+        if not isinstance(tx, dict) or str(tx.get("hash", "")).lower() != h:
+            _external("rpc_bad_response")
+        if not isinstance(receipt, dict) or receipt.get("status") != "0x1":
+            _fail("link_tx_failed_or_pending")
+        sender, receiver = tx.get("from"), tx.get("to")
+        out[h] = {
+            "from": sender.lower() if _is_hex(sender, 40) else "",
+            "to": receiver.lower() if _is_hex(receiver, 40) else "",
+            "value": _hex_int(tx.get("value")),
+            "nonce": _hex_int(tx.get("nonce")),
+            "block": _hex_int(tx.get("blockNumber")),
+        }
+    return out
 
 
 def _exact_validator(fetch: Any) -> Any:
@@ -312,9 +324,9 @@ def _case_evidence(case: str) -> dict[str, Any]:
     return gl.vm.run_nondet_unsafe(fetch, _exact_validator(fetch))
 
 
-def _tx_evidence(tx_hash: str) -> dict[str, Any]:
-    def fetch() -> dict[str, Any]:
-        return _fetch_tx(tx_hash)
+def _tx_evidence(network: str, hashes: list[str]) -> dict[str, dict[str, Any]]:
+    def fetch() -> dict[str, dict[str, Any]]:
+        return _fetch_txs(network, hashes)
 
     return gl.vm.run_nondet_unsafe(fetch, _exact_validator(fetch))
 
@@ -447,6 +459,8 @@ def _normalize_proof(proof_json: Any) -> dict[str, str]:
 def _verified_link(kind: str, subject: str, other: str, txs: dict[str, dict[str, Any]], proof: dict[str, str]) -> str | None:
     """Returns a short description if the transactions prove the claimed link, otherwise None."""
 
+    network = proof.get("network", "base-sepolia")
+
     def first_funding(wallet: str, funder: str, funding_key: str, first_tx_key: str) -> bool:
         funding, first = txs.get(proof.get(funding_key, "")), txs.get(proof.get(first_tx_key, ""))
         if funding is None or first is None:
@@ -454,7 +468,7 @@ def _verified_link(kind: str, subject: str, other: str, txs: dict[str, dict[str,
         # The wallet could not send its first transaction before it held gas, so a native-value
         # transfer mined before (or with) its nonce-0 transaction is its first funding. Later dust
         # sent by a stranger can never satisfy this.
-        return (
+        matched = (
             funding["from"] == funder
             and funding["to"] == wallet
             and funding["value"] > 0
@@ -462,12 +476,15 @@ def _verified_link(kind: str, subject: str, other: str, txs: dict[str, dict[str,
             and first["nonce"] == 0
             and funding["block"] <= first["block"]
         )
+        if matched and funding["nonce"] > MAX_FUNDER_NONCE:
+            _fail("funder_is_infrastructure")
+        return matched
 
     if kind == "first_funded_by":
         if first_funding(subject, other, "funding_tx", "subject_first_tx"):
-            return "other wallet sent the subject its first funds"
+            return f"other wallet sent the subject its first funds ({network})"
         if first_funding(other, subject, "funding_tx", "other_first_tx"):
-            return "subject sent the other wallet its first funds"
+            return f"subject sent the other wallet its first funds ({network})"
         return None
     if kind == "shared_first_funder":
         funder = proof.get("funder", "")
@@ -477,7 +494,7 @@ def _verified_link(kind: str, subject: str, other: str, txs: dict[str, dict[str,
             and first_funding(subject, funder.lower(), "subject_funding_tx", "subject_first_tx")
             and first_funding(other, funder.lower(), "other_funding_tx", "other_first_tx")
         ):
-            return "both were first funded by the same wallet"
+            return f"both were first funded by the same wallet ({network})"
         return None
     return None
 
@@ -537,6 +554,9 @@ class AgentScore(gl.Contract):
         if kind not in LINK_KINDS:
             _fail("unknown_link_kind")
         proof = _normalize_proof(proof_json)
+        network = proof.get("network", "base-sepolia")
+        if network not in NETWORK_RPC:
+            _fail("unknown_network")
         hashes = sorted({_tx_hash(v) for k, v in proof.items() if k.endswith("_tx")})
         if not 1 <= len(hashes) <= 4:
             _fail("invalid_proof_json")
@@ -549,7 +569,7 @@ class AgentScore(gl.Contract):
         if len(links_a) >= MAX_LINKS_PER_WALLET or len(links_b) >= MAX_LINKS_PER_WALLET:
             _fail("wallet_link_limit")
 
-        txs = {h: _tx_evidence(h) for h in hashes}
+        txs = _tx_evidence(network, hashes)
         description = _verified_link(kind, a, b, txs, proof)
         if description is None:
             _fail("link_not_proven")
@@ -592,7 +612,7 @@ class AgentScore(gl.Contract):
                     out.append((record, mine[0]))
             return out
 
-        wins = fake_wins = loss_weight = inherited = unclear = ruled = 0
+        wins = fake_wins = loss_penalty = inherited = unclear = ruled = 0
         for record, me in rulings(subject):
             ruled += 1
             counterparties = {p["address"] for p in record["parties"] if p["address"] != subject}
@@ -602,7 +622,7 @@ class AgentScore(gl.Contract):
                 else:
                     wins += 1
             elif me["outcome"] == "UNFAVORABLE":
-                loss_weight += SEVERITY_WEIGHT[me["severity"]]
+                loss_penalty += LOSS_PENALTY[me["severity"]]
             elif me["outcome"] == "UNCLEAR":
                 unclear += 1
 
@@ -612,7 +632,7 @@ class AgentScore(gl.Contract):
                 if subject in {p["address"] for p in record["parties"]}:
                     continue  # already counted from the subject's own side
                 if them["outcome"] == "UNFAVORABLE":
-                    inherited += SEVERITY_WEIGHT[them["severity"]]
+                    inherited += LOSS_PENALTY[them["severity"]]
                     inherited_cases += 1
 
         flags = []
@@ -624,10 +644,10 @@ class AgentScore(gl.Contract):
             flags.append("UNCLEAR_RULINGS")
 
         if ruled == 0 and inherited == 0:
-            grade, points, limit = "C", 50, 100
+            grade, points, limit = NO_HISTORY_GRADE, BASE_POINTS, NO_HISTORY_LIMIT
             flags.append("NO_HISTORY")
         else:
-            points = 50 + 10 * min(wins, 4) - 15 * (loss_weight + inherited) - 10 * fake_wins
+            points = BASE_POINTS + WIN_POINTS * min(wins, MAX_COUNTED_WINS) - loss_penalty - inherited - FAKE_WIN_PENALTY * fake_wins
             grade, limit = "F", 0
             for g, threshold, approve in GRADE_TABLE:
                 if points >= threshold:
@@ -644,8 +664,8 @@ class AgentScore(gl.Contract):
                 "ruled_cases": ruled,
                 "wins": wins,
                 "fake_wins": fake_wins,
-                "loss_weight": loss_weight,
-                "inherited_loss_weight": inherited,
+                "loss_penalty": loss_penalty,
+                "inherited_penalty": inherited,
                 "inherited_cases": inherited_cases,
                 "unclear": unclear,
                 "linked_wallets": len(cluster),
