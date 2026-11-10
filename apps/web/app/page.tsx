@@ -299,7 +299,10 @@ export default function Home() {
 
       <footer className="mt-16 border-t border-[var(--border)] pt-6 text-xs text-[var(--muted)]">
         Rulings from Internet Court on Base Sepolia · wallet links found with Nansen · judged and graded by a GenLayer
-        intelligent contract. Test networks only.
+        intelligent contract. Test networks only. ·{" "}
+        <a href="https://github.com/Leokings/agentscore" target="_blank" rel="noreferrer" className="underline hover:text-[var(--fg)]">
+          Source on GitHub
+        </a>
       </footer>
     </main>
   );

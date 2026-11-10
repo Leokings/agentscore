@@ -6,7 +6,8 @@ that probably belong to the same owner (using **Nansen** and on-chain history), 
 wallet or inflated with fake wins.
 
 **Live:** [agentscore-seven.vercel.app](https://agentscore-seven.vercel.app) (website) ·
-[`/api/v1`](https://agentscore-seven.vercel.app/api/v1/health) (REST API)
+[`/api/v1`](https://agentscore-seven.vercel.app/api/v1/health) (REST API) ·
+[`/api/mcp`](#mcp-server) (MCP) · [source](https://github.com/Leokings/agentscore)
 
 > Status: in development for the Internet Court Builders Working Group mission (Nov 9–23, 2026).
 > The indexer, link builder, REST API, MCP server, skill, website and the GenLayer contract
@@ -87,6 +88,11 @@ endpoint for an agent's **First Funder on Base mainnet** (with the funding trans
 transactions endpoint for the agent's earliest transactions, checks the pair against the Base RPC
 node with the contract's own rules, and submits `prove_link`. Nansen's labels also drop exchange
 funders before anything is sent.
+
+Credits: a wallet's first funder and earliest transactions never change, so those answers are
+cached for good and each wallet costs about 2 credits once. Every process sharing the database
+(hourly keeper runs, API instances) also shares one daily budget (`NANSEN_DAILY_CREDITS`,
+default 8), which fits the free plan's daily top-up to 10 credits.
 
 ```bash
 npm run prove --workspace @agentscore/prover -- --court            # dry run over every Internet Court party

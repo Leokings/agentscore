@@ -30,6 +30,8 @@ jobs:
       GENLAYER_NETWORK: ${{ vars.GENLAYER_NETWORK }}
       KEEPER_MAX_WRITES: ${{ vars.KEEPER_MAX_WRITES || '10' }}
       NANSEN_MAX_CREDITS_PER_RUN: ${{ vars.NANSEN_MAX_CREDITS_PER_RUN || '10' }}
+      # Shared by every run through the database: the free plan only tops up to 10 credits a day.
+      NANSEN_DAILY_CREDITS: ${{ vars.NANSEN_DAILY_CREDITS || '8' }}
       AGENTSCORE_SIGNER_KEY: ${{ secrets.AGENTSCORE_SIGNER_KEY }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       DATABASE_AUTH_TOKEN: ${{ secrets.DATABASE_AUTH_TOKEN }}
