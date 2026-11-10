@@ -1,0 +1,18 @@
+{
+  "name": "@agentscore/links",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "links": "tsx --env-file-if-exists=../../.env src/cli/links.ts"
+  },
+  "dependencies": {
+    "@agentscore/indexer": "0.1.0",
+    "@agentscore/shared": "0.1.0"
+  }
+}

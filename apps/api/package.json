@@ -1,0 +1,19 @@
+{
+  "name": "@agentscore/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/app.ts",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=../../.env src/server.ts",
+    "start": "tsx --env-file-if-exists=../../.env src/server.ts"
+  },
+  "dependencies": {
+    "@agentscore/indexer": "0.1.0",
+    "@agentscore/links": "0.1.0",
+    "@agentscore/shared": "0.1.0",
+    "@hono/node-server": "^1.13.7",
+    "genlayer-js": "^1.1.8",
+    "hono": "^4.6.14"
+  }
+}

@@ -1,0 +1,148 @@
+{"label":"00-deploy","tx":"0xb8c2c52657002b2337f77845ce36f4cb919bc653e5112d6d4fe0cb9ab53c29f5","contract":"0xFC9f3DFce2f9B5B3A7Ed24Fbc26c1987cD41E649","status":"FINALIZED","leader":"SUCCESS"}
+{"label":"01-judge-case15","tx":"0xd329af0713b20771267013babfce638b8bcd662627be7d24d363561b8865ebd4","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":0,"error":""}
+{"label":"02-judge-case16","tx":"0x8ea2645412a5c58d3e03fb1589c244fbb4b47ca0bcc9c9e146f16cf17eab1a05","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":0,"error":""}
+{"label":"03-judge-trade-case0","tx":"0x98cbd3b985e582803357148aca4459ad9abcb1bd9ea249b37e43f523d72da642","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":0,"error":""}
+{"label":"04-judge-trade-case1","tx":"0xac25dfc473da2703b632b3600e984df1d62b0b8606a05e022e2a0e3f6858491f","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":0,"error":""}
+{"label":"05-prove-link-paid","tx":"0xc96bc30aa48c2037310b9d5c5f3bceeecb36950010f52b0c02a3fb240c67d4cd","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":0,"error":""}
+{"label":"06-EXPECTED-replay-judged-case","tx":"0xca7ec2abd4c3bd124ce6a3c2049f0631c8f92aac18f3e2a153e88a7e71e36989","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":0,"error":"[EXPECTED] case_already_judged"}
+{"label":"07-EXPECTED-not-an-internet-court-case","tx":"0xa78ff5ec59c1072a769a85bd34d2254c44f883ae9edfcb07103fefb669bb85b3","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":0,"error":"[EXPECTED] case_not_registered"}
+{"label":"08-EXPECTED-case-not-ruled","tx":"0x89c3a16348a0316b6d7c73b2a906fea987ee988efdb19c2f5baebb99e35a802d","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":0,"error":"[EXPECTED] case_not_ruled"}
+{"label":"09-EXPECTED-forged-link-wrong-sender","tx":"0x895d5e85929a3d82633f95c1469923c29985c52f074b3fc24b56607589edfa38","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":0,"error":"[EXPECTED] link_already_proven"}
+{"label":"10-EXPECTED-replay-proven-link","tx":"0x6d3ec674b2e0b51c246a79ce0dd6534063c8e28a7de0b23ca355bf2926f09857","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":0,"error":"[EXPECTED] link_already_proven"}
+--- get_stats
+{ judged_cases: 4 }
+
+--- get_case 0x32cb0d3e1671088caafe62e7cbce1b875876a035
+{
+  case_id: 15,
+  case_type: 'Agreement',
+  parties: [
+    {
+      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',
+      outcome: 'FAVORABLE',
+      role: 'partyA',
+      severity: 'NONE'
+    },
+    {
+      address: '0xce413ffe2628b60cdaf4413d63d7838b8d4309ac',
+      outcome: 'UNFAVORABLE',
+      role: 'partyB',
+      severity: 'MINOR'
+    }
+  ]
+}
+--- get_case 0x4f0e52342241539f5b4d1cc25dc4c6531049e44c
+{
+  case_id: 16,
+  case_type: 'Agreement',
+  parties: [
+    {
+      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',
+      outcome: 'FAVORABLE',
+      role: 'partyA',
+      severity: 'NONE'
+    },
+    {
+      address: '0xce413ffe2628b60cdaf4413d63d7838b8d4309ac',
+      outcome: 'UNFAVORABLE',
+      role: 'partyB',
+      severity: 'MINOR'
+    }
+  ]
+}
+--- get_case 0x778e3528940849432619142a8d7ac172486353bf
+{
+  case_id: 0,
+  case_type: 'TradeFxSettlement',
+  parties: [
+    {
+      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',
+      outcome: 'UNCLEAR',
+      role: 'exporter',
+      severity: 'NONE'
+    },
+    {
+      address: '0x942c20d078f7417ad67e96714310da8068850b77',
+      outcome: 'UNCLEAR',
+      role: 'importer',
+      severity: 'NONE'
+    }
+  ]
+}
+--- get_case 0xab772bb1d873ed851b6f1150100f085b36a1ca02
+{
+  case_id: 1,
+  case_type: 'TradeFxSettlement',
+  parties: [
+    {
+      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',
+      outcome: 'UNFAVORABLE',
+      role: 'exporter',
+      severity: 'MINOR'
+    },
+    {
+      address: '0x942c20d078f7417ad67e96714310da8068850b77',
+      outcome: 'FAVORABLE',
+      role: 'importer',
+      severity: 'NONE'
+    }
+  ]
+}
+--- get_links 0xce413ffe2628b60cdaf4413d63d7838b8d4309ac
+{
+  '0x05e7ec36e5d31347b7aa90c7122a6d6e24fbe1a5': 'subject paid the other wallet'
+}
+--- get_score 0xce413ffe2628b60cdaf4413d63d7838b8d4309ac
+{
+  approval_limit_usd: 0,
+  counts: {
+    fake_wins: 0,
+    inherited_cases: 0,
+    inherited_loss_weight: 0,
+    linked_wallets: 1,
+    loss_weight: 2,
+    ruled_cases: 2,
+    unclear: 0,
+    wins: 0
+  },
+  flags: [],
+  grade: 'F',
+  points: 20,
+  wallet: '0xce413ffe2628b60cdaf4413d63d7838b8d4309ac'
+}
+--- get_score 0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87
+{
+  approval_limit_usd: 100,
+  counts: {
+    fake_wins: 0,
+    inherited_cases: 0,
+    inherited_loss_weight: 0,
+    linked_wallets: 0,
+    loss_weight: 1,
+    ruled_cases: 4,
+    unclear: 1,
+    wins: 2
+  },
+  flags: [ 'UNCLEAR_RULINGS' ],
+  grade: 'C',
+  points: 55,
+  wallet: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87'
+}
+--- get_score 0x05e7ec36e5d31347b7aa90c7122a6d6e24fbe1a5
+{
+  approval_limit_usd: 0,
+  counts: {
+    fake_wins: 0,
+    inherited_cases: 2,
+    inherited_loss_weight: 2,
+    linked_wallets: 1,
+    loss_weight: 0,
+    ruled_cases: 0,
+    unclear: 0,
+    wins: 0
+  },
+  flags: [ 'INHERITED_LOSSES' ],
+  grade: 'F',
+  points: 20,
+  wallet: '0x05e7ec36e5d31347b7aa90c7122a6d6e24fbe1a5'
+}

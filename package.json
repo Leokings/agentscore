@@ -1,0 +1,30 @@
+{
+  "name": "agentscore",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Credit scores for AI agents, built from Internet Court rulings, wallet links and GenLayer judgment.",
+  "license": "MIT",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "index": "npm run index --workspace @agentscore/indexer",
+    "record": "npm run record --workspace @agentscore/indexer --",
+    "api": "npm run dev --workspace @agentscore/api",
+    "mcp": "npm run start --workspace @agentscore/mcp",
+    "web": "npm run dev --workspace @agentscore/web"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
