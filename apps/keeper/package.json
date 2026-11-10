@@ -1,0 +1,17 @@
+{
+  "name": "@agentscore/keeper",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/run.ts",
+  "scripts": {
+    "start": "tsx --env-file-if-exists=../../.env src/cli.ts",
+    "once": "tsx --env-file-if-exists=../../.env src/cli.ts --once"
+  },
+  "dependencies": {
+    "@agentscore/indexer": "0.1.0",
+    "@agentscore/links": "0.1.0",
+    "@agentscore/prover": "0.1.0",
+    "@agentscore/shared": "0.1.0"
+  }
+}

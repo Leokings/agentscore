@@ -309,5 +309,86 @@
     "Internet Court cases used here are the existing testnet cases on Base Sepolia, created by other parties; none of them is a deliberate fake-win or fresh-wallet scenario. Those two abuses are demonstrated in direct-mode tests, not on-chain.",
     "No Base mainnet link has been proven live yet: that path (Nansen discovery, mainnet RPC verification) is covered by direct-mode tests and the prover's checks, and waits for a Nansen API key.",
     "StudioNet is a test network; scores move no funds."
-  ]
+  ],
+  "keeper": [
+    {
+      "log": "first-pass.log",
+      "action": "judge_cases",
+      "case_id": 2,
+      "case": "0x43fcbf7fa4a1c8d6ca648fad163636b20bcee233",
+      "tx": "0x2e3dae98ddf3e4a73ca6b1468d4005683691c92bd1d680b6d8a76af1100f292b",
+      "stored": true
+    },
+    {
+      "log": "first-pass.log",
+      "action": "judge_cases",
+      "case_id": 3,
+      "case": "0xb4700d67d6cbef18011021a2a20389ea88753234",
+      "tx": "0x8356524938fcf40706121ea73f7e69f93e07f2161c5d26e74a1edbe0757ccea1",
+      "stored": true
+    },
+    {
+      "log": "first-pass.log",
+      "action": "judge_cases",
+      "case_id": 4,
+      "case": "0xbd0db046a913817522b595cfeb922d5e2aad4268",
+      "tx": "0x6c9fd31131f2035548fc6e2c6b7eb2765c8ab6f4ce7a711a33bd2b23469bd884",
+      "stored": true
+    },
+    {
+      "log": "first-pass.log",
+      "action": "judge_cases",
+      "case_id": 5,
+      "case": "0xe50a8f382b3b751dbd7053963ebabb59916f3788",
+      "tx": "0x5b6c822d2a63d281ac05183fd40e146f7886901d034eefed8d66efa7d4118f21",
+      "stored": true
+    },
+    {
+      "log": "first-pass.log",
+      "action": "judge_cases",
+      "case_id": 6,
+      "case": "0x08fb300e1290fa3e12cded8b2bf050edd46fff73",
+      "tx": "0xe83a11116434806c5f2a9beedafcb226e19846d4cd706c9e03a6519e8dd866f9",
+      "stored": true
+    },
+    {
+      "log": "first-pass.log",
+      "action": "judge_cases",
+      "case_id": 7,
+      "case": "0xd42d18bea9c22e6c230b5ee116e9bcac8757a6ec",
+      "tx": "0x5d92e686f9b326134085b6819efb6a0b6e39cf414f125da214a4859a6a1d101a",
+      "stored": true
+    },
+    {
+      "log": "first-pass.log",
+      "action": "judge_cases",
+      "case_id": 8,
+      "case": "0x8ede7afc449cca494ff3066ab020be143d784f91",
+      "tx": "0x514154d468297bc3e396ade5b453cd775c9e8f30835615f238e3aa71e80d2eea",
+      "stored": true
+    },
+    {
+      "log": "first-pass.log",
+      "action": "failed",
+      "item": "case #9 0x87b5afc78ca48d0ec62eec7816884e0220c49978",
+      "error": "network: An unknown RPC error occurred."
+    },
+    {
+      "log": "first-pass.log",
+      "action": "judge_cases",
+      "case_id": 10,
+      "case": "0x9bff14a32325ea103dd690e29cd3f22660321b44",
+      "tx": "0x4113e600b718b37ffa3fdf0fb56e2b27d2f7944d40400e7876489b6ba93ff388",
+      "stored": true
+    },
+    {
+      "log": "first-pass.log",
+      "action": "judge_cases",
+      "case_id": 11,
+      "case": "0x2d14f1ad43d90e8db1209a6ce3c1959c85b4d9e1",
+      "tx": "0x2314317ed2b2db865fb77ea4e7dc95d2ee0672fff2b354b9068934078e7522a6",
+      "stored": true
+    }
+  ],
+  "keeper_notes": "Case #9 was reported failed in first-pass.log because the StudioNet RPC returned an HTML error page while the keeper polled for the receipt; a later read-back showed the case was judged on-chain anyway. The keeper now reads back after network errors."
 }

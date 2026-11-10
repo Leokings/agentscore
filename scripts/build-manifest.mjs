@@ -138,6 +138,25 @@ const manifest = {
   ],
 };
 
+// Transactions sent by the keeper (apps/keeper), from its pass logs.
+const keeperDir = `${dir}/keeper`;
+manifest.keeper = [];
+if (existsSync(keeperDir)) {
+  const { readdirSync } = await import("node:fs");
+  for (const f of readdirSync(keeperDir).filter((n) => n.endsWith(".log")).sort()) {
+    for (const line of readFileSync(`${keeperDir}/${f}`, "utf8").split("\n")) {
+      const judged = line.match(/judged case #(\d+) (0x[0-9a-f]{40}) \(tx (0x[0-9a-f]{64})\)/);
+      const proved = line.match(/proved (\S+) (0x[0-9a-f]{40}) ↔ (0x[0-9a-f]{40}) \(tx (0x[0-9a-f]{64})\)/);
+      const failed = line.match(/(case #\d+ 0x[0-9a-f]{40}|link 0x[0-9a-f]{40} ↔ 0x[0-9a-f]{40}) not (?:judged|stored): (.*)$/);
+      if (judged) manifest.keeper.push({ log: f, action: "judge_cases", case_id: Number(judged[1]), case: judged[2], tx: judged[3], stored: true });
+      if (proved) manifest.keeper.push({ log: f, action: "prove_link", kind: proved[1], subject: proved[2], other: proved[3], tx: proved[4], stored: true });
+      if (failed) manifest.keeper.push({ log: f, action: "failed", item: failed[1], error: failed[2] });
+    }
+  }
+  manifest.keeper_notes =
+    "Case #9 was reported failed in first-pass.log because the StudioNet RPC returned an HTML error page while the keeper polled for the receipt; a later read-back showed the case was judged on-chain anyway. The keeper now reads back after network errors.";
+}
+
 // Deployed source must be byte-identical to the file.
 try {
   const { createClient } = await import("genlayer-js");

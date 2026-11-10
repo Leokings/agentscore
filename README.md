@@ -36,6 +36,21 @@ Reproduce with `scripts/live-demo.sh` (deploys a fresh contract) or `scripts/liv
 | `judge_cases([case, …])` | anyone | Reads up to 5 finalized Internet Court cases from Base Sepolia and has validators classify what each ruling means for each party. Final once stored. |
 | `prove_link(subject, other, kind, proof)` | anyone | Stores chain-verified proof that two wallets share an owner (`first_funded_by`, `shared_first_funder`: funding mined before the wallet's own nonce-0 transaction, so strangers can't create it). Works on Base mainnet or Base Sepolia, read from the public Base RPC nodes. Funders that had sent over 1,000 transactions (exchanges, faucets) are rejected. Permanent. |
 
+### Keeping scores current
+
+`apps/keeper` runs the whole loop on a timer. Each pass it syncs Internet Court, judges every
+newly ruled case the contract hasn't judged, then discovers and submits new same-owner links among
+the case parties (Nansen on Base mainnet, Blockscout on Base Sepolia). Something counts as stored
+only when a read-back from the contract confirms it. Outages are retried after 30 minutes,
+validator disagreements after 6 hours, and permanent contract errors (such as an unsupported case
+type or a faucet funder) are never resent.
+
+```bash
+npm run once  --workspace @agentscore/keeper -- --dry-run   # show what it would send
+npm run once  --workspace @agentscore/keeper               # one pass
+npm run start --workspace @agentscore/keeper               # every KEEPER_INTERVAL_MIN minutes
+```
+
 ### Where Nansen fits
 
 Nansen finds the links; GenLayer proves them. `packages/prover` asks Nansen's related-wallets
@@ -68,6 +83,8 @@ pytest tests/direct -m live          # decodes real Internet Court cases from Ba
 | `packages/shared` | Shared types and constants (verified Internet Court addresses) |
 | `packages/indexer` | Internet Court indexer: backfills the factory's events from Blockscout, then polls Base Sepolia |
 | `packages/links` | Wallet history (Blockscout + Nansen) and the deterministic link rules |
+| `packages/prover` | Finds provable same-owner links (Nansen on Base mainnet, Blockscout on Base Sepolia), pre-checks them and submits `prove_link` |
+| `apps/keeper` | Service that keeps the contract current: judges new rulings, submits new links |
 | `apps/api` | REST API (Hono) |
 | `apps/mcp` | MCP server exposing the API as tools |
 | `apps/web` | Website (Next.js): score, court record, link graph |

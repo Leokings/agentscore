@@ -5,14 +5,13 @@
 //   add --submit to send the proofs to the contract on StudioNet
 //
 // Base mainnet links come from Nansen (needs NANSEN_API_KEY); Base Sepolia links from Blockscout.
-import { appendFileSync, existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
-import { createAccount, createClient, generatePrivateKey } from "genlayer-js";
-import { studionet } from "genlayer-js/chains";
+import { createAccount } from "genlayer-js";
 import { Store, syncInternetCourt } from "@agentscore/indexer";
 import { NansenClient } from "@agentscore/links";
 import { isAddress, normalizeAddress, type Address } from "@agentscore/shared";
+import { StudioNetChain } from "./chain.js";
 import { buildProofs, firstFundingFromBlockscout, firstFundingFromNansen, type FirstFunding } from "./discover.js";
+import { loadSignerKey } from "./signer.js";
 import { submitProof } from "./submit.js";
 
 const args = process.argv.slice(2);
@@ -56,31 +55,18 @@ try {
   if (submit && proofs.length) {
     const contract = process.env.AGENTSCORE_CONTRACT_ADDRESS as Address | undefined;
     if (!contract) throw new Error("AGENTSCORE_CONTRACT_ADDRESS is not set");
-    const key = signerKey();
-    const reader = createClient({ chain: studionet });
+    const key = loadSignerKey();
+    const chain = new StudioNetChain(contract, key);
     console.log(`\nSubmitting as ${createAccount(key).address} to ${contract}`);
     for (const p of proofs) {
-      const existing = (await reader.readContract({ address: contract, functionName: "get_links", args: [p.subject], jsonSafeReturn: true })) as Record<string, string>;
-      if (p.other in existing) {
+      if (p.other in (await chain.links(p.subject))) {
         console.log(`  skip ${p.subject} ↔ ${p.other}: already proven`);
         continue;
       }
       const r = await submitProof(p, contract, key);
-      console.log(`  ${r.stored ? "stored" : "NOT stored"} ${p.subject} ↔ ${p.other} (tx ${r.tx})`);
+      console.log(`  ${r.stored ? "stored" : `NOT stored${r.error ? ` (${r.error})` : ""}`} ${p.subject} ↔ ${p.other} (tx ${r.tx})`);
     }
   }
 } finally {
   store.close();
-}
-
-/** StudioNet is gasless; the prover signs with its own test key, kept in the git-ignored .env. */
-function signerKey(): `0x${string}` {
-  const existing = process.env.AGENTSCORE_SIGNER_KEY;
-  if (existing && /^0x[0-9a-fA-F]{64}$/.test(existing)) return existing as `0x${string}`;
-  const key = generatePrivateKey();
-  const envPath = resolve(import.meta.dirname, "../../../.env");
-  const prefix = existsSync(envPath) && !readFileSync(envPath, "utf8").endsWith("\n") ? "\n" : "";
-  appendFileSync(envPath, `${prefix}# StudioNet signer for the link prover (test network only)\nAGENTSCORE_SIGNER_KEY=${key}\n`);
-  console.log(`Created a StudioNet signer key in .env (address ${createAccount(key).address}).`);
-  return key;
 }
