@@ -2,7 +2,7 @@ import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createClient, type Client } from "@libsql/client";
-import type { Address, CaseContractType, CaseKind, CaseParty, CourtCase, StatementVerdict, TxHash } from "@agentscore/shared";
+import type { Address, CaseContractType, CaseKind, CaseParty, CaseResolution, CourtCase, StatementVerdict, TxHash } from "@agentscore/shared";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -49,6 +49,12 @@ export class Store {
     }
     const db = createClient({ url, authToken: process.env.DATABASE_AUTH_TOKEN || undefined });
     for (const sql of SCHEMA) await db.execute(sql);
+    // Added after the first release: how a ruled case was decided. Existing rows are re-read once.
+    const columns = await db.execute("PRAGMA table_info(cases)");
+    if (!columns.rows.some((c) => c.name === "resolution")) {
+      await db.execute("ALTER TABLE cases ADD COLUMN resolution TEXT");
+      await db.execute("UPDATE cases SET enriched_at = NULL");
+    }
     return new Store(db);
   }
 
@@ -138,11 +144,12 @@ export class Store {
       status?: string;
       escrowAmount?: string;
       statementVerdict?: StatementVerdict;
+      resolution?: CaseResolution;
     },
   ): Promise<void> {
     await this.db.execute({
       sql: `UPDATE cases SET contract_type = ?, statement = ?, reasoning = ?, status_code = ?, status = ?,
-              escrow_amount = ?, statement_verdict = ?, enriched_at = ? WHERE address = ?`,
+              escrow_amount = ?, statement_verdict = ?, resolution = ?, enriched_at = ? WHERE address = ?`,
       args: [
         e.contractType,
         e.statement ?? null,
@@ -151,6 +158,7 @@ export class Store {
         e.status ?? null,
         e.escrowAmount ?? null,
         e.statementVerdict ?? null,
+        e.resolution ?? null,
         Date.now(),
         address,
       ],
@@ -161,7 +169,7 @@ export class Store {
   async casesNeedingEnrichment(staleAfterMs: number): Promise<Array<{ address: Address; kind: CaseKind; createdTx?: TxHash }>> {
     const r = await this.db.execute({
       sql: `SELECT address, kind, created_tx FROM cases
-            WHERE enriched_at IS NULL OR (verdict_code IS NULL AND enriched_at < ?)`,
+            WHERE enriched_at IS NULL OR (verdict_code IS NULL AND resolution IS NULL AND enriched_at < ?)`,
       args: [Date.now() - staleAfterMs],
     });
     return r.rows.map((row) => ({
@@ -214,5 +222,6 @@ function rowToCase(row: Record<string, unknown>, parties: CaseParty[]): CourtCas
     verdictCode: opt<number>(row.verdict_code) === undefined ? undefined : Number(row.verdict_code),
     verdictBlock: opt<number>(row.verdict_block) === undefined ? undefined : Number(row.verdict_block),
     statementVerdict: opt<StatementVerdict>(row.statement_verdict),
+    resolution: opt<CaseResolution>(row.resolution),
   };
 }

@@ -44,6 +44,18 @@ export class ScoreReader {
     });
     return raw as unknown as ContractScore;
   }
+
+  /** Same-owner links the contract has verified and stored: other wallet -> description. */
+  async links(wallet: Address): Promise<Record<string, string>> {
+    if (!this.contract) return {};
+    const raw = await this.client.readContract({
+      address: this.contract,
+      functionName: "get_links",
+      args: [wallet],
+      jsonSafeReturn: true,
+    });
+    return (raw ?? {}) as Record<string, string>;
+  }
 }
 
 const FLAG_REASONS: Record<string, string> = {
@@ -54,10 +66,23 @@ const FLAG_REASONS: Record<string, string> = {
   NO_HISTORY: "No jury-ruled Internet Court cases, losses or inherited losses yet: unknown, so escrow is required.",
 };
 
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+
+/** One readable line from the contract's counts. */
+function summary(c: Record<string, number>): string {
+  const parts = [
+    `${plural(c.ruled_cases ?? 0, "ruled case")} judged on-chain (${c.jury_cases ?? 0} by the AI jury)`,
+    plural(c.wins ?? 0, "jury win"),
+  ];
+  if (c.loss_penalty) parts.push(`−${c.loss_penalty} points for its own losses`);
+  if (c.inherited_penalty) parts.push(`−${c.inherited_penalty} for losses of linked wallets`);
+  return parts.join(" · ") + ".";
+}
+
 export function toAgentScore(wallet: Address, s: ContractScore, contract: string): AgentScore & { points: number; approvalLimitUsd: number; counts: Record<string, number>; contract: string } {
   const c = s.counts;
   const reasons = [
-    `${c.ruled_cases ?? 0} judged Internet Court case(s), ${c.jury_cases ?? 0} decided by the jury: ${c.wins ?? 0} genuine win(s), ${c.loss_penalty ?? 0} points lost to rulings, ${c.inherited_penalty ?? 0} inherited from linked wallets.`,
+    summary(c),
     ...s.flags.map((f) => FLAG_REASONS[f] ?? f),
   ];
   return {

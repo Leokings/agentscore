@@ -7,8 +7,9 @@ export function baseSepoliaClient(): PublicClient {
   client ??= createPublicClient({
     chain: baseSepolia,
     transport: http(process.env.BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org", {
-      retryCount: 3,
-      retryDelay: 500,
+      // The public node allows 25 requests per second; back off and retry instead of failing.
+      retryCount: 6,
+      retryDelay: 1000,
     }),
   }) as PublicClient;
   return client;

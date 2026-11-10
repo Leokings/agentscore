@@ -1,5 +1,6 @@
-import { normalizeAddress, type Address, type CaseContractType, type CaseParty, type StatementVerdict, type TxHash } from "@agentscore/shared";
+import { normalizeAddress, type Address, type CaseContractType, type CaseParty, type CaseResolution, type StatementVerdict, type TxHash } from "@agentscore/shared";
 import { AGREEMENT_STATUS, AGREEMENT_VERDICT, agreementAbi, genericRoleAbi, genericRoleGetters, tradeFxAbi } from "./abi.js";
+import { BaseError, ContractFunctionRevertedError, ContractFunctionZeroDataError } from "viem";
 import { baseSepoliaClient } from "./chain.js";
 
 export interface CaseDetails {
@@ -11,30 +12,58 @@ export interface CaseDetails {
   status?: string;
   escrowAmount?: string;
   statementVerdict?: StatementVerdict;
+  resolution?: CaseResolution;
+}
+
+/**
+ * The contract's rule (contracts/agent_score.py): Agreement.sol only sends a case to the jury once
+ * both sides submitted evidence; a default needs a dispute; a settlement never opens one.
+ */
+export function agreementResolution(aSubmitted: boolean, bSubmitted: boolean, disputedAt: bigint): CaseResolution {
+  if (aSubmitted && bSubmitted) return "jury";
+  return disputedAt > 0n ? "default" : "settlement";
 }
 
 type Abi = readonly unknown[];
 
-/** Calls a view function, returning undefined if the contract does not implement it. */
+/** True only when the call reached the chain and the contract reverted (the getter does not exist). */
+function isRevert(e: unknown): boolean {
+  if (e instanceof BaseError) {
+    return !!e.walk((err) => err instanceof ContractFunctionRevertedError || (err instanceof ContractFunctionZeroDataError));
+  }
+  return false;
+}
+
+/**
+ * Calls a view function, returning undefined if the contract does not implement it. Anything else
+ * (a rate limit, an outage) is thrown, so a case is never stored with fields wrongly missing; the
+ * next sync reads it again. The public Base node allows 25 requests per second.
+ */
 async function tryRead<T>(address: Address, abi: Abi, functionName: string): Promise<T | undefined> {
   try {
     return (await baseSepoliaClient().readContract({ address, abi: abi as never, functionName } as never)) as T;
-  } catch {
-    return undefined;
+  } catch (e) {
+    if (isRevert(e)) return undefined;
+    throw e;
   }
 }
 
 async function readAgreement(address: Address): Promise<CaseDetails | undefined> {
   const partyA = await tryRead<Address>(address, agreementAbi, "partyA");
   if (!partyA) return undefined;
-  const [partyB, status, verdict, statement, reasoning, escrow] = await Promise.all([
+  const [partyB, status, verdict, statement, reasoning, escrow, aSubmitted, bSubmitted, disputedAt] = await Promise.all([
     tryRead<Address>(address, agreementAbi, "partyB"),
     tryRead<number>(address, agreementAbi, "status"),
     tryRead<number>(address, agreementAbi, "verdict"),
     tryRead<string>(address, agreementAbi, "statement"),
     tryRead<string>(address, agreementAbi, "reasoning"),
     tryRead<bigint>(address, agreementAbi, "escrowAmount"),
+    tryRead<boolean>(address, agreementAbi, "evidenceASubmitted"),
+    tryRead<boolean>(address, agreementAbi, "evidenceBSubmitted"),
+    tryRead<bigint>(address, agreementAbi, "disputeTimestamp"),
   ]);
+  const ruled = status !== undefined && AGREEMENT_STATUS[status] === "RESOLVED";
+  const readable = aSubmitted !== undefined && bSubmitted !== undefined && disputedAt !== undefined;
   const parties: CaseParty[] = [{ role: "partyA", address: normalizeAddress(partyA) }];
   if (partyB) parties.push({ role: "partyB", address: normalizeAddress(partyB) });
   return {
@@ -46,6 +75,7 @@ async function readAgreement(address: Address): Promise<CaseDetails | undefined>
     status: status === undefined ? undefined : AGREEMENT_STATUS[status],
     escrowAmount: escrow?.toString(),
     statementVerdict: verdict === undefined ? undefined : AGREEMENT_VERDICT[verdict],
+    resolution: ruled && readable ? agreementResolution(aSubmitted!, bSubmitted!, disputedAt!) : undefined,
   };
 }
 
@@ -68,6 +98,8 @@ async function readTradeFx(address: Address): Promise<CaseDetails | undefined> {
     reasoning: reason || undefined,
     statusCode: status,
     escrowAmount: invoice?.toString(),
+    // Registered cases are only ever decided by the jury, through the bridge.
+    resolution: reason ? "jury" : undefined,
   };
 }
 

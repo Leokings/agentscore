@@ -37,6 +37,15 @@ export function createApp(store: Store, reader: ScoreReader = new ScoreReader())
     return buildLinks(graph);
   }
 
+  async function provenLinks(wallet: Address): Promise<Record<string, string>> {
+    try {
+      return await reader.links(wallet);
+    } catch (e) {
+      console.error("GenLayer link read failed", e);
+      return {};
+    }
+  }
+
   /** Reads the grade from the GenLayer contract; never invents one when it is unavailable. */
   async function score(wallet: Address): Promise<AgentScore & { approvalLimitUsd?: number }> {
     if (!reader.configured) {
@@ -89,7 +98,10 @@ export function createApp(store: Store, reader: ScoreReader = new ScoreReader())
   app.get("/v1/agents/:wallet/links", async (c) => {
     const wallet = walletParam(c.req.param("wallet"));
     await ensureFresh();
-    return c.json({ wallet, links: await links(wallet) });
+    // `links` are what the link builder sees (Nansen + on-chain history, some only flags);
+    // `proven` are the links the GenLayer contract verified and counts in the grade.
+    const [walletLinks, proven] = await Promise.all([links(wallet), provenLinks(wallet)]);
+    return c.json({ wallet, links: walletLinks, proven });
   });
 
   app.get("/v1/agents/:wallet/score", async (c) => {

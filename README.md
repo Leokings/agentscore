@@ -5,6 +5,9 @@ that probably belong to the same owner (using **Nansen** and on-chain history), 
 **GenLayer** validators judge what each ruling means, so a score can't be reset with a new
 wallet or inflated with fake wins.
 
+**Live:** [agentscore-seven.vercel.app](https://agentscore-seven.vercel.app) (website) ·
+[`/api/v1`](https://agentscore-seven.vercel.app/api/v1/health) (REST API)
+
 > Status: in development for the Internet Court Builders Working Group mission (Nov 9–23, 2026).
 > The indexer, link builder, REST API, MCP server, skill, website and the GenLayer contract
 > ([contracts/agent_score.py](contracts/agent_score.py), design in [docs/DESIGN.md](docs/DESIGN.md))
@@ -127,11 +130,15 @@ npm install
 cp .env.example .env        # add NANSEN_API_KEY for mainnet links (optional)
 npm run index               # index every Internet Court case into data/agentscore.db
 npm run record -- 0xce413FFE2628b60cdaF4413d63d7838B8d4309AC
-npm run api                 # http://localhost:8787
-npm run web                 # http://localhost:3000
+npm run web                 # website + API at http://localhost:3000 (API under /api/v1)
+npm run api                 # standalone API at http://localhost:8787 (same routes under /v1)
 ```
 
 ## REST API
+
+Base URL: `https://agentscore-seven.vercel.app/api` (or `http://localhost:3000/api` locally). The
+website and the API are one Next.js app on Vercel, backed by a Turso (libSQL) database, so the
+local and hosted versions run the same code.
 
 | Endpoint | Returns |
 |---|---|
@@ -149,7 +156,7 @@ npm run web                 # http://localhost:3000
     "agentscore": {
       "command": "npx",
       "args": ["tsx", "apps/mcp/src/server.ts"],
-      "env": { "AGENTSCORE_API_URL": "http://localhost:8787" }
+      "env": { "AGENTSCORE_API_URL": "https://agentscore-seven.vercel.app/api" }
     }
   }
 }

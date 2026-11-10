@@ -9,8 +9,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@agentscore/api": "0.1.0",
+    "@agentscore/indexer": "0.1.0",
     "@agentscore/shared": "0.1.0",
     "cytoscape": "^3.30.4",
+    "hono": "^4.6.14",
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

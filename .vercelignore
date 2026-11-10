@@ -1,0 +1,15 @@
+# Never upload secrets or local state to Vercel.
+.env
+.env.*
+!.env.example
+data/
+# Not needed to build or run the website and API.
+.venv/
+.pytest_cache/
+.artifacts/
+**/__pycache__/
+**/.next/
+**/node_modules/
+contracts/
+tests/
+deployments/

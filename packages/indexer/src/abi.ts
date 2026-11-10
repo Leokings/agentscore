@@ -22,6 +22,9 @@ export const agreementAbi = parseAbi([
   "function statement() view returns (string)",
   "function reasoning() view returns (string)",
   "function escrowAmount() view returns (uint256)",
+  "function evidenceASubmitted() view returns (bool)",
+  "function evidenceBSubmitted() view returns (bool)",
+  "function disputeTimestamp() view returns (uint256)",
 ]);
 
 export const AGREEMENT_STATUS = ["CREATED", "ACTIVE", "DISPUTED", "RESOLVING", "RESOLVED", "CANCELLED"] as const;

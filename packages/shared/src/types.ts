@@ -47,7 +47,16 @@ export interface CourtCase {
   verdictBlock?: number;
   /** Only set for standard agreements, decoded from the Agreement verdict enum. */
   statementVerdict?: StatementVerdict;
+  /** How a ruled case was decided, read the same way the GenLayer contract reads it. */
+  resolution?: CaseResolution;
 }
+
+/**
+ * jury: both sides submitted evidence and Internet Court's AI jury ruled.
+ * default: one side never answered the dispute, so it was decided by default.
+ * settlement: no dispute; the parties agreed on the outcome themselves.
+ */
+export type CaseResolution = "jury" | "default" | "settlement";
 
 /** An agent's view of Internet Court: every case where its wallet is a party. */
 export interface CourtRecord {
@@ -57,6 +66,8 @@ export interface CourtRecord {
     cases: number;
     disputed: number;
     ruled: number;
+    /** Ruled cases that Internet Court's AI jury decided (the only wins that earn points). */
+    jury: number;
     pendingRuling: number;
   };
   indexedToBlock: number;

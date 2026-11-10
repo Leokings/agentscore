@@ -5,8 +5,12 @@
   --fg: #16161a;
   --muted: #6b6b76;
   --card: #ffffff;
+  --chip: #f0eee7;
   --border: #e4e2da;
   --accent: #3d5afe;
+  --good: #16a34a;
+  --warn: #c2790b;
+  --bad: #dc2626;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -15,12 +19,17 @@
     --fg: #ececf1;
     --muted: #9a9aa6;
     --card: #18181f;
+    --chip: #23232c;
     --border: #2a2a33;
     --accent: #7c8cff;
+    --good: #4ade80;
+    --warn: #fbbf24;
+    --bad: #f87171;
   }
 }
 
 body {
+  overflow-wrap: anywhere;
   background: var(--bg);
   color: var(--fg);
 }

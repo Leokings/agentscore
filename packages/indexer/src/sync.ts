@@ -1,4 +1,4 @@
-import { INTERNET_COURT, type Address, type CourtRecord } from "@agentscore/shared";
+import { INTERNET_COURT, type Address, type CourtCase, type CourtRecord } from "@agentscore/shared";
 import { factoryEventsAbi } from "./abi.js";
 import { fetchAllLogs, type RawLog } from "./blockscout.js";
 import { readCaseDetails } from "./cases.js";
@@ -72,25 +72,40 @@ export async function syncInternetCourt(store: Store, opts: SyncOptions = {}): P
   log(`Applied ${events.length} factory events`);
 
   const toEnrich = await store.casesNeedingEnrichment(OPEN_CASE_REFRESH_MS);
+  let enriched = 0;
   for (const c of toEnrich) {
-    const details = await readCaseDetails(c.address, c.createdTx);
-    await store.setParties(c.address, details.parties);
-    await store.saveEnrichment(c.address, details);
-    log(`Read case ${c.address} as ${details.contractType} (${details.parties.length} parties)`);
+    try {
+      const details = await readCaseDetails(c.address, c.createdTx);
+      await store.setParties(c.address, details.parties);
+      await store.saveEnrichment(c.address, details);
+      enriched++;
+      log(`Read case ${c.address} as ${details.contractType} (${details.parties.length} parties)`);
+    } catch (e) {
+      // Left unread: the next sync tries again rather than storing a half-read case.
+      log(`Could not read case ${c.address} yet: ${(e as Error).message.split("\n")[0]}`);
+    }
   }
 
-  return { mode, events: events.length, enriched: toEnrich.length, fromBlock, toBlock: head };
+  return { mode, events: events.length, enriched, fromBlock, toBlock: head };
 }
 
 /** Every Internet Court case where the wallet is a party, with simple totals. */
 export async function courtRecord(store: Store, wallet: Address): Promise<CourtRecord> {
   const cases = await store.casesForWallet(wallet);
-  const ruled = cases.filter((c) => c.verdictCode !== undefined).length;
-  const disputed = cases.filter((c) => c.disputed).length;
+  // A case is ruled once it has a verdict, whether the jury, a default judgment or a settlement
+  // decided it (only jury verdicts emit the factory's VerdictReceived event).
+  const isRuled = (c: CourtCase) => c.verdictCode !== undefined || c.resolution !== undefined;
+  const isDisputed = (c: CourtCase) => c.disputed || c.resolution === "jury" || c.resolution === "default";
   return {
     wallet,
     cases,
-    totals: { cases: cases.length, disputed, ruled, pendingRuling: cases.filter((c) => c.disputed && c.verdictCode === undefined).length },
+    totals: {
+      cases: cases.length,
+      disputed: cases.filter(isDisputed).length,
+      ruled: cases.filter(isRuled).length,
+      jury: cases.filter((c) => c.resolution === "jury").length,
+      pendingRuling: cases.filter((c) => isDisputed(c) && !isRuled(c)).length,
+    },
     indexedToBlock: Number((await store.getMeta(LAST_BLOCK_KEY)) ?? 0),
   };
 }

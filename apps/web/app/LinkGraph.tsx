@@ -4,51 +4,86 @@ import { useEffect, useRef } from "react";
 import cytoscape from "cytoscape";
 import type { WalletLink } from "@agentscore/shared";
 
-const STRENGTH_COLOR: Record<WalletLink["strength"], string> = {
-  strong: "#e5484d",
-  medium: "#f5a524",
-  weak: "#8b8d98",
-};
-
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 
-/** The subject in the middle, one node per linked wallet, edges coloured by link strength. */
-export function LinkGraph({ subject, links }: { subject: string; links: WalletLink[] }) {
+function cssVar(name: string, fallback: string): string {
+  if (typeof window === "undefined") return fallback;
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+}
+
+/**
+ * The subject in the middle and one node per linked wallet. A wallet with several link types gets
+ * one edge. Edges proven by the GenLayer contract are solid; the rest are dashed signals.
+ */
+export function LinkGraph({ subject, links, proven }: { subject: string; links: WalletLink[]; proven: Record<string, string> }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!ref.current) return;
-    const others = [...new Set(links.map((l) => l.other))];
+    const others = [...new Set([...links.map((l) => l.other), ...Object.keys(proven)])];
+    const typesFor = (o: string) => [...new Set(links.filter((l) => l.other === o).map((l) => l.type.replaceAll("_", " ")))];
+    const accent = cssVar("--accent", "#7c8cff");
+    const muted = cssVar("--muted", "#9a9aa6");
+    const fg = cssVar("--fg", "#ececf1");
+    const bad = cssVar("--bad", "#e5484d");
+
     const cy = cytoscape({
       container: ref.current,
       elements: [
         { data: { id: subject, label: short(subject) }, classes: "subject" },
-        ...others.map((o) => ({ data: { id: o, label: short(o) } })),
-        ...links.map((l, i) => ({
-          data: { id: `e${i}`, source: subject, target: l.other, label: l.type.replaceAll("_", " "), color: STRENGTH_COLOR[l.strength] },
+        ...others.map((o) => ({ data: { id: o, label: short(o) }, classes: o in proven ? "proven" : "" })),
+        ...others.map((o) => ({
+          data: { id: `e:${o}`, source: subject, target: o, label: o in proven ? "proven by GenLayer" : typesFor(o).join(" · ") },
+          classes: o in proven ? "proven" : "signal",
         })),
       ],
       style: [
-        { selector: "node", style: { label: "data(label)", "font-size": 10, color: "#888", "background-color": "#9aa0ff", width: 18, height: 18 } },
-        { selector: ".subject", style: { "background-color": "#3d5afe", width: 30, height: 30, "font-weight": "bold" } },
+        {
+          selector: "node",
+          style: {
+            label: "data(label)",
+            "font-size": 11,
+            "font-family": "ui-monospace, monospace",
+            color: muted,
+            "text-valign": "bottom",
+            "text-margin-y": 6,
+            "background-color": muted,
+            width: 16,
+            height: 16,
+          },
+        },
+        { selector: "node.proven", style: { "background-color": bad } },
+        { selector: ".subject", style: { "background-color": accent, color: fg, width: 30, height: 30, "font-weight": "bold" } },
         {
           selector: "edge",
           style: {
             label: "data(label)",
-            "font-size": 8,
-            color: "#888",
-            "line-color": "data(color)",
-            width: 2,
-            "curve-style": "bezier",
-            "text-rotation": "autorotate",
+            "font-size": 10,
+            color: muted,
+            "text-background-color": cssVar("--card", "#18181f"),
+            "text-background-opacity": 1,
+            "text-background-padding": "2px",
+            "line-color": muted,
+            width: 1.5,
+            "curve-style": "straight",
           },
         },
+        { selector: "edge.signal", style: { "line-style": "dashed" } },
+        { selector: "edge.proven", style: { "line-color": bad, width: 3, color: bad } },
       ],
-      layout: { name: others.length > 1 ? "concentric" : "grid", padding: 24 } as cytoscape.LayoutOptions,
+      layout: {
+        name: "concentric",
+        concentric: (n: cytoscape.NodeSingular) => (n.id() === subject ? 2 : 1),
+        levelWidth: () => 1,
+        minNodeSpacing: 80,
+        padding: 40,
+      } as cytoscape.LayoutOptions,
       userZoomingEnabled: false,
+      userPanningEnabled: false,
+      boxSelectionEnabled: false,
     });
     return () => cy.destroy();
-  }, [subject, links]);
+  }, [subject, links, proven]);
 
   return <div ref={ref} className="h-80 w-full rounded-lg border border-[var(--border)]" />;
 }
