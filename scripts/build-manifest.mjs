@@ -58,6 +58,7 @@ for (const line of log.split("\n")) {
 for (const k of Object.keys(readbacks)) readbacks[k] = readbacks[k].trim();
 
 const deploy = steps.find((s) => s.label === "00-deploy") ?? {};
+const contractCommit = sh("git log -1 --format=%H -- contracts/agent_score.py") || null;
 const contract = readFileSync(`${dir}/CONTRACT`, "utf8").trim();
 const manifest = {
   project: "AgentScore",
@@ -68,7 +69,10 @@ const manifest = {
     runner: source.match(/py-genlayer:([0-9a-z]+)/)?.[1] ?? null,
     sha256: createHash("sha256").update(source).digest("hex"),
     git_blob: sh("git hash-object contracts/agent_score.py"),
-    git_commit: sh("git rev-parse HEAD"),
+    // The last commit that changed the contract, not HEAD, so later commits (like the one that
+    // records this manifest) keep pointing at the source that was deployed.
+    git_commit: contractCommit,
+    git_blob_at_commit: contractCommit ? sh(`git rev-parse ${contractCommit}:contracts/agent_score.py`) : null,
     git_clean_for_contract: sh("git status --porcelain contracts/agent_score.py") === "",
     constructor_args: [],
     deploy_tx: deploy.tx ?? null,
