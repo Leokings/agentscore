@@ -1,0 +1,57 @@
+# Keeps the AgentScore contract on StudioNet current: each run syncs Internet Court (Base
+# Sepolia), judges newly ruled cases and submits newly provable same-owner links. Attempts are
+# recorded in the shared Turso database, so runs never resend what is already stored.
+name: keeper
+
+on:
+  schedule:
+    - cron: "17 * * * *" # hourly, off the top of the hour
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only show what would be sent"
+        type: boolean
+        default: false
+
+# One pass at a time: a slow pass must never overlap the next one.
+concurrency:
+  group: keeper
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  pass:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      AGENTSCORE_CONTRACT_ADDRESS: ${{ vars.AGENTSCORE_CONTRACT_ADDRESS }}
+      GENLAYER_NETWORK: ${{ vars.GENLAYER_NETWORK }}
+      KEEPER_MAX_WRITES: ${{ vars.KEEPER_MAX_WRITES || '10' }}
+      NANSEN_MAX_CREDITS_PER_RUN: ${{ vars.NANSEN_MAX_CREDITS_PER_RUN || '10' }}
+      AGENTSCORE_SIGNER_KEY: ${{ secrets.AGENTSCORE_SIGNER_KEY }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_AUTH_TOKEN: ${{ secrets.DATABASE_AUTH_TOKEN }}
+      NANSEN_API_KEY: ${{ secrets.NANSEN_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Keeper pass
+        shell: bash # -eo pipefail, so a failed pass fails the run despite tee
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            npm run once --workspace @agentscore/keeper -- --dry-run | tee keeper.log
+          else
+            npm run once --workspace @agentscore/keeper | tee keeper.log
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: keeper-log-${{ github.run_id }}
+          path: keeper.log
+          retention-days: 30
