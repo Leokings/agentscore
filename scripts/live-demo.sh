@@ -64,8 +64,30 @@ tx 11-EXPECTED-payment-is-not-a-link "$C" prove_link "$PARTY_B" "$OTHER" paid "{
 # A real faucet cannot be recorded as an owner, so it cannot link the strangers it funded.
 tx 12-EXPECTED-faucet-is-not-an-owner "$C" prove_link "$FAUCET_CHILD" "$FAUCET" first_funded_by "{\"funding_tx\":\"$FAUCET_FUNDING_TX\",\"subject_first_tx\":\"$FAUCET_CHILD_FIRST_TX\"}"
 
+# --- The two abuses, staged on Base Sepolia by scripts/stage-abuses.ts (one operator controls
+# every wallet). Both cases were decided by default judgment, not by the jury.
+CASE19=0xb7a08ff8e092023eb7169f42a554261c3b0ebc9a   # fake win: AGENT_X beat SOCK_S by default
+CASE20=0xcc955bfe47fca91d2f0f9e45ca773bc8556d65cd   # loss: CLIENT_Z beat AGENT_Y by default
+AGENT_X=0x36b26d2df45a2838e6fe0f8b3c97cd0033a124cc
+SOCK_S=0x2f7d415a7ec68fe94c589c8ba6d4959e6ac899ae
+AGENT_Y=0x9a88ebbba9e7f52acaf296ae7706f9b16affad69
+CLIENT_Z=0x5a5160eec0435cc20309735715b44898a46b8032
+SUCCESSOR_N=0x9c985f2536587966f087e2677c81e386d4ab797c
+tx 13-judge-staged-fake-win-case19 "$C" judge_cases "[\"$CASE19\"]"
+tx 14-judge-staged-loss-case20 "$C" judge_cases "[\"$CASE20\"]"
+# AGENT_X gave SOCK_S its first funds; SOCK_S's first transaction was accepting case 19.
+tx 15-prove-link-sock-funded-by-agent "$C" prove_link "$SOCK_S" "$AGENT_X" first_funded_by "{\"funding_tx\":\"0x0e4bb6cd8f7d691963a7bc9ed4a5258996c0c0b5357740698710c29ca0d5cdb0\",\"subject_first_tx\":\"0x736c13a977a2dab4614acb93421ce768d1ce1285bef7640b80433fe092ab8cc0\"}"
+# After losing case 20, AGENT_Y gave a brand-new wallet its first funds.
+tx 16-prove-link-successor-funded-by-loser "$C" prove_link "$SUCCESSOR_N" "$AGENT_Y" first_funded_by "{\"funding_tx\":\"0x1d20cd311a57712a2bac0f166e89769d1d3c42b8e70ef81ae0c2172aa82f0ebb\",\"subject_first_tx\":\"0xc27de800b994be165bd65db76b3cf040ae338cdd1b01e37c8fc7a49ba495b311\"}"
+
+# --- A Base mainnet link found by Nansen (related-wallets First Funder of 0xb5fe, party B of
+# case 17), verified by validators against mainnet.base.org.
+NANSEN_CHILD=0xb5fe6011cee8974c24c630afdf3c15f5620925b7
+NANSEN_FUNDER=0xf171c23607b892797eb5eb4e52fc668f924df0a3
+tx 17-prove-mainnet-link-found-by-nansen "$C" prove_link "$NANSEN_CHILD" "$NANSEN_FUNDER" first_funded_by "{\"network\":\"base\",\"funding_tx\":\"0x69752dea622c52a0bf066ceb64316f9d03c618a65aaeaac9ea0f8d75a45b324d\",\"subject_first_tx\":\"0x258f0bc72f7a6ccc50244fd8739302b7418bd1711d6103deb532f6d38fa85848\"}"
+
 # --- Read-backs
 echo "--- get_stats";               read_view get_stats
-for case in $CASE15 $CASE16 $TRADE0 $TRADE1; do echo "--- get_case $case"; read_view get_case --args "$case"; done
-for w in $CHILD $PARTY_B; do echo "--- get_links $w"; read_view get_links --args "$w"; done
-for w in $PARTY_A $PARTY_B $OTHER $CHILD $PARENT; do echo "--- get_score $w"; read_view get_score --args "$w"; done
+for case in $CASE15 $CASE16 $TRADE0 $TRADE1 $CASE19 $CASE20; do echo "--- get_case $case"; read_view get_case --args "$case"; done
+for w in $CHILD $PARTY_B $SOCK_S $SUCCESSOR_N $NANSEN_CHILD; do echo "--- get_links $w"; read_view get_links --args "$w"; done
+for w in $PARTY_A $PARTY_B $OTHER $CHILD $PARENT $AGENT_X $SOCK_S $AGENT_Y $CLIENT_Z $SUCCESSOR_N $NANSEN_CHILD; do echo "--- get_score $w"; read_view get_score --args "$w"; done

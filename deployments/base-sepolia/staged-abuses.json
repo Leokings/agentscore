@@ -1,0 +1,104 @@
+{
+  "network": "base-sepolia",
+  "factory": "0xd533cB0B52E85b3F506b6f0c28b8f6bc4E449Dda",
+  "operator": "0xEAa24431285FE4939e8595AA3a555Bfb657D4002",
+  "wallets": {
+    "hubX": "0xbbbb17FA35fF942f88c45083a8Cd0C54B5FddF07",
+    "hubY": "0x6f139fF76855D0498aeFc0fE061d27F9e8895979",
+    "hubZ": "0x0f2bF541B73C654b78613E7316E240e0f32c880b",
+    "agentX": "0x36b26d2DF45a2838E6Fe0F8B3c97Cd0033A124Cc",
+    "sockS": "0x2f7d415A7Ec68Fe94c589c8BA6D4959e6AC899Ae",
+    "agentY": "0x9A88EbBbA9e7F52aCaf296ae7706f9b16affaD69",
+    "clientZ": "0x5A5160Eec0435cc20309735715b44898A46b8032",
+    "successorN": "0x9c985F2536587966F087E2677c81E386D4AB797c"
+  },
+  "cases": {
+    "fakeWin": {
+      "id": 19,
+      "address": "0xb7a08FF8E092023eB7169f42a554261c3B0ebc9A"
+    },
+    "loss": {
+      "id": 20,
+      "address": "0xCc955bfe47FcA91D2f0F9E45Ca773bC8556d65cd"
+    }
+  },
+  "steps": {
+    "fund:hubX": {
+      "tx": "0xfb42b7c2183baf7c7ef6911ccdc8b3d8f6d051710ba31471c96e21c7ae5249c0",
+      "block": 57086695
+    },
+    "fund:hubY": {
+      "tx": "0x950c84c1d0df0e279173ea19c49d96c650c8c643aa262536e40ce09188744fe6",
+      "block": 57086706
+    },
+    "fund:hubZ": {
+      "tx": "0x297e76b9fd214f67c7ecdc990da57e392496e85f2fc57759b8684fdb3601f49a",
+      "block": 57086718
+    },
+    "fund:agentX": {
+      "tx": "0x4b821bb6d9a82df99b81ef99cb66cedcc9cb2fb3e4f772bbe9abf55fe02b52b2",
+      "block": 57086729
+    },
+    "fund:agentY": {
+      "tx": "0x9abc4f86882fe4f9c4b0ae965d86752e5a48c98c1fed0132d1c89e1603f7ca1d",
+      "block": 57086740
+    },
+    "fund:clientZ": {
+      "tx": "0x2ee0a2fe342c4a331b16be433f18429f69ec44c4b0553590bfe87be519de86a6",
+      "block": 57086751
+    },
+    "fund:sockS": {
+      "tx": "0x0e4bb6cd8f7d691963a7bc9ed4a5258996c0c0b5357740698710c29ca0d5cdb0",
+      "block": 57086762
+    },
+    "fakeWin:create": {
+      "tx": "0x83a21985e227a85e20f4d6a9a79ad13f8cedb67bf7e21d6825ec5cacc94f5bd9",
+      "block": 57086770
+    },
+    "fakeWin:accept": {
+      "tx": "0x736c13a977a2dab4614acb93421ce768d1ce1285bef7640b80433fe092ab8cc0",
+      "block": 57086780
+    },
+    "fakeWin:dispute": {
+      "tx": "0x5dd805bcf7b50e195aa5b5d8f704fc38e34e7122012a81091cd2cfd33fe60f16",
+      "block": 57086793
+    },
+    "fakeWin:evidence": {
+      "tx": "0x6734ad31c147dfcc74c7a60a2b45f7910fd1833452d6e2cbb92aace7e239cf72",
+      "block": 57086804
+    },
+    "fakeWin:resolve": {
+      "tx": "0xaf5cfaaf54cfc6ca7c5dfbe99851ad8a0de2526cbab83c4a573a6d3032bd1e0f",
+      "block": 57086975
+    },
+    "loss:create": {
+      "tx": "0xd08b6a1262b67ddf1677177f9865beb56dc7ce0739e93692764d492ed82e74cf",
+      "block": 57086986
+    },
+    "loss:accept": {
+      "tx": "0xf94463a78393289119870279a81eab2074f2045f95b3e5f6c7d9d0358a91a431",
+      "block": 57086997
+    },
+    "loss:dispute": {
+      "tx": "0x917a5e3d1b9c73f8ac1bd82ee0467e250e1260b13b3caf64fe0fc3de43fe49a4",
+      "block": 57087005
+    },
+    "loss:evidence": {
+      "tx": "0xb02db2c13fc9c49896c4a02753dc97d4ec86237eb9b2a6000721c4449cccccc1",
+      "block": 57087017
+    },
+    "loss:resolve": {
+      "tx": "0x1c57b972ff44b2871502901107e667b19f1de11eda8aa23db446750527dee354",
+      "block": 57087191
+    },
+    "fund:successorN": {
+      "tx": "0x1d20cd311a57712a2bac0f166e89769d1d3c42b8e70ef81ae0c2172aa82f0ebb",
+      "block": 57087202
+    },
+    "successorN:firstTx": {
+      "tx": "0xc27de800b994be165bd65db76b3cf040ae338cdd1b01e37c8fc7a49ba495b311",
+      "block": 57087210
+    }
+  },
+  "pending": {}
+}

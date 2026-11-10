@@ -7,18 +7,18 @@
     "explorer": "https://genlayer-explorer.vercel.app"
   },
   "contract": {
-    "address": "0x07bf2207852FE8F47DDeE26C4f4F0B206D259e74",
+    "address": "0xF1a3D4079b19968D31FC47326849906C9F03EB89",
     "file": "contracts/agent_score.py",
     "runner": "1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6",
-    "sha256": "0da68b9097994ca81fc428562634247c5b0a1d1c99367fcc049a21ad35afbb83",
-    "git_blob": "69e1a8d5de6248d87e828f469cbaf9f70aec4aab",
-    "git_commit": "3d1fd935d1055654edf475de710fa81fa0a2c7b2",
-    "git_blob_at_commit": "69e1a8d5de6248d87e828f469cbaf9f70aec4aab",
-    "git_clean_for_contract": true,
+    "sha256": "83fcc930e54ce1c68ae3c524a6dc35dd7ccd2a059cb2b617e8aa8eb6c1b9de52",
+    "git_blob": "44015818e55f48d6b16c5c1fb5825ed2fe3e2720",
+    "git_commit": null,
+    "git_blob_at_commit": null,
+    "git_clean_for_contract": false,
     "constructor_args": [],
-    "deploy_tx": "0xd51eca9436d7c6c19f79a638c40e3864d243273c16cdd79214e8409c796a73ee",
+    "deploy_tx": "0x6dc40dd9305820a8ce84c3cd52913a1c8fcc50355f4d768bec88c59c492210b3",
     "deployed_source_identical": true,
-    "deployed_sha256": "0da68b9097994ca81fc428562634247c5b0a1d1c99367fcc049a21ad35afbb83"
+    "deployed_sha256": "83fcc930e54ce1c68ae3c524a6dc35dd7ccd2a059cb2b617e8aa8eb6c1b9de52"
   },
   "deployer": "0x797d3b25fb2cca0ff93f60df1910267f3822d655",
   "toolchain": {
@@ -66,80 +66,308 @@
       "git_commit": "8f11d7d55ee1cddf6dd3fe5d197091bcbbe429ad",
       "evidence": "deployments/studionet/superseded/v5/ (full demo, 12/12 steps proof, own release manifest)",
       "why": "Worked as designed, replaced to (1) prove links on Base mainnet as well as Base Sepolia, reading transactions from the public Base RPC nodes instead of Blockscout, so Nansen-discovered mainnet funding can be verified; (2) add the exchange/faucet guard: v5 would have accepted a 'shared first funder' link between two strangers funded by the same faucet (a real case: both sides of Internet Court case 14 were funded by a faucet that had sent 18,881 transactions); (3) apply the user's new scoring table and require escrow for wallets with no history."
+    },
+    {
+      "address": "0x07bf2207852FE8F47DDeE26C4f4F0B206D259e74",
+      "deploy_tx": "0xd51eca9436d7c6c19f79a638c40e3864d243273c16cdd79214e8409c796a73ee",
+      "git_commit": "3d1fd935d1055654edf475de710fa81fa0a2c7b2",
+      "evidence": "deployments/studionet/superseded/v6/ (13/13 demo steps proof, keeper passes, staged abuses and their scores, own release manifest)",
+      "why": "Worked as designed, replaced because (1) it counted default judgments and settlements as jury rulings: Internet Court's jury relay had stopped delivering verdicts, so every new case was decided without a jury, and two colluding wallets with no provable link could have minted wins for free; (2) it read a rate-limited RPC call (the public Base node allows 25 requests per second and counts every call in a batch) as a missing field, which could store a permanent unsupported_case_type or link_tx_not_found instead of retrying."
     }
   ],
   "steps": [
     {
       "label": "00-deploy",
-      "tx": "0xd51eca9436d7c6c19f79a638c40e3864d243273c16cdd79214e8409c796a73ee",
+      "tx": "0x6dc40dd9305820a8ce84c3cd52913a1c8fcc50355f4d768bec88c59c492210b3",
       "expected_failure": false,
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "leader_execution": "SUCCESS",
       "leader_error": null,
       "votes": {
-        "0x0cf3809a31B0c7E0742d126451aDE1977e3748D2": "idle",
-        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "agree",
-        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "agree",
+        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "idle",
         "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "agree",
-        "0xD0eD149D26E76cf49fB588c970E608E44Dd4DAB8": "idle"
+        "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "agree",
+        "0xe1626534791FC675ED813Cc2C89C427866526113": "idle"
       },
       "counts_as_proof": true
     },
     {
       "label": "01-judge-case15",
-      "tx": "0xfb35b9c1c6ff7e06da314a8c521d340a1d5d85124c4e3ce09f9f08a18ee28f43",
+      "tx": "0x5cab6abb155c6e053c8570f3d823333ee3b52fb26f4bc9d589a15d2e7e341c3a",
       "expected_failure": false,
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "leader_execution": "SUCCESS",
       "leader_error": null,
       "votes": {
-        "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "agree",
-        "0x0cf3809a31B0c7E0742d126451aDE1977e3748D2": "agree",
-        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "idle",
-        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree",
-        "0xf1EAD5E5f876eae701eF1881b42861079cd9A287": "idle"
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "agree",
+        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "idle",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree",
+        "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "disagree"
       },
       "counts_as_proof": true
     },
     {
       "label": "02-judge-case16",
-      "tx": "0x0068781f83090e45bdb960dc1f4226860ab39ccbe0769d2ab2b9dd5169b0d5f5",
+      "tx": "0x0dc6ba2d3ef6215fb70430b966296db39e2fbfb39bfba5d6db893cb5fe7e19a0",
       "expected_failure": false,
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "leader_execution": "SUCCESS",
       "leader_error": null,
       "votes": {
-        "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "idle",
-        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "agree",
-        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "idle",
-        "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "agree",
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "agree",
+        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "disagree",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "agree",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "idle",
         "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree"
       },
       "counts_as_proof": true
     },
     {
       "label": "03-judge-trade-case0",
-      "tx": "0x776d713cef257939563f1be21c48af669c6acfbdd8a53ca4fe9c8a3919ada5d9",
+      "tx": "0x87c5200ccfc678b9a9455b1220f5efa157d5c00cbaed7c4884a09b6e136e9ebc",
       "expected_failure": false,
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "leader_execution": "SUCCESS",
       "leader_error": null,
       "votes": {
-        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "idle",
-        "0x29300188B54F5BFEE91542595611603b4B201008": "agree",
-        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
-        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "agree",
-        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "idle"
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "agree",
+        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "disagree",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree",
+        "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "idle",
+        "0xc675c2B7E1F066B7c1D2fe54EF7B76C91CdFa5F4": "agree"
       },
       "counts_as_proof": true
     },
     {
       "label": "04-judge-trade-case1",
-      "tx": "0xbae960147b2ba8ae813e93075b6d76335d4d31c115046cd4c785a713db2b191b",
+      "tx": "0x6c4ba948b74862275e4280ecda11986fbaee2048aebe279ccd2871fab96c65fe",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x29300188B54F5BFEE91542595611603b4B201008": "disagree",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "agree",
+        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "disagree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "05-prove-link-first-funded",
+      "tx": "0xdd52b9578f0de78ad36b5555e2b96d05b6060be4d9cc1bf10d7adb290640c635",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x0cf3809a31B0c7E0742d126451aDE1977e3748D2": "agree",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "idle",
+        "0xD0eD149D26E76cf49fB588c970E608E44Dd4DAB8": "agree",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "agree",
+        "0xf1EAD5E5f876eae701eF1881b42861079cd9A287": "idle"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "06-EXPECTED-replay-judged-case",
+      "tx": "0xdc1194eb8cff15d7b098b218f2bc0e1af303b4fd719b1e62ec9936bc80035063",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] case_already_judged",
+      "votes": {
+        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "agree",
+        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "agree",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "idle",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "idle",
+        "0xc675c2B7E1F066B7c1D2fe54EF7B76C91CdFa5F4": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "07-EXPECTED-not-an-internet-court-case",
+      "tx": "0x5a8ee3e79f941e7c37f9e2499842a1268dce00ef319c866cd1bba3b4678aac6a",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] case_not_registered",
+      "votes": {
+        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "agree",
+        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "idle",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "idle",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "agree",
+        "0xf1EAD5E5f876eae701eF1881b42861079cd9A287": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "08-EXPECTED-case-not-ruled",
+      "tx": "0x1720965b940581e70b02b34df8f085867445709864983b458bce87cfda32eb1c",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] case_not_ruled",
+      "votes": {
+        "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "agree",
+        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "agree",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "disagree",
+        "0xD0eD149D26E76cf49fB588c970E608E44Dd4DAB8": "agree",
+        "0xe1626534791FC675ED813Cc2C89C427866526113": "disagree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "09-EXPECTED-forged-funding-direction",
+      "tx": "0x4673f196cb8b5f10856df20477f2b9c4ab50080c797898afa64e6fd979decb96",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] link_not_proven",
+      "votes": {
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "idle",
+        "0x29300188B54F5BFEE91542595611603b4B201008": "agree",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree",
+        "0xe1626534791FC675ED813Cc2C89C427866526113": "idle"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "10-EXPECTED-replay-proven-link",
+      "tx": "0xacd7d8685be1887d253931447d719d637bb4c87bb70cc50c4146bb37adcee8dc",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] link_already_proven",
+      "votes": {
+        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "idle",
+        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "idle",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0xD0eD149D26E76cf49fB588c970E608E44Dd4DAB8": "agree",
+        "0xe1626534791FC675ED813Cc2C89C427866526113": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "11-EXPECTED-payment-is-not-a-link",
+      "tx": "0x4e8fb2814763795aed1cbef1fdb6f9629bba90c6c319183c274a5eaf632cd4b1",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] unknown_link_kind",
+      "votes": {
+        "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "agree",
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "agree",
+        "0x29300188B54F5BFEE91542595611603b4B201008": "idle",
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "idle",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "12-EXPECTED-faucet-is-not-an-owner",
+      "tx": "0x7dc9a2d267dbfea1282cf3876c23b10834d0613a6fdd7f64f66cb5f54e6e5e56",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] funder_is_infrastructure",
+      "votes": {
+        "0x0cf3809a31B0c7E0742d126451aDE1977e3748D2": "idle",
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "agree",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "idle",
+        "0xe1626534791FC675ED813Cc2C89C427866526113": "agree",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "13-judge-staged-fake-win-case19",
+      "tx": "0x14b787434b23fc884cbafb172dc799e94f0e26c56f9a4649b14fbf1fb6e813ce",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "agree",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "agree",
+        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "agree",
+        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "idle",
+        "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "disagree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "14-judge-staged-loss-case20",
+      "tx": "0x325068f926fdea4991d1bac84da0bc469eb89b78d34656febecaef1d0e10386f",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x0cf3809a31B0c7E0742d126451aDE1977e3748D2": "agree",
+        "0x29300188B54F5BFEE91542595611603b4B201008": "idle",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "idle",
+        "0xD0eD149D26E76cf49fB588c970E608E44Dd4DAB8": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "15-prove-link-sock-funded-by-agent",
+      "tx": "0x90a1d667281248b2036abd5f63e38503114a15a67794df26132885a3af750a6c",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "agree",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree",
+        "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "idle",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "idle"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "16-prove-link-successor-funded-by-loser",
+      "tx": "0xb54d726f44a6c8266413e8128395a88e141d886d4e1406405a4aa4624e8a00ed",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "idle",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "agree",
+        "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "idle",
+        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "17-prove-mainnet-link-found-by-nansen",
+      "tx": "0x1da6b2c223859e35b2e37452dd8a33683870eb4e371c536ca830f7a9b6c2d6a6",
       "expected_failure": false,
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
@@ -147,248 +375,300 @@
       "leader_error": null,
       "votes": {
         "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "idle",
-        "0x29300188B54F5BFEE91542595611603b4B201008": "agree",
-        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "agree",
         "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
-        "0xc675c2B7E1F066B7c1D2fe54EF7B76C91CdFa5F4": "idle"
-      },
-      "counts_as_proof": true
-    },
-    {
-      "label": "05-prove-link-first-funded",
-      "tx": "0x04e85865b834c9e64fd673af596a301fe930a40253074a6255711eae187a6078",
-      "expected_failure": false,
-      "status": "FINALIZED",
-      "consensus_result": "MAJORITY_AGREE",
-      "leader_execution": "SUCCESS",
-      "leader_error": null,
-      "votes": {
-        "0x0cf3809a31B0c7E0742d126451aDE1977e3748D2": "idle",
-        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "agree",
-        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree",
-        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "idle",
-        "0xf1EAD5E5f876eae701eF1881b42861079cd9A287": "agree"
-      },
-      "counts_as_proof": true
-    },
-    {
-      "label": "06-EXPECTED-replay-judged-case",
-      "tx": "0x1d77deb0167c2ca11f5c31ec5e9c03c15ae9a2ae2c25418430df5186435efe91",
-      "expected_failure": true,
-      "status": "FINALIZED",
-      "consensus_result": "MAJORITY_AGREE",
-      "leader_execution": "ERROR",
-      "leader_error": "[EXPECTED] case_already_judged",
-      "votes": {
-        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "agree",
-        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "idle",
-        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "agree",
-        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "idle",
-        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree"
-      },
-      "counts_as_proof": true
-    },
-    {
-      "label": "07-EXPECTED-not-an-internet-court-case",
-      "tx": "0x7c4980893357ab110c83c8ed7e311bad981b949a6c51d6c97a7c765455a50fd3",
-      "expected_failure": true,
-      "status": "FINALIZED",
-      "consensus_result": "MAJORITY_AGREE",
-      "leader_execution": "ERROR",
-      "leader_error": "[EXPECTED] case_not_registered",
-      "votes": {
-        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "idle",
-        "0x29300188B54F5BFEE91542595611603b4B201008": "idle",
-        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "agree",
-        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "agree",
-        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree"
-      },
-      "counts_as_proof": true
-    },
-    {
-      "label": "08-EXPECTED-case-not-ruled",
-      "tx": "0x72e335fdfbf6a5887dfd14b4760af2a2eacead693cfc1537bc9d4db3df608810",
-      "expected_failure": true,
-      "status": "FINALIZED",
-      "consensus_result": "MAJORITY_AGREE",
-      "leader_execution": "ERROR",
-      "leader_error": "[EXPECTED] case_not_ruled",
-      "votes": {
-        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "idle",
-        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "agree",
-        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "idle",
-        "0xe1626534791FC675ED813Cc2C89C427866526113": "agree",
-        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "agree"
-      },
-      "counts_as_proof": true
-    },
-    {
-      "label": "09-EXPECTED-forged-funding-direction",
-      "tx": "0x751e2811e0631db164e6e081473ac11a4d55fc74f927bc5823dd32d38e3fba84",
-      "expected_failure": true,
-      "status": "FINALIZED",
-      "consensus_result": "MAJORITY_AGREE",
-      "leader_execution": "ERROR",
-      "leader_error": "[EXPECTED] link_not_proven",
-      "votes": {
-        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "agree",
-        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "idle",
-        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "agree",
         "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "idle",
-        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree"
-      },
-      "counts_as_proof": true
-    },
-    {
-      "label": "10-EXPECTED-replay-proven-link",
-      "tx": "0x27ded907b7fdedfe8a89819a56db7b17a3415a47768bf8171ccf9a9301e2221a",
-      "expected_failure": true,
-      "status": "FINALIZED",
-      "consensus_result": "MAJORITY_AGREE",
-      "leader_execution": "ERROR",
-      "leader_error": "[EXPECTED] link_already_proven",
-      "votes": {
-        "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "agree",
-        "0x29300188B54F5BFEE91542595611603b4B201008": "idle",
-        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "agree",
-        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
-        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree"
-      },
-      "counts_as_proof": true
-    },
-    {
-      "label": "11-EXPECTED-payment-is-not-a-link",
-      "tx": "0x4443f8f92db1177821bbe715a4676d7ed0f2f3353eaf89f9a97b1958651acf3c",
-      "expected_failure": true,
-      "status": "FINALIZED",
-      "consensus_result": "MAJORITY_AGREE",
-      "leader_execution": "ERROR",
-      "leader_error": "[EXPECTED] unknown_link_kind",
-      "votes": {
-        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "idle",
-        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "agree",
-        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "agree",
         "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree",
-        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "agree"
-      },
-      "counts_as_proof": true
-    },
-    {
-      "label": "12-EXPECTED-faucet-is-not-an-owner",
-      "tx": "0xb36410a5bc98ff9c10e39e30868c0fb1a349f8fa646784755ac8f2b17c304013",
-      "expected_failure": true,
-      "status": "FINALIZED",
-      "consensus_result": "MAJORITY_AGREE",
-      "leader_execution": "ERROR",
-      "leader_error": "[EXPECTED] funder_is_infrastructure",
-      "votes": {
-        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "agree",
-        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "agree",
-        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "agree",
-        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "idle",
-        "0xe1626534791FC675ED813Cc2C89C427866526113": "idle"
+        "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "agree"
       },
       "counts_as_proof": true
     }
   ],
   "readbacks": {
-    "get_stats": "{ judged_cases: 4 }",
-    "get_case 0x32cb0d3e1671088caafe62e7cbce1b875876a035": "{\n  case_id: 15,\n  case_type: 'Agreement',\n  parties: [\n    {\n      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',\n      outcome: 'FAVORABLE',\n      role: 'partyA',\n      severity: 'NONE'\n    },\n    {\n      address: '0xce413ffe2628b60cdaf4413d63d7838b8d4309ac',\n      outcome: 'UNFAVORABLE',\n      role: 'partyB',\n      severity: 'MINOR'\n    }\n  ]\n}",
-    "get_case 0x4f0e52342241539f5b4d1cc25dc4c6531049e44c": "{\n  case_id: 16,\n  case_type: 'Agreement',\n  parties: [\n    {\n      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',\n      outcome: 'FAVORABLE',\n      role: 'partyA',\n      severity: 'NONE'\n    },\n    {\n      address: '0xce413ffe2628b60cdaf4413d63d7838b8d4309ac',\n      outcome: 'UNFAVORABLE',\n      role: 'partyB',\n      severity: 'MINOR'\n    }\n  ]\n}",
-    "get_case 0x778e3528940849432619142a8d7ac172486353bf": "{\n  case_id: 0,\n  case_type: 'TradeFxSettlement',\n  parties: [\n    {\n      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',\n      outcome: 'UNCLEAR',\n      role: 'exporter',\n      severity: 'NONE'\n    },\n    {\n      address: '0x942c20d078f7417ad67e96714310da8068850b77',\n      outcome: 'UNCLEAR',\n      role: 'importer',\n      severity: 'NONE'\n    }\n  ]\n}",
-    "get_case 0xab772bb1d873ed851b6f1150100f085b36a1ca02": "{\n  case_id: 1,\n  case_type: 'TradeFxSettlement',\n  parties: [\n    {\n      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',\n      outcome: 'UNFAVORABLE',\n      role: 'exporter',\n      severity: 'MINOR'\n    },\n    {\n      address: '0x942c20d078f7417ad67e96714310da8068850b77',\n      outcome: 'FAVORABLE',\n      role: 'importer',\n      severity: 'NONE'\n    }\n  ]\n}",
+    "get_stats": "{ judged_cases: 6 }",
+    "get_case 0x32cb0d3e1671088caafe62e7cbce1b875876a035": "{\n  case_id: 15,\n  case_type: 'Agreement',\n  parties: [\n    {\n      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',\n      outcome: 'FAVORABLE',\n      role: 'partyA',\n      severity: 'NONE'\n    },\n    {\n      address: '0xce413ffe2628b60cdaf4413d63d7838b8d4309ac',\n      outcome: 'UNFAVORABLE',\n      role: 'partyB',\n      severity: 'MINOR'\n    }\n  ],\n  resolution: 'jury'\n}",
+    "get_case 0x4f0e52342241539f5b4d1cc25dc4c6531049e44c": "{\n  case_id: 16,\n  case_type: 'Agreement',\n  parties: [\n    {\n      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',\n      outcome: 'FAVORABLE',\n      role: 'partyA',\n      severity: 'NONE'\n    },\n    {\n      address: '0xce413ffe2628b60cdaf4413d63d7838b8d4309ac',\n      outcome: 'UNFAVORABLE',\n      role: 'partyB',\n      severity: 'MINOR'\n    }\n  ],\n  resolution: 'jury'\n}",
+    "get_case 0x778e3528940849432619142a8d7ac172486353bf": "{\n  case_id: 0,\n  case_type: 'TradeFxSettlement',\n  parties: [\n    {\n      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',\n      outcome: 'UNCLEAR',\n      role: 'exporter',\n      severity: 'NONE'\n    },\n    {\n      address: '0x942c20d078f7417ad67e96714310da8068850b77',\n      outcome: 'UNCLEAR',\n      role: 'importer',\n      severity: 'NONE'\n    }\n  ],\n  resolution: 'jury'\n}",
+    "get_case 0xab772bb1d873ed851b6f1150100f085b36a1ca02": "{\n  case_id: 1,\n  case_type: 'TradeFxSettlement',\n  parties: [\n    {\n      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',\n      outcome: 'UNFAVORABLE',\n      role: 'exporter',\n      severity: 'MINOR'\n    },\n    {\n      address: '0x942c20d078f7417ad67e96714310da8068850b77',\n      outcome: 'FAVORABLE',\n      role: 'importer',\n      severity: 'NONE'\n    }\n  ],\n  resolution: 'jury'\n}",
+    "get_case 0xb7a08ff8e092023eb7169f42a554261c3b0ebc9a": "{\n  case_id: 19,\n  case_type: 'Agreement',\n  parties: [\n    {\n      address: '0x36b26d2df45a2838e6fe0f8b3c97cd0033a124cc',\n      outcome: 'FAVORABLE',\n      role: 'partyA',\n      severity: 'NONE'\n    },\n    {\n      address: '0x2f7d415a7ec68fe94c589c8ba6d4959e6ac899ae',\n      outcome: 'UNFAVORABLE',\n      role: 'partyB',\n      severity: 'MINOR'\n    }\n  ],\n  resolution: 'default'\n}",
+    "get_case 0xcc955bfe47fca91d2f0f9e45ca773bc8556d65cd": "{\n  case_id: 20,\n  case_type: 'Agreement',\n  parties: [\n    {\n      address: '0x9a88ebbba9e7f52acaf296ae7706f9b16affad69',\n      outcome: 'UNFAVORABLE',\n      role: 'partyA',\n      severity: 'MATERIAL'\n    },\n    {\n      address: '0x5a5160eec0435cc20309735715b44898a46b8032',\n      outcome: 'FAVORABLE',\n      role: 'partyB',\n      severity: 'NONE'\n    }\n  ],\n  resolution: 'default'\n}",
     "get_links 0x278d35035fb589195ed513507ce7e32021659250": "{\n  '0xba444be47ac0fb4738c6fcb33d19bc03e854b4b5': 'other wallet sent the subject its first funds (base-sepolia)'\n}",
     "get_links 0xce413ffe2628b60cdaf4413d63d7838b8d4309ac": "{}",
-    "get_score 0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87": "{\n  approval_limit_usd: 100,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    linked_wallets: 0,\n    loss_penalty: 8,\n    ruled_cases: 4,\n    unclear: 1,\n    wins: 2\n  },\n  flags: [ 'UNCLEAR_RULINGS' ],\n  grade: 'C',\n  points: 58,\n  wallet: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87'\n}",
-    "get_score 0xce413ffe2628b60cdaf4413d63d7838b8d4309ac": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    linked_wallets: 0,\n    loss_penalty: 16,\n    ruled_cases: 2,\n    unclear: 0,\n    wins: 0\n  },\n  flags: [],\n  grade: 'D',\n  points: 34,\n  wallet: '0xce413ffe2628b60cdaf4413d63d7838b8d4309ac'\n}",
-    "get_score 0x05e7ec36e5d31347b7aa90c7122a6d6e24fbe1a5": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    linked_wallets: 0,\n    loss_penalty: 0,\n    ruled_cases: 0,\n    unclear: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0x05e7ec36e5d31347b7aa90c7122a6d6e24fbe1a5'\n}",
-    "get_score 0x278d35035fb589195ed513507ce7e32021659250": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    linked_wallets: 1,\n    loss_penalty: 0,\n    ruled_cases: 0,\n    unclear: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0x278d35035fb589195ed513507ce7e32021659250'\n}",
-    "get_score 0xba444be47ac0fb4738c6fcb33d19bc03e854b4b5": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    linked_wallets: 1,\n    loss_penalty: 0,\n    ruled_cases: 0,\n    unclear: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0xba444be47ac0fb4738c6fcb33d19bc03e854b4b5'\n}"
+    "get_links 0x2f7d415a7ec68fe94c589c8ba6d4959e6ac899ae": "{\n  '0x36b26d2df45a2838e6fe0f8b3c97cd0033a124cc': 'other wallet sent the subject its first funds (base-sepolia)'\n}",
+    "get_links 0x9c985f2536587966f087e2677c81e386d4ab797c": "{\n  '0x9a88ebbba9e7f52acaf296ae7706f9b16affad69': 'other wallet sent the subject its first funds (base-sepolia)'\n}",
+    "get_links 0xb5fe6011cee8974c24c630afdf3c15f5620925b7": "{\n  '0xf171c23607b892797eb5eb4e52fc668f924df0a3': 'other wallet sent the subject its first funds (base)'\n}",
+    "get_score 0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87": "{\n  approval_limit_usd: 100,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 4,\n    linked_wallets: 0,\n    loss_penalty: 8,\n    ruled_cases: 4,\n    unclear: 1,\n    uncontested_wins: 0,\n    wins: 2\n  },\n  flags: [ 'UNCLEAR_RULINGS' ],\n  grade: 'C',\n  points: 58,\n  wallet: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87'\n}",
+    "get_score 0xce413ffe2628b60cdaf4413d63d7838b8d4309ac": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 2,\n    linked_wallets: 0,\n    loss_penalty: 16,\n    ruled_cases: 2,\n    unclear: 0,\n    uncontested_wins: 0,\n    wins: 0\n  },\n  flags: [],\n  grade: 'D',\n  points: 34,\n  wallet: '0xce413ffe2628b60cdaf4413d63d7838b8d4309ac'\n}",
+    "get_score 0x05e7ec36e5d31347b7aa90c7122a6d6e24fbe1a5": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 0,\n    linked_wallets: 0,\n    loss_penalty: 0,\n    ruled_cases: 0,\n    unclear: 0,\n    uncontested_wins: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0x05e7ec36e5d31347b7aa90c7122a6d6e24fbe1a5'\n}",
+    "get_score 0x278d35035fb589195ed513507ce7e32021659250": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 0,\n    linked_wallets: 1,\n    loss_penalty: 0,\n    ruled_cases: 0,\n    unclear: 0,\n    uncontested_wins: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0x278d35035fb589195ed513507ce7e32021659250'\n}",
+    "get_score 0xba444be47ac0fb4738c6fcb33d19bc03e854b4b5": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 0,\n    linked_wallets: 1,\n    loss_penalty: 0,\n    ruled_cases: 0,\n    unclear: 0,\n    uncontested_wins: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0xba444be47ac0fb4738c6fcb33d19bc03e854b4b5'\n}",
+    "get_score 0x36b26d2df45a2838e6fe0f8b3c97cd0033a124cc": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 1,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 0,\n    linked_wallets: 1,\n    loss_penalty: 0,\n    ruled_cases: 1,\n    unclear: 0,\n    uncontested_wins: 0,\n    wins: 0\n  },\n  flags: [ 'FAKE_WINS' ],\n  grade: 'D',\n  points: 40,\n  wallet: '0x36b26d2df45a2838e6fe0f8b3c97cd0033a124cc'\n}",
+    "get_score 0x2f7d415a7ec68fe94c589c8ba6d4959e6ac899ae": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 0,\n    linked_wallets: 1,\n    loss_penalty: 8,\n    ruled_cases: 1,\n    unclear: 0,\n    uncontested_wins: 0,\n    wins: 0\n  },\n  flags: [],\n  grade: 'D',\n  points: 42,\n  wallet: '0x2f7d415a7ec68fe94c589c8ba6d4959e6ac899ae'\n}",
+    "get_score 0x9a88ebbba9e7f52acaf296ae7706f9b16affad69": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 0,\n    linked_wallets: 1,\n    loss_penalty: 20,\n    ruled_cases: 1,\n    unclear: 0,\n    uncontested_wins: 0,\n    wins: 0\n  },\n  flags: [],\n  grade: 'D',\n  points: 30,\n  wallet: '0x9a88ebbba9e7f52acaf296ae7706f9b16affad69'\n}",
+    "get_score 0x5a5160eec0435cc20309735715b44898a46b8032": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 0,\n    linked_wallets: 0,\n    loss_penalty: 0,\n    ruled_cases: 1,\n    unclear: 0,\n    uncontested_wins: 1,\n    wins: 0\n  },\n  flags: [ 'UNCONTESTED_WINS', 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0x5a5160eec0435cc20309735715b44898a46b8032'\n}",
+    "get_score 0x9c985f2536587966f087e2677c81e386d4ab797c": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 1,\n    inherited_penalty: 20,\n    jury_cases: 0,\n    linked_wallets: 1,\n    loss_penalty: 0,\n    ruled_cases: 0,\n    unclear: 0,\n    uncontested_wins: 0,\n    wins: 0\n  },\n  flags: [ 'INHERITED_LOSSES' ],\n  grade: 'D',\n  points: 30,\n  wallet: '0x9c985f2536587966f087e2677c81e386d4ab797c'\n}",
+    "get_score 0xb5fe6011cee8974c24c630afdf3c15f5620925b7": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 0,\n    linked_wallets: 1,\n    loss_penalty: 0,\n    ruled_cases: 0,\n    unclear: 0,\n    uncontested_wins: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0xb5fe6011cee8974c24c630afdf3c15f5620925b7'\n}"
   },
   "not_proven": [
-    "Internet Court cases used here are the existing testnet cases on Base Sepolia, created by other parties; none of them is a deliberate fake-win or fresh-wallet scenario. Those two abuses are demonstrated in direct-mode tests, not on-chain.",
-    "No Base mainnet link has been proven live yet: that path (Nansen discovery, mainnet RPC verification) is covered by direct-mode tests and the prover's checks, and waits for a Nansen API key.",
+    "Cases 0-18 are existing testnet cases on Base Sepolia created by other parties. Cases 19 and 20 were staged by this project (see staged_abuses) and every party in them is controlled by one operator; they were decided by Internet Court's default-judgment path, not by its AI jury, because the jury relay was not delivering verdicts.",
+    "The Base mainnet link (step 17) was found by Nansen and verified by validators against mainnet.base.org, but its funder has no Internet Court record, so it changes no score today.",
+    "No new case has been decided by Internet Court's AI jury since its relay stopped (last verdict at block ~39.07M): cases 15, 16 and the trade cases are older jury rulings; 19 and 20 are default judgments.",
     "StudioNet is a test network; scores move no funds."
   ],
   "keeper": [
     {
-      "log": "first-pass.log",
+      "log": "v7-first-pass.log",
       "action": "judge_cases",
       "case_id": 2,
       "case": "0x43fcbf7fa4a1c8d6ca648fad163636b20bcee233",
-      "tx": "0x2e3dae98ddf3e4a73ca6b1468d4005683691c92bd1d680b6d8a76af1100f292b",
+      "tx": "0x4d6ca849b0918a7d1ecbce5498426004bf36918df4b974791bc35ce54c90ab5d",
       "stored": true
     },
     {
-      "log": "first-pass.log",
+      "log": "v7-first-pass.log",
       "action": "judge_cases",
       "case_id": 3,
       "case": "0xb4700d67d6cbef18011021a2a20389ea88753234",
-      "tx": "0x8356524938fcf40706121ea73f7e69f93e07f2161c5d26e74a1edbe0757ccea1",
+      "tx": "0x76af0394be86049fa914f0255d55d98dc79be8de5626600d6f021050089d6290",
       "stored": true
     },
     {
-      "log": "first-pass.log",
+      "log": "v7-first-pass.log",
       "action": "judge_cases",
       "case_id": 4,
       "case": "0xbd0db046a913817522b595cfeb922d5e2aad4268",
-      "tx": "0x6c9fd31131f2035548fc6e2c6b7eb2765c8ab6f4ce7a711a33bd2b23469bd884",
+      "tx": "0xee6c156b5091c0bae42161db48e37c19da3381b281f6078986a1da6a149dafe4",
       "stored": true
     },
     {
-      "log": "first-pass.log",
+      "log": "v7-first-pass.log",
       "action": "judge_cases",
       "case_id": 5,
       "case": "0xe50a8f382b3b751dbd7053963ebabb59916f3788",
-      "tx": "0x5b6c822d2a63d281ac05183fd40e146f7886901d034eefed8d66efa7d4118f21",
+      "tx": "0x409951e19e00aaeb71b63b980462543be561127fa49969275fdb032d12cfc2fa",
       "stored": true
     },
     {
-      "log": "first-pass.log",
+      "log": "v7-first-pass.log",
       "action": "judge_cases",
       "case_id": 6,
       "case": "0x08fb300e1290fa3e12cded8b2bf050edd46fff73",
-      "tx": "0xe83a11116434806c5f2a9beedafcb226e19846d4cd706c9e03a6519e8dd866f9",
+      "tx": "0xbcee0c2a190358b230a98c4d3422520840e8f4e68e16146a8a499bb269177006",
       "stored": true
     },
     {
-      "log": "first-pass.log",
+      "log": "v7-first-pass.log",
       "action": "judge_cases",
       "case_id": 7,
       "case": "0xd42d18bea9c22e6c230b5ee116e9bcac8757a6ec",
-      "tx": "0x5d92e686f9b326134085b6819efb6a0b6e39cf414f125da214a4859a6a1d101a",
+      "tx": "0x8320f030cc361daa3e544d3ec68779122d6f4aad78980c3078333ed85118bb93",
       "stored": true
     },
     {
-      "log": "first-pass.log",
+      "log": "v7-first-pass.log",
       "action": "judge_cases",
       "case_id": 8,
       "case": "0x8ede7afc449cca494ff3066ab020be143d784f91",
-      "tx": "0x514154d468297bc3e396ade5b453cd775c9e8f30835615f238e3aa71e80d2eea",
+      "tx": "0x78f49176eb5476b8cc1b54be6d2318d300edf0884542f8dd13095805b8d0d93f",
       "stored": true
     },
     {
-      "log": "first-pass.log",
-      "action": "failed",
-      "item": "case #9 0x87b5afc78ca48d0ec62eec7816884e0220c49978",
-      "error": "network: An unknown RPC error occurred."
+      "log": "v7-first-pass.log",
+      "action": "judge_cases",
+      "case_id": 9,
+      "case": "0x87b5afc78ca48d0ec62eec7816884e0220c49978",
+      "tx": "0x984d8a196aac517edd50a76428703cb05a1d39934ba6bd5011b60608bdb5180a",
+      "stored": true
     },
     {
-      "log": "first-pass.log",
+      "log": "v7-first-pass.log",
       "action": "judge_cases",
       "case_id": 10,
       "case": "0x9bff14a32325ea103dd690e29cd3f22660321b44",
-      "tx": "0x4113e600b718b37ffa3fdf0fb56e2b27d2f7944d40400e7876489b6ba93ff388",
+      "tx": "0x987fd2570b38996338c9b87aced27d78c909968bc984774e020285263675c72d",
       "stored": true
     },
     {
-      "log": "first-pass.log",
+      "log": "v7-first-pass.log",
       "action": "judge_cases",
       "case_id": 11,
       "case": "0x2d14f1ad43d90e8db1209a6ce3c1959c85b4d9e1",
-      "tx": "0x2314317ed2b2db865fb77ea4e7dc95d2ee0672fff2b354b9068934078e7522a6",
+      "tx": "0xe7e38e06cb69115c866f74387d45478db6c6cd9a977a8473e623930149558e4a",
       "stored": true
     }
   ],
-  "keeper_notes": "Case #9 was reported failed in first-pass.log because the StudioNet RPC returned an HTML error page while the keeper polled for the receipt; a later read-back showed the case was judged on-chain anyway. The keeper now reads back after network errors."
+  "keeper_notes": "Case #9 was reported failed in first-pass.log because the StudioNet RPC returned an HTML error page while the keeper polled for the receipt; a later read-back showed the case was judged on-chain anyway. The keeper now reads back after network errors.",
+  "staged_abuses": {
+    "script": "scripts/stage-abuses.ts",
+    "network": "base-sepolia",
+    "operator": "0xEAa24431285FE4939e8595AA3a555Bfb657D4002",
+    "wallets": {
+      "hubX": "0xbbbb17FA35fF942f88c45083a8Cd0C54B5FddF07",
+      "hubY": "0x6f139fF76855D0498aeFc0fE061d27F9e8895979",
+      "hubZ": "0x0f2bF541B73C654b78613E7316E240e0f32c880b",
+      "agentX": "0x36b26d2DF45a2838E6Fe0F8B3c97Cd0033A124Cc",
+      "sockS": "0x2f7d415A7Ec68Fe94c589c8BA6D4959e6AC899Ae",
+      "agentY": "0x9A88EbBbA9e7F52aCaf296ae7706f9b16affaD69",
+      "clientZ": "0x5A5160Eec0435cc20309735715b44898A46b8032",
+      "successorN": "0x9c985F2536587966F087E2677c81E386D4AB797c"
+    },
+    "cases": {
+      "fakeWin": {
+        "id": 19,
+        "address": "0xb7a08FF8E092023eB7169f42a554261c3B0ebc9A"
+      },
+      "loss": {
+        "id": 20,
+        "address": "0xCc955bfe47FcA91D2f0F9E45Ca773bC8556d65cd"
+      }
+    },
+    "base_sepolia_txs": {
+      "fund:hubX": {
+        "tx": "0xfb42b7c2183baf7c7ef6911ccdc8b3d8f6d051710ba31471c96e21c7ae5249c0",
+        "block": 57086695
+      },
+      "fund:hubY": {
+        "tx": "0x950c84c1d0df0e279173ea19c49d96c650c8c643aa262536e40ce09188744fe6",
+        "block": 57086706
+      },
+      "fund:hubZ": {
+        "tx": "0x297e76b9fd214f67c7ecdc990da57e392496e85f2fc57759b8684fdb3601f49a",
+        "block": 57086718
+      },
+      "fund:agentX": {
+        "tx": "0x4b821bb6d9a82df99b81ef99cb66cedcc9cb2fb3e4f772bbe9abf55fe02b52b2",
+        "block": 57086729
+      },
+      "fund:agentY": {
+        "tx": "0x9abc4f86882fe4f9c4b0ae965d86752e5a48c98c1fed0132d1c89e1603f7ca1d",
+        "block": 57086740
+      },
+      "fund:clientZ": {
+        "tx": "0x2ee0a2fe342c4a331b16be433f18429f69ec44c4b0553590bfe87be519de86a6",
+        "block": 57086751
+      },
+      "fund:sockS": {
+        "tx": "0x0e4bb6cd8f7d691963a7bc9ed4a5258996c0c0b5357740698710c29ca0d5cdb0",
+        "block": 57086762
+      },
+      "fakeWin:create": {
+        "tx": "0x83a21985e227a85e20f4d6a9a79ad13f8cedb67bf7e21d6825ec5cacc94f5bd9",
+        "block": 57086770
+      },
+      "fakeWin:accept": {
+        "tx": "0x736c13a977a2dab4614acb93421ce768d1ce1285bef7640b80433fe092ab8cc0",
+        "block": 57086780
+      },
+      "fakeWin:dispute": {
+        "tx": "0x5dd805bcf7b50e195aa5b5d8f704fc38e34e7122012a81091cd2cfd33fe60f16",
+        "block": 57086793
+      },
+      "fakeWin:evidence": {
+        "tx": "0x6734ad31c147dfcc74c7a60a2b45f7910fd1833452d6e2cbb92aace7e239cf72",
+        "block": 57086804
+      },
+      "fakeWin:resolve": {
+        "tx": "0xaf5cfaaf54cfc6ca7c5dfbe99851ad8a0de2526cbab83c4a573a6d3032bd1e0f",
+        "block": 57086975
+      },
+      "loss:create": {
+        "tx": "0xd08b6a1262b67ddf1677177f9865beb56dc7ce0739e93692764d492ed82e74cf",
+        "block": 57086986
+      },
+      "loss:accept": {
+        "tx": "0xf94463a78393289119870279a81eab2074f2045f95b3e5f6c7d9d0358a91a431",
+        "block": 57086997
+      },
+      "loss:dispute": {
+        "tx": "0x917a5e3d1b9c73f8ac1bd82ee0467e250e1260b13b3caf64fe0fc3de43fe49a4",
+        "block": 57087005
+      },
+      "loss:evidence": {
+        "tx": "0xb02db2c13fc9c49896c4a02753dc97d4ec86237eb9b2a6000721c4449cccccc1",
+        "block": 57087017
+      },
+      "loss:resolve": {
+        "tx": "0x1c57b972ff44b2871502901107e667b19f1de11eda8aa23db446750527dee354",
+        "block": 57087191
+      },
+      "fund:successorN": {
+        "tx": "0x1d20cd311a57712a2bac0f166e89769d1d3c42b8e70ef81ae0c2172aa82f0ebb",
+        "block": 57087202
+      },
+      "successorN:firstTx": {
+        "tx": "0xc27de800b994be165bd65db76b3cf040ae338cdd1b01e37c8fc7a49ba495b311",
+        "block": 57087210
+      }
+    },
+    "resolution": "Internet Court's jury relay had not delivered a verdict since block ~39.07M (case 18's dispute of 2026-11-09 was still pending), so both cases were resolved through Agreement.resolveByDefault(): one side disputed and submitted evidence, the other stayed silent.",
+    "expected": {
+      "agentX": "won case 19 against sockS, a wallet agentX itself first funded: the win must count as fake (FAKE_WINS), not as a win",
+      "agentY": "lost case 20 to clientZ: one loss",
+      "successorN": "first funded by agentY after that loss, no cases of its own: must inherit agentY's loss (INHERITED_LOSSES) instead of scoring as a clean new wallet",
+      "clientZ": "won case 20 by default judgment against an unlinked wallet: an uncontested win (UNCONTESTED_WINS), so no points and escrow still required (NO_HISTORY)"
+    },
+    "scores": {
+      "agentX": {
+        "wallet": "0x36b26d2DF45a2838E6Fe0F8B3c97Cd0033A124Cc",
+        "grade": "D",
+        "points": 40,
+        "approval_limit_usd": 0,
+        "flags": [
+          "FAKE_WINS"
+        ],
+        "wins": 1,
+        "uncontested_wins": 0,
+        "fake_wins": 1,
+        "inherited_cases": 0
+      },
+      "sockS": {
+        "wallet": "0x2f7d415A7Ec68Fe94c589c8BA6D4959e6AC899Ae",
+        "grade": "D",
+        "points": 42,
+        "approval_limit_usd": 0,
+        "flags": [],
+        "wins": 0,
+        "uncontested_wins": 0,
+        "fake_wins": 0,
+        "inherited_cases": 0
+      },
+      "agentY": {
+        "wallet": "0x9A88EbBbA9e7F52aCaf296ae7706f9b16affaD69",
+        "grade": "D",
+        "points": 30,
+        "approval_limit_usd": 0,
+        "flags": [],
+        "wins": 0,
+        "uncontested_wins": 0,
+        "fake_wins": 0,
+        "inherited_cases": 0
+      },
+      "clientZ": {
+        "wallet": "0x5A5160Eec0435cc20309735715b44898A46b8032",
+        "grade": "C",
+        "points": 50,
+        "approval_limit_usd": 0,
+        "flags": [
+          "UNCONTESTED_WINS",
+          "NO_HISTORY"
+        ],
+        "wins": 0,
+        "uncontested_wins": 1,
+        "fake_wins": 0,
+        "inherited_cases": 0
+      },
+      "successorN": {
+        "wallet": "0x9c985F2536587966F087E2677c81E386D4AB797c",
+        "grade": "D",
+        "points": 30,
+        "approval_limit_usd": 0,
+        "flags": [
+          "INHERITED_LOSSES"
+        ],
+        "wins": 0,
+        "uncontested_wins": 0,
+        "fake_wins": 0,
+        "inherited_cases": 1
+      }
+    }
+  }
 }

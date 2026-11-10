@@ -8,9 +8,9 @@ wallet or inflated with fake wins.
 > Status: in development for the Internet Court Builders Working Group mission (Nov 9–23, 2026).
 > The indexer, link builder, REST API, MCP server, skill, website and the GenLayer contract
 > ([contracts/agent_score.py](contracts/agent_score.py), design in [docs/DESIGN.md](docs/DESIGN.md))
-> work. The contract is live on **GenLayer StudioNet** at
-> `0x07bf2207852FE8F47DDeE26C4f4F0B206D259e74`, where it has judged real Internet Court cases
-> from Base Sepolia. Every transaction is recorded in
+> work. The contract (v7) is live on **GenLayer StudioNet** at
+> `0xF1a3D4079b19968D31FC47326849906C9F03EB89`, where it has judged every ruled Internet Court
+> case on Base Sepolia. Every transaction is recorded in
 > [deployments/studionet/release-manifest.json](deployments/studionet/release-manifest.json).
 
 ## Live on StudioNet
@@ -26,8 +26,34 @@ wallet or inflated with fake wins.
 | Replay a proven link from the other side | rejected: `link_already_proven` |
 | Claim ownership from a plain payment | rejected: `unknown_link_kind` |
 | Record a real faucet (18,881 txs sent) as a wallet's owner | rejected: `funder_is_infrastructure` |
+| Judge staged cases 19 and 20 (default judgments) and prove their two links | FINALIZED, leader SUCCESS; both recorded as `resolution: default` |
+| Prove a **Base mainnet** link found by **Nansen** (`0xf171…` first funded `0xb5fe…`, party B of case 17) | FINALIZED, leader SUCCESS: validators verified it against `mainnet.base.org` |
 
 Reproduce with `scripts/live-demo.sh` (deploys a fresh contract) or `scripts/live-demo.sh <address>`.
+
+### The two abuses, staged on-chain
+
+`scripts/stage-abuses.ts` creates two real Internet Court cases on Base Sepolia (#19 and #20) with
+wallets one operator controls. Internet Court's jury relay was not delivering verdicts, so both
+were decided through the Agreement contract's default-judgment path. The contract judged both
+cases and proved the links between the wallets:
+
+| Wallet | What happened | AgentScore |
+|---|---|---|
+| Agent X | Won case #19 against S, a wallet X itself first funded | Win counted as fake (`FAKE_WINS`): D (40) |
+| Agent Y | Lost case #20 to client Z; validators found non-delivery | Material loss: D (30) |
+| New wallet N | First funded by agent Y right after that loss | Inherits Y's loss (`INHERITED_LOSSES`): D (30), not a clean C |
+| Client Z | Won case #20, but only because Y never answered | Uncontested win (`UNCONTESTED_WINS`): no points, still needs escrow (C, $0) |
+
+### Only a jury verdict earns points
+
+An Internet Court case ends one of three ways, and the contract reads which from the case's own
+state: **jury** (both sides submitted evidence, the only way a case reaches the AI jury),
+**default** (one side never answered) or **settlement** (the parties agreed). A default or a
+settlement costs a colluding pair nothing, so a win that way earns no points and does not lift a
+wallet out of the no-history escrow rule. Losses count however the case ended: nobody fakes a loss.
+
+Every transaction and score is in the release manifest under `staged_abuses`.
 
 ## The GenLayer contract
 
@@ -65,14 +91,15 @@ npm run prove --workspace @agentscore/prover -- 0xWALLET --submit  # submit prov
 ```
 | `get_score(wallet)` | view | Deterministic grade, approval limit, flags and counts from both registries. No LLM. |
 
-Validators only classify rulings (FAVORABLE / UNFAVORABLE / NEUTRAL / UNCLEAR, plus severity) and
-must agree exactly. Ordinary code discounts wins against proven same-owner wallets and adds losses
-from them, then derives the grade.
+Validators answer only narrow yes/no questions about each ruling and must agree exactly. Who
+prevailed and how the case ended (AI jury, default judgment or settlement) come from the chain.
+Ordinary code then derives the grade: only jury wins earn points, wins against proven same-owner
+wallets cost points, and losses count from the wallet and every wallet proven linked to it.
 
 ```bash
 pip install genlayer-test genvm-linter
 genvm-lint check contracts/agent_score.py
-pytest tests/direct -m "not live"   # 42 direct-mode tests
+pytest tests/direct -m "not live"   # 76 direct-mode tests
 pytest tests/direct -m live          # decodes real Internet Court cases from Base Sepolia
 ```
 

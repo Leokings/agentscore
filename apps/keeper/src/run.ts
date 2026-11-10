@@ -17,6 +17,8 @@ export interface KeeperDeps {
   /** Upper bound on contract writes per pass (StudioNet rate-limits per IP). */
   maxWrites?: number;
   now?: () => number;
+  /** Separates attempt records per contract (the contract address), so a new deployment starts fresh. */
+  scope?: string;
 }
 
 export interface KeeperReport {
@@ -28,8 +30,9 @@ export interface KeeperReport {
   writes: number;
 }
 
-const caseKey = (c: string) => `keeper:case:${c}`;
-const linkKey = (a: string, b: string) => `keeper:link:${[a, b].sort().join(":")}`;
+const prefix = (scope?: string) => (scope ? `keeper:${scope.toLowerCase()}` : "keeper");
+const caseKey = (scope: string | undefined, c: string) => `${prefix(scope)}:case:${c}`;
+const linkKey = (scope: string | undefined, a: string, b: string) => `${prefix(scope)}:link:${[a, b].sort().join(":")}`;
 
 async function getAttempt(store: Store, key: string): Promise<Attempt | undefined> {
   const raw = await store.getMeta(key);
@@ -70,7 +73,7 @@ export async function runOnce(deps: KeeperDeps): Promise<KeeperReport> {
   // 1. Judge every ruled case the contract has not judged yet.
   const judgedParties = new Set<Address>();
   for (const c of cases.filter(isJudgeable)) {
-    const key = caseKey(c.address);
+    const key = caseKey(deps.scope, c.address);
     const attempt = await getAttempt(store, key);
     if (attempt?.outcome === "stored") {
       c.parties.forEach((p) => judgedParties.add(p.address));
@@ -130,7 +133,7 @@ export async function runOnce(deps: KeeperDeps): Promise<KeeperReport> {
   const proofs: LinkProof[] = buildProofs(facts, known);
 
   for (const p of proofs) {
-    const key = linkKey(p.subject, p.other);
+    const key = linkKey(deps.scope, p.subject, p.other);
     const attempt = await getAttempt(store, key);
     if (attempt?.outcome === "stored" || !isDue(attempt, now())) continue;
     if (p.other in (await chain.links(p.subject))) {

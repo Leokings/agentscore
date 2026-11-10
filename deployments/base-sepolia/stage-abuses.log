@@ -1,0 +1,23 @@
+operator 0xEAa24431285FE4939e8595AA3a555Bfb657D4002: 0.000659178494702371 ETH on Base Sepolia
+✓ fund:hubX (already done, tx 0xfb42b7c2183baf7c7ef6911ccdc8b3d8f6d051710ba31471c96e21c7ae5249c0)
+✓ fund:hubY (already done, tx 0x950c84c1d0df0e279173ea19c49d96c650c8c643aa262536e40ce09188744fe6)
+✓ fund:hubZ (already done, tx 0x297e76b9fd214f67c7ecdc990da57e392496e85f2fc57759b8684fdb3601f49a)
+✓ fund:agentX (already done, tx 0x4b821bb6d9a82df99b81ef99cb66cedcc9cb2fb3e4f772bbe9abf55fe02b52b2)
+✓ fund:agentY (already done, tx 0x9abc4f86882fe4f9c4b0ae965d86752e5a48c98c1fed0132d1c89e1603f7ca1d)
+✓ fund:clientZ (already done, tx 0x2ee0a2fe342c4a331b16be433f18429f69ec44c4b0553590bfe87be519de86a6)
+✓ fund:sockS (already done, tx 0x0e4bb6cd8f7d691963a7bc9ed4a5258996c0c0b5357740698710c29ca0d5cdb0)
+✓ fakeWin:create (already done, tx 0x83a21985e227a85e20f4d6a9a79ad13f8cedb67bf7e21d6825ec5cacc94f5bd9)
+✓ fakeWin:accept (already done, tx 0x736c13a977a2dab4614acb93421ce768d1ce1285bef7640b80433fe092ab8cc0)
+✓ fakeWin:dispute (already done, tx 0x5dd805bcf7b50e195aa5b5d8f704fc38e34e7122012a81091cd2cfd33fe60f16)
+✓ fakeWin:evidence (already done, tx 0x6734ad31c147dfcc74c7a60a2b45f7910fd1833452d6e2cbb92aace7e239cf72)
+✓ fakeWin:resolve (already done, tx 0xaf5cfaaf54cfc6ca7c5dfbe99851ad8a0de2526cbab83c4a573a6d3032bd1e0f)
+✓ loss:create (already done, tx 0xd08b6a1262b67ddf1677177f9865beb56dc7ce0739e93692764d492ed82e74cf)
+✓ loss:accept (already done, tx 0xf94463a78393289119870279a81eab2074f2045f95b3e5f6c7d9d0358a91a431)
+✓ loss:dispute (already done, tx 0x917a5e3d1b9c73f8ac1bd82ee0467e250e1260b13b3caf64fe0fc3de43fe49a4)
+✓ loss:evidence (already done, tx 0xb02db2c13fc9c49896c4a02753dc97d4ec86237eb9b2a6000721c4449cccccc1)
+✓ loss:resolve (already done, tx 0x1c57b972ff44b2871502901107e667b19f1de11eda8aa23db446750527dee354)
+✓ fund:successorN (already done, tx 0x1d20cd311a57712a2bac0f166e89769d1d3c42b8e70ef81ae0c2172aa82f0ebb)
+✓ successorN:firstTx (already done, tx 0xc27de800b994be165bd65db76b3cf040ae338cdd1b01e37c8fc7a49ba495b311)
+case #19 (fakeWin) 0xb7a08FF8E092023eB7169f42a554261c3B0ebc9A: status RESOLVED, verdict TRUE, "Resolved by default - only dispute initiator submitted evidence"
+case #20 (loss) 0xCc955bfe47FcA91D2f0F9E45Ca773bC8556d65cd: status RESOLVED, verdict FALSE, "Resolved by default - only dispute initiator submitted evidence"
+operator balance now 0.000659178494702371 ETH

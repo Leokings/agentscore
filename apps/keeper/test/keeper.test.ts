@@ -161,6 +161,13 @@ describe("runOnce", () => {
     expect(r.failed).toEqual([]);
   });
 
+  it("keeps separate records per contract, so a new deployment is judged from scratch", async () => {
+    await runOnce({ store, chain, sync: noSync, discover: async () => [], scope: "0xold" });
+    const fresh = new FakeChain();
+    const r = await runOnce({ store, chain: fresh, sync: noSync, discover: async () => [], scope: "0xnew" });
+    expect(r.judged).toHaveLength(2);
+  });
+
   it("stops at the write budget", async () => {
     const r = await runOnce({ store, chain, sync: noSync, discover: async () => [], maxWrites: 1 });
     expect(r.writes).toBe(1);

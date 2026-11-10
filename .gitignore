@@ -9,3 +9,4 @@ data/*.db-*
 .venv/
 __pycache__/
 .pytest_cache/
+data/demo-wallets.json

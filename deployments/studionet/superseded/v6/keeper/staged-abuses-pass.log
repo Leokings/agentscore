@@ -1,0 +1,8 @@
+
+
+GenLayer RPC error (gen_call): execution failed
+[2026-11-10T19:37:09.811Z] judged case #19 0xb7a08ff8e092023eb7169f42a554261c3b0ebc9a (tx 0x844cd294dbfc730f0e6fb62d6ea2c1b9d7033cc6bc5a1f7d54b9a0332206e081)
+GenLayer RPC error (gen_call): execution failed
+[2026-11-10T19:38:02.991Z] judged case #20 0xcc955bfe47fca91d2f0f9e45ca773bc8556d65cd (tx 0xf7f92466d7da65e9b7e127b4d0eb0919c1ec0f6fe434b3a4cefb0e8ce46a04e6)
+[2026-11-10T19:38:59.177Z] proved first_funded_by 0x2f7d415a7ec68fe94c589c8ba6d4959e6ac899ae ↔ 0x36b26d2df45a2838e6fe0f8b3c97cd0033a124cc (tx 0xc0b261617dea70c5fdb877a1e9aa6747df588f39fb930cdac3404c1a41619632)
+[2026-11-10T19:38:59.177Z] pass done: 2 judged, 0 already on-chain, 1 links proven, 0 failed, 3 writes

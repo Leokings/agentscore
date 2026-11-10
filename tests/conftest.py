@@ -42,9 +42,11 @@ def enc_string(text: str | bytes) -> str:
 
 
 REVERT = None  # marker for a reverted eth_call
+RATE_LIMITED = "rate-limited"  # marker for a call the public node refused (25 requests/second)
+RATE_LIMIT_ERROR = {"code": -32016, "message": "25/second request limit reached"}
 
 # Order must match the contract: agreementIds, agreements(0), then CASE_GETTERS in order.
-GETTERS = ["partyA", "partyB", "status", "verdict", "statement", "reasoning", "exporter", "importer", "shipmentStatement", "shipmentVerdictReason"]
+GETTERS = ["partyA", "partyB", "status", "verdict", "statement", "reasoning", "exporter", "importer", "shipmentStatement", "shipmentVerdictReason", "evidenceASubmitted", "evidenceBSubmitted", "disputeTimestamp"]
 
 
 FACTORY = "0xd533cb0b52e85b3f506b6f0c28b8f6bc4e449dda"
@@ -61,6 +63,9 @@ SELECTORS = {
     "62932301": "importer",
     "34120d79": "shipmentStatement",
     "503ae34e": "shipmentVerdictReason",
+    "b442c81d": "evidenceASubmitted",
+    "dbd4d40d": "evidenceBSubmitted",
+    "c3018f98": "disputeTimestamp",
 }
 
 
@@ -75,6 +80,7 @@ class FakeBaseNode:
         self.getters: dict[str, str | None] = {}
         self.txs: dict[str, dict[str, dict]] = {"base-sepolia": {}, "base": {}}
         self.http_status = 200
+        self.rate_limited_methods: set[str] = set()
 
     def handle(self, data: dict) -> dict:
         url = data.get("url", "")
@@ -103,9 +109,13 @@ class FakeBaseNode:
                 result = enc_addr(self.slot0) if self.slot0 else enc_uint(0)
             else:
                 result = self.getters.get(name or "", REVERT)
+            if result == RATE_LIMITED:
+                return {"jsonrpc": "2.0", "id": rid, "error": RATE_LIMIT_ERROR}
             if result is None:
                 return {"jsonrpc": "2.0", "id": rid, "error": {"code": 3, "message": "execution reverted"}}
             return {"jsonrpc": "2.0", "id": rid, "result": result}
+        if method in self.rate_limited_methods:
+            return {"jsonrpc": "2.0", "id": rid, "error": RATE_LIMIT_ERROR}
         tx = self.txs[network].get(params[0].lower())
         if method == "eth_getTransactionByHash":
             if tx is None:
@@ -123,8 +133,16 @@ def node(vm) -> FakeBaseNode:
     return vm._live_web_handler.__self__
 
 
-def agreement(party_a: str, party_b: str, statement: str, reasoning: str, verdict: int = 1, status: int = 4) -> dict[str, str | None]:
+# On-chain state each resolution path leaves behind: (evidence A submitted, evidence B submitted, dispute time).
+RESOLUTION_STATE = {"jury": (1, 1, 1773905526), "default": (1, 0, 1794339227), "settlement": (0, 0, 0)}
+
+
+def agreement(party_a: str, party_b: str, statement: str, reasoning: str, verdict: int = 1, status: int = 4, resolution: str = "jury") -> dict[str, str | None]:
+    a_sub, b_sub, disputed_at = RESOLUTION_STATE[resolution]
     return {
+        "evidenceASubmitted": enc_uint(a_sub),
+        "evidenceBSubmitted": enc_uint(b_sub),
+        "disputeTimestamp": enc_uint(disputed_at),
         "partyA": enc_addr(party_a),
         "partyB": enc_addr(party_b),
         "status": enc_uint(status),

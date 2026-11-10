@@ -1,0 +1,590 @@
+{
+  "project": "AgentScore",
+  "network": {
+    "name": "studionet",
+    "chain_id": 61999,
+    "rpc": "https://studio.genlayer.com/api",
+    "explorer": "https://genlayer-explorer.vercel.app"
+  },
+  "contract": {
+    "address": "0x07bf2207852FE8F47DDeE26C4f4F0B206D259e74",
+    "file": "contracts/agent_score.py",
+    "runner": "1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6",
+    "sha256": "0da68b9097994ca81fc428562634247c5b0a1d1c99367fcc049a21ad35afbb83",
+    "git_blob": "69e1a8d5de6248d87e828f469cbaf9f70aec4aab",
+    "git_commit": "3d1fd935d1055654edf475de710fa81fa0a2c7b2",
+    "git_blob_at_commit": "69e1a8d5de6248d87e828f469cbaf9f70aec4aab",
+    "git_clean_for_contract": true,
+    "constructor_args": [],
+    "deploy_tx": "0xd51eca9436d7c6c19f79a638c40e3864d243273c16cdd79214e8409c796a73ee",
+    "deployed_source_identical": true,
+    "deployed_sha256": "0da68b9097994ca81fc428562634247c5b0a1d1c99367fcc049a21ad35afbb83"
+  },
+  "deployer": "0x797d3b25fb2cca0ff93f60df1910267f3822d655",
+  "toolchain": {
+    "node": "v24.19.0",
+    "genlayer_cli": "0.39.2",
+    "genlayer_js": "1.1.8",
+    "genvm_linter": "0.11.0",
+    "genlayer_test": "0.29.2"
+  },
+  "probe": {
+    "file": "contracts/probe/web_probe.py",
+    "address": "0xbfCc46A498b882bcF9eFc45d9a7291f147d9C079",
+    "deploy_tx": "0x7d8fae59269169d9fb5470fa6c4d708464ae4d3ad480b063d200d83c94ffa36d",
+    "probe_tx": "0xb6648ac0aafcfc7492bdf6769a88f523eccfcea172e641e64ca5565a8c16e350",
+    "result": "Both FINALIZED with leader SUCCESS. GenVM reached the Base Sepolia RPC (POST eth_call returned agreements(0)) and Blockscout (GET transaction)."
+  },
+  "superseded_deployments": [
+    {
+      "address": "0x4a12008D8EaebE3c17B7C3aa69B4ef8D585169BC",
+      "deploy_tx": "0xf5e3083f6fa87f4cf3bcb7fb6c1d0a2a63ccebde9618312c47551f02a1e436d2",
+      "attempt_tx": "0x718d3c8ef05e19a1d1968abcc171692fbd6a13f3455368eb6f6120bb837e57d7",
+      "why": "judge_cases rejected the CLI's Address-typed arguments ([EXPECTED] invalid_address). Fixed by accepting calldata Address values."
+    },
+    {
+      "address": "0x1112e434dAB571d6BEEB36BDEdAF615aAE33D49A",
+      "deploy_tx": "0x3f7a4c709e7c5afc052f230df14f4620adad63c44afcc71e87498d8cd4549960",
+      "attempt_tx": "0x8112b64972d78b2eae7f5358075103c33589724929210080371fcc2c1bf8ccc3",
+      "why": "Case 15 finalized as MAJORITY_DISAGREE and stored nothing: per-party outcome + 3-level severity was too loose for different models to match exactly. Fixed by taking the winner from the on-chain verdict and asking validators two yes/no findings."
+    },
+    {
+      "address": "0x5d212eEd9134eF1799486377fDb16B96b46AFF0a",
+      "deploy_tx": "0x90cd66d7fa7ae3da1e4d59548f505017ef801e63d7ceaf33467705dd71c3de7e",
+      "attempt_tx": "0x27d8a90807893cb68a51553ab09695d7d619d58d4f965b6d81161e3e4a2ac57c",
+      "why": "Operator error: the link proof was passed double-encoded, so the contract rejected it ([EXPECTED] invalid_proof_json). The CLI also turns 64-hex strings into integers, so prove_link now accepts the CLI's decoded dict as well. Cases 15, 16 and trade cases 0 and 1 had been judged successfully on this deployment (3/3 agree each)."
+    },
+    {
+      "address": "0xFC9f3DFce2f9B5B3A7Ed24Fbc26c1987cD41E649",
+      "deploy_tx": "0xb8c2c52657002b2337f77845ce36f4cb919bc653e5112d6d4fe0cb9ab53c29f5",
+      "evidence": "deployments/studionet/superseded/v4/",
+      "why": "Full demo ran (all 11 steps FINALIZED, 3/3 agree), but the read-back exposed a design flaw: 0x05e7 inherited 0xce41's losses only because 0xce41 had paid it, and anyone can pay anyone, so a 'paid' link let a bad wallet smear an honest one. The 'paid' kind was removed; only first-funding proofs anchored to the wallet's nonce-0 transaction remain. Step 09 on v4 also hit link_already_proven instead of the intended forgery check, because the pair had just been linked (operator ordering mistake)."
+    },
+    {
+      "address": "0x88F8cbBA953da2D934EDb94975F5281a3Cb06B91",
+      "deploy_tx": "0x88b48e1d0cd4e7f82e4a5bdb50c2f4c6bb796c4bed61fe4d9a7aae97a5a146f1",
+      "git_commit": "8f11d7d55ee1cddf6dd3fe5d197091bcbbe429ad",
+      "evidence": "deployments/studionet/superseded/v5/ (full demo, 12/12 steps proof, own release manifest)",
+      "why": "Worked as designed, replaced to (1) prove links on Base mainnet as well as Base Sepolia, reading transactions from the public Base RPC nodes instead of Blockscout, so Nansen-discovered mainnet funding can be verified; (2) add the exchange/faucet guard: v5 would have accepted a 'shared first funder' link between two strangers funded by the same faucet (a real case: both sides of Internet Court case 14 were funded by a faucet that had sent 18,881 transactions); (3) apply the user's new scoring table and require escrow for wallets with no history."
+    }
+  ],
+  "steps": [
+    {
+      "label": "00-deploy",
+      "tx": "0xd51eca9436d7c6c19f79a638c40e3864d243273c16cdd79214e8409c796a73ee",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x0cf3809a31B0c7E0742d126451aDE1977e3748D2": "idle",
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "agree",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "agree",
+        "0xD0eD149D26E76cf49fB588c970E608E44Dd4DAB8": "idle"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "01-judge-case15",
+      "tx": "0xfb35b9c1c6ff7e06da314a8c521d340a1d5d85124c4e3ce09f9f08a18ee28f43",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "agree",
+        "0x0cf3809a31B0c7E0742d126451aDE1977e3748D2": "agree",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "idle",
+        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree",
+        "0xf1EAD5E5f876eae701eF1881b42861079cd9A287": "idle"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "02-judge-case16",
+      "tx": "0x0068781f83090e45bdb960dc1f4226860ab39ccbe0769d2ab2b9dd5169b0d5f5",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "idle",
+        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "agree",
+        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "idle",
+        "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "agree",
+        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "03-judge-trade-case0",
+      "tx": "0x776d713cef257939563f1be21c48af669c6acfbdd8a53ca4fe9c8a3919ada5d9",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "idle",
+        "0x29300188B54F5BFEE91542595611603b4B201008": "agree",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "agree",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "idle"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "04-judge-trade-case1",
+      "tx": "0xbae960147b2ba8ae813e93075b6d76335d4d31c115046cd4c785a713db2b191b",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "idle",
+        "0x29300188B54F5BFEE91542595611603b4B201008": "agree",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "agree",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0xc675c2B7E1F066B7c1D2fe54EF7B76C91CdFa5F4": "idle"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "05-prove-link-first-funded",
+      "tx": "0x04e85865b834c9e64fd673af596a301fe930a40253074a6255711eae187a6078",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x0cf3809a31B0c7E0742d126451aDE1977e3748D2": "idle",
+        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "agree",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "idle",
+        "0xf1EAD5E5f876eae701eF1881b42861079cd9A287": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "06-EXPECTED-replay-judged-case",
+      "tx": "0x1d77deb0167c2ca11f5c31ec5e9c03c15ae9a2ae2c25418430df5186435efe91",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] case_already_judged",
+      "votes": {
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "agree",
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "idle",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "agree",
+        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "idle",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "07-EXPECTED-not-an-internet-court-case",
+      "tx": "0x7c4980893357ab110c83c8ed7e311bad981b949a6c51d6c97a7c765455a50fd3",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] case_not_registered",
+      "votes": {
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "idle",
+        "0x29300188B54F5BFEE91542595611603b4B201008": "idle",
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "agree",
+        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "agree",
+        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "08-EXPECTED-case-not-ruled",
+      "tx": "0x72e335fdfbf6a5887dfd14b4760af2a2eacead693cfc1537bc9d4db3df608810",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] case_not_ruled",
+      "votes": {
+        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "idle",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "agree",
+        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "idle",
+        "0xe1626534791FC675ED813Cc2C89C427866526113": "agree",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "09-EXPECTED-forged-funding-direction",
+      "tx": "0x751e2811e0631db164e6e081473ac11a4d55fc74f927bc5823dd32d38e3fba84",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] link_not_proven",
+      "votes": {
+        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "agree",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "idle",
+        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "agree",
+        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "idle",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "10-EXPECTED-replay-proven-link",
+      "tx": "0x27ded907b7fdedfe8a89819a56db7b17a3415a47768bf8171ccf9a9301e2221a",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] link_already_proven",
+      "votes": {
+        "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "agree",
+        "0x29300188B54F5BFEE91542595611603b4B201008": "idle",
+        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "agree",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "11-EXPECTED-payment-is-not-a-link",
+      "tx": "0x4443f8f92db1177821bbe715a4676d7ed0f2f3353eaf89f9a97b1958651acf3c",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] unknown_link_kind",
+      "votes": {
+        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "idle",
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "agree",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "agree",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "12-EXPECTED-faucet-is-not-an-owner",
+      "tx": "0xb36410a5bc98ff9c10e39e30868c0fb1a349f8fa646784755ac8f2b17c304013",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] funder_is_infrastructure",
+      "votes": {
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "agree",
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "agree",
+        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "agree",
+        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "idle",
+        "0xe1626534791FC675ED813Cc2C89C427866526113": "idle"
+      },
+      "counts_as_proof": true
+    }
+  ],
+  "readbacks": {
+    "get_stats": "{ judged_cases: 4 }",
+    "get_case 0x32cb0d3e1671088caafe62e7cbce1b875876a035": "{\n  case_id: 15,\n  case_type: 'Agreement',\n  parties: [\n    {\n      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',\n      outcome: 'FAVORABLE',\n      role: 'partyA',\n      severity: 'NONE'\n    },\n    {\n      address: '0xce413ffe2628b60cdaf4413d63d7838b8d4309ac',\n      outcome: 'UNFAVORABLE',\n      role: 'partyB',\n      severity: 'MINOR'\n    }\n  ]\n}",
+    "get_case 0x4f0e52342241539f5b4d1cc25dc4c6531049e44c": "{\n  case_id: 16,\n  case_type: 'Agreement',\n  parties: [\n    {\n      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',\n      outcome: 'FAVORABLE',\n      role: 'partyA',\n      severity: 'NONE'\n    },\n    {\n      address: '0xce413ffe2628b60cdaf4413d63d7838b8d4309ac',\n      outcome: 'UNFAVORABLE',\n      role: 'partyB',\n      severity: 'MINOR'\n    }\n  ]\n}",
+    "get_case 0x778e3528940849432619142a8d7ac172486353bf": "{\n  case_id: 0,\n  case_type: 'TradeFxSettlement',\n  parties: [\n    {\n      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',\n      outcome: 'UNCLEAR',\n      role: 'exporter',\n      severity: 'NONE'\n    },\n    {\n      address: '0x942c20d078f7417ad67e96714310da8068850b77',\n      outcome: 'UNCLEAR',\n      role: 'importer',\n      severity: 'NONE'\n    }\n  ]\n}",
+    "get_case 0xab772bb1d873ed851b6f1150100f085b36a1ca02": "{\n  case_id: 1,\n  case_type: 'TradeFxSettlement',\n  parties: [\n    {\n      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',\n      outcome: 'UNFAVORABLE',\n      role: 'exporter',\n      severity: 'MINOR'\n    },\n    {\n      address: '0x942c20d078f7417ad67e96714310da8068850b77',\n      outcome: 'FAVORABLE',\n      role: 'importer',\n      severity: 'NONE'\n    }\n  ]\n}",
+    "get_links 0x278d35035fb589195ed513507ce7e32021659250": "{\n  '0xba444be47ac0fb4738c6fcb33d19bc03e854b4b5': 'other wallet sent the subject its first funds (base-sepolia)'\n}",
+    "get_links 0xce413ffe2628b60cdaf4413d63d7838b8d4309ac": "{}",
+    "get_score 0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87": "{\n  approval_limit_usd: 100,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    linked_wallets: 0,\n    loss_penalty: 8,\n    ruled_cases: 4,\n    unclear: 1,\n    wins: 2\n  },\n  flags: [ 'UNCLEAR_RULINGS' ],\n  grade: 'C',\n  points: 58,\n  wallet: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87'\n}",
+    "get_score 0xce413ffe2628b60cdaf4413d63d7838b8d4309ac": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    linked_wallets: 0,\n    loss_penalty: 16,\n    ruled_cases: 2,\n    unclear: 0,\n    wins: 0\n  },\n  flags: [],\n  grade: 'D',\n  points: 34,\n  wallet: '0xce413ffe2628b60cdaf4413d63d7838b8d4309ac'\n}",
+    "get_score 0x05e7ec36e5d31347b7aa90c7122a6d6e24fbe1a5": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    linked_wallets: 0,\n    loss_penalty: 0,\n    ruled_cases: 0,\n    unclear: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0x05e7ec36e5d31347b7aa90c7122a6d6e24fbe1a5'\n}",
+    "get_score 0x278d35035fb589195ed513507ce7e32021659250": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    linked_wallets: 1,\n    loss_penalty: 0,\n    ruled_cases: 0,\n    unclear: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0x278d35035fb589195ed513507ce7e32021659250'\n}",
+    "get_score 0xba444be47ac0fb4738c6fcb33d19bc03e854b4b5": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    linked_wallets: 1,\n    loss_penalty: 0,\n    ruled_cases: 0,\n    unclear: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0xba444be47ac0fb4738c6fcb33d19bc03e854b4b5'\n}"
+  },
+  "not_proven": [
+    "Cases 0-18 are existing testnet cases on Base Sepolia created by other parties. Cases 19 and 20 were staged by this project (see staged_abuses) and every party in them is controlled by one operator; they were decided by Internet Court's default-judgment path, not by its AI jury, because the jury relay was not delivering verdicts.",
+    "No Base mainnet link has been proven live yet: that path (Nansen discovery, mainnet RPC verification) is covered by direct-mode tests and the prover's checks, and waits for a Nansen API key.",
+    "StudioNet is a test network; scores move no funds."
+  ],
+  "keeper": [
+    {
+      "log": "first-pass.log",
+      "action": "judge_cases",
+      "case_id": 2,
+      "case": "0x43fcbf7fa4a1c8d6ca648fad163636b20bcee233",
+      "tx": "0x2e3dae98ddf3e4a73ca6b1468d4005683691c92bd1d680b6d8a76af1100f292b",
+      "stored": true
+    },
+    {
+      "log": "first-pass.log",
+      "action": "judge_cases",
+      "case_id": 3,
+      "case": "0xb4700d67d6cbef18011021a2a20389ea88753234",
+      "tx": "0x8356524938fcf40706121ea73f7e69f93e07f2161c5d26e74a1edbe0757ccea1",
+      "stored": true
+    },
+    {
+      "log": "first-pass.log",
+      "action": "judge_cases",
+      "case_id": 4,
+      "case": "0xbd0db046a913817522b595cfeb922d5e2aad4268",
+      "tx": "0x6c9fd31131f2035548fc6e2c6b7eb2765c8ab6f4ce7a711a33bd2b23469bd884",
+      "stored": true
+    },
+    {
+      "log": "first-pass.log",
+      "action": "judge_cases",
+      "case_id": 5,
+      "case": "0xe50a8f382b3b751dbd7053963ebabb59916f3788",
+      "tx": "0x5b6c822d2a63d281ac05183fd40e146f7886901d034eefed8d66efa7d4118f21",
+      "stored": true
+    },
+    {
+      "log": "first-pass.log",
+      "action": "judge_cases",
+      "case_id": 6,
+      "case": "0x08fb300e1290fa3e12cded8b2bf050edd46fff73",
+      "tx": "0xe83a11116434806c5f2a9beedafcb226e19846d4cd706c9e03a6519e8dd866f9",
+      "stored": true
+    },
+    {
+      "log": "first-pass.log",
+      "action": "judge_cases",
+      "case_id": 7,
+      "case": "0xd42d18bea9c22e6c230b5ee116e9bcac8757a6ec",
+      "tx": "0x5d92e686f9b326134085b6819efb6a0b6e39cf414f125da214a4859a6a1d101a",
+      "stored": true
+    },
+    {
+      "log": "first-pass.log",
+      "action": "judge_cases",
+      "case_id": 8,
+      "case": "0x8ede7afc449cca494ff3066ab020be143d784f91",
+      "tx": "0x514154d468297bc3e396ade5b453cd775c9e8f30835615f238e3aa71e80d2eea",
+      "stored": true
+    },
+    {
+      "log": "first-pass.log",
+      "action": "failed",
+      "item": "case #9 0x87b5afc78ca48d0ec62eec7816884e0220c49978",
+      "error": "network: An unknown RPC error occurred."
+    },
+    {
+      "log": "first-pass.log",
+      "action": "judge_cases",
+      "case_id": 10,
+      "case": "0x9bff14a32325ea103dd690e29cd3f22660321b44",
+      "tx": "0x4113e600b718b37ffa3fdf0fb56e2b27d2f7944d40400e7876489b6ba93ff388",
+      "stored": true
+    },
+    {
+      "log": "first-pass.log",
+      "action": "judge_cases",
+      "case_id": 11,
+      "case": "0x2d14f1ad43d90e8db1209a6ce3c1959c85b4d9e1",
+      "tx": "0x2314317ed2b2db865fb77ea4e7dc95d2ee0672fff2b354b9068934078e7522a6",
+      "stored": true
+    },
+    {
+      "log": "staged-abuses-pass.log",
+      "action": "judge_cases",
+      "case_id": 19,
+      "case": "0xb7a08ff8e092023eb7169f42a554261c3b0ebc9a",
+      "tx": "0x844cd294dbfc730f0e6fb62d6ea2c1b9d7033cc6bc5a1f7d54b9a0332206e081",
+      "stored": true
+    },
+    {
+      "log": "staged-abuses-pass.log",
+      "action": "judge_cases",
+      "case_id": 20,
+      "case": "0xcc955bfe47fca91d2f0f9e45ca773bc8556d65cd",
+      "tx": "0xf7f92466d7da65e9b7e127b4d0eb0919c1ec0f6fe434b3a4cefb0e8ce46a04e6",
+      "stored": true
+    },
+    {
+      "log": "staged-abuses-pass.log",
+      "action": "prove_link",
+      "kind": "first_funded_by",
+      "subject": "0x2f7d415a7ec68fe94c589c8ba6d4959e6ac899ae",
+      "other": "0x36b26d2df45a2838e6fe0f8b3c97cd0033a124cc",
+      "tx": "0xc0b261617dea70c5fdb877a1e9aa6747df588f39fb930cdac3404c1a41619632",
+      "stored": true
+    },
+    {
+      "log": "successor-link.log",
+      "action": "prove_link",
+      "kind": "first_funded_by",
+      "subject": "0x9c985f2536587966f087e2677c81e386d4ab797c",
+      "other": "0x9a88ebbba9e7f52acaf296ae7706f9b16affad69",
+      "tx": "0xf7ead59e2a506dddf2e5f091019b8709165b8a1b5a0f3bf27d7c6cb9366ccd81",
+      "stored": true,
+      "via": "prover cli"
+    }
+  ],
+  "keeper_notes": "Case #9 was reported failed in first-pass.log because the StudioNet RPC returned an HTML error page while the keeper polled for the receipt; a later read-back showed the case was judged on-chain anyway. The keeper now reads back after network errors.",
+  "staged_abuses": {
+    "script": "scripts/stage-abuses.ts",
+    "network": "base-sepolia",
+    "operator": "0xEAa24431285FE4939e8595AA3a555Bfb657D4002",
+    "wallets": {
+      "hubX": "0xbbbb17FA35fF942f88c45083a8Cd0C54B5FddF07",
+      "hubY": "0x6f139fF76855D0498aeFc0fE061d27F9e8895979",
+      "hubZ": "0x0f2bF541B73C654b78613E7316E240e0f32c880b",
+      "agentX": "0x36b26d2DF45a2838E6Fe0F8B3c97Cd0033A124Cc",
+      "sockS": "0x2f7d415A7Ec68Fe94c589c8BA6D4959e6AC899Ae",
+      "agentY": "0x9A88EbBbA9e7F52aCaf296ae7706f9b16affaD69",
+      "clientZ": "0x5A5160Eec0435cc20309735715b44898A46b8032",
+      "successorN": "0x9c985F2536587966F087E2677c81E386D4AB797c"
+    },
+    "cases": {
+      "fakeWin": {
+        "id": 19,
+        "address": "0xb7a08FF8E092023eB7169f42a554261c3B0ebc9A"
+      },
+      "loss": {
+        "id": 20,
+        "address": "0xCc955bfe47FcA91D2f0F9E45Ca773bC8556d65cd"
+      }
+    },
+    "base_sepolia_txs": {
+      "fund:hubX": {
+        "tx": "0xfb42b7c2183baf7c7ef6911ccdc8b3d8f6d051710ba31471c96e21c7ae5249c0",
+        "block": 57086695
+      },
+      "fund:hubY": {
+        "tx": "0x950c84c1d0df0e279173ea19c49d96c650c8c643aa262536e40ce09188744fe6",
+        "block": 57086706
+      },
+      "fund:hubZ": {
+        "tx": "0x297e76b9fd214f67c7ecdc990da57e392496e85f2fc57759b8684fdb3601f49a",
+        "block": 57086718
+      },
+      "fund:agentX": {
+        "tx": "0x4b821bb6d9a82df99b81ef99cb66cedcc9cb2fb3e4f772bbe9abf55fe02b52b2",
+        "block": 57086729
+      },
+      "fund:agentY": {
+        "tx": "0x9abc4f86882fe4f9c4b0ae965d86752e5a48c98c1fed0132d1c89e1603f7ca1d",
+        "block": 57086740
+      },
+      "fund:clientZ": {
+        "tx": "0x2ee0a2fe342c4a331b16be433f18429f69ec44c4b0553590bfe87be519de86a6",
+        "block": 57086751
+      },
+      "fund:sockS": {
+        "tx": "0x0e4bb6cd8f7d691963a7bc9ed4a5258996c0c0b5357740698710c29ca0d5cdb0",
+        "block": 57086762
+      },
+      "fakeWin:create": {
+        "tx": "0x83a21985e227a85e20f4d6a9a79ad13f8cedb67bf7e21d6825ec5cacc94f5bd9",
+        "block": 57086770
+      },
+      "fakeWin:accept": {
+        "tx": "0x736c13a977a2dab4614acb93421ce768d1ce1285bef7640b80433fe092ab8cc0",
+        "block": 57086780
+      },
+      "fakeWin:dispute": {
+        "tx": "0x5dd805bcf7b50e195aa5b5d8f704fc38e34e7122012a81091cd2cfd33fe60f16",
+        "block": 57086793
+      },
+      "fakeWin:evidence": {
+        "tx": "0x6734ad31c147dfcc74c7a60a2b45f7910fd1833452d6e2cbb92aace7e239cf72",
+        "block": 57086804
+      },
+      "fakeWin:resolve": {
+        "tx": "0xaf5cfaaf54cfc6ca7c5dfbe99851ad8a0de2526cbab83c4a573a6d3032bd1e0f",
+        "block": 57086975
+      },
+      "loss:create": {
+        "tx": "0xd08b6a1262b67ddf1677177f9865beb56dc7ce0739e93692764d492ed82e74cf",
+        "block": 57086986
+      },
+      "loss:accept": {
+        "tx": "0xf94463a78393289119870279a81eab2074f2045f95b3e5f6c7d9d0358a91a431",
+        "block": 57086997
+      },
+      "loss:dispute": {
+        "tx": "0x917a5e3d1b9c73f8ac1bd82ee0467e250e1260b13b3caf64fe0fc3de43fe49a4",
+        "block": 57087005
+      },
+      "loss:evidence": {
+        "tx": "0xb02db2c13fc9c49896c4a02753dc97d4ec86237eb9b2a6000721c4449cccccc1",
+        "block": 57087017
+      },
+      "loss:resolve": {
+        "tx": "0x1c57b972ff44b2871502901107e667b19f1de11eda8aa23db446750527dee354",
+        "block": 57087191
+      },
+      "fund:successorN": {
+        "tx": "0x1d20cd311a57712a2bac0f166e89769d1d3c42b8e70ef81ae0c2172aa82f0ebb",
+        "block": 57087202
+      },
+      "successorN:firstTx": {
+        "tx": "0xc27de800b994be165bd65db76b3cf040ae338cdd1b01e37c8fc7a49ba495b311",
+        "block": 57087210
+      }
+    },
+    "resolution": "Internet Court's jury relay had not delivered a verdict since block ~39.07M (case 18's dispute of 2026-11-09 was still pending), so both cases were resolved through Agreement.resolveByDefault(): one side disputed and submitted evidence, the other stayed silent.",
+    "expected": {
+      "agentX": "won case 19 against sockS, a wallet agentX itself first funded: the win must count as fake (FAKE_WINS), not as a win",
+      "agentY": "lost case 20 to clientZ: one loss",
+      "successorN": "first funded by agentY after that loss, no cases of its own: must inherit agentY's loss (INHERITED_LOSSES) instead of scoring as a clean new wallet",
+      "clientZ": "won case 20 against an unlinked wallet: an ordinary win"
+    },
+    "scores": {
+      "agentX": {
+        "wallet": "0x36b26d2DF45a2838E6Fe0F8B3c97Cd0033A124Cc",
+        "grade": "D",
+        "points": 40,
+        "approval_limit_usd": 0,
+        "flags": [
+          "FAKE_WINS"
+        ],
+        "fake_wins": 1,
+        "inherited_cases": 0
+      },
+      "sockS": {
+        "wallet": "0x2f7d415A7Ec68Fe94c589c8BA6D4959e6AC899Ae",
+        "grade": "D",
+        "points": 42,
+        "approval_limit_usd": 0,
+        "flags": [],
+        "fake_wins": 0,
+        "inherited_cases": 0
+      },
+      "agentY": {
+        "wallet": "0x9A88EbBbA9e7F52aCaf296ae7706f9b16affaD69",
+        "grade": "D",
+        "points": 42,
+        "approval_limit_usd": 0,
+        "flags": [],
+        "fake_wins": 0,
+        "inherited_cases": 0
+      },
+      "clientZ": {
+        "wallet": "0x5A5160Eec0435cc20309735715b44898A46b8032",
+        "grade": "C",
+        "points": 58,
+        "approval_limit_usd": 100,
+        "flags": [],
+        "fake_wins": 0,
+        "inherited_cases": 0
+      },
+      "successorN": {
+        "wallet": "0x9c985F2536587966F087E2677c81E386D4AB797c",
+        "grade": "D",
+        "points": 42,
+        "approval_limit_usd": 0,
+        "flags": [
+          "INHERITED_LOSSES"
+        ],
+        "fake_wins": 0,
+        "inherited_cases": 1
+      }
+    }
+  }
+}

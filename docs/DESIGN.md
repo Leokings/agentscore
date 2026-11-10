@@ -1,7 +1,7 @@
 # AgentScore scoring contract: design for approval
 
-Status: **approved 2026-11-09; v6 deployed on StudioNet 2026-11-10 at
-`0x07bf2207852FE8F47DDeE26C4f4F0B206D259e74`** (see `deployments/studionet/release-manifest.json`). Contract:
+Status: **approved 2026-11-09; v7 deployed on StudioNet 2026-11-10 at
+`0xF1a3D4079b19968D31FC47326849906C9F03EB89`** (see `deployments/studionet/release-manifest.json`). Contract:
 [`contracts/agent_score.py`](../contracts/agent_score.py). This follows the checkpoints in
 `Genlayer/GENLAYER_PORTAL_SUBMISSION_GUIDE.md` (section 8).
 
@@ -59,7 +59,28 @@ These change the approved design. Sections below are kept as approved for refere
    - Scoring (chosen by the user): start 50; +8 per genuine win (up to 5); losses −8 minor,
      −20 material, −40 severe (own or inherited); −10 per fake win; A ≥ 80, B ≥ 65, C ≥ 50,
      D ≥ 30, F below. No history: shown as C with an approval limit of $0 (escrow required).
-9. **Defaults taken where you had not decided:** scoring table as in section 4 (minus the closed-loop
+9. **v7: only jury verdicts earn points, and RPC refusals are outages (2026-11-10).**
+   - Internet Court decides a case one of three ways, and the contract now records which, from the
+     case's own state rather than its text: **jury** (both sides submitted evidence, the only way
+     Agreement.sol sends a case to the AI jury), **default** (a dispute with evidence from at most
+     one side, settled by `resolveByDefault()`), or **settlement** (no dispute; both parties agreed).
+     Registered cases are always jury cases.
+   - A default or a settlement costs a colluding pair nothing, so a win that way adds no points
+     (`uncontested_wins`, flag `UNCONTESTED_WINS`). Losses count however the case ended: nobody
+     fakes a loss. A win against a proven linked wallet is still a fake win and still costs 10.
+   - Uncontested wins alone do not lift a wallet out of the no-history rule: without a jury
+     ruling, a loss or a caught fake win it stays a C that needs escrow. Otherwise one free
+     default win would buy a $100 limit.
+   - Validators are told how the case ended ("No jury: decided by default judgment…") instead of
+     always "The AI jury ruled…".
+   - Why now: Internet Court's jury relay has delivered no verdict since block ~39.07M, so every
+     new case is a default or a settlement; the staged cases #19 and #20 were defaults.
+   - Bug fixed: the public Base RPC allows 25 requests per second and counts every call in a
+     batch. v6 read a refused call as "missing", so a rate-limited `partyA` became a permanent
+     `unsupported_case_type` and a rate-limited link lookup a permanent `link_tx_not_found`. Now
+     only a real revert (code 3) means missing; any other per-call error is `[TRANSIENT]
+     rpc_call_error`, which the keeper retries after 30 minutes.
+10. **Defaults taken where you had not decided:** scoring table as in section 4 (minus the closed-loop
    penalty), target network StudioNet, Nansen-only links shown as flags without affecting points.
 
 ## 1. Mechanism in one line

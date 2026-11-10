@@ -33,9 +33,22 @@ CASE_GETTERS = {
     "importer": "62932301",
     "shipmentStatement": "34120d79",
     "shipmentVerdictReason": "503ae34e",
+    "evidenceASubmitted": "b442c81d",
+    "evidenceBSubmitted": "dbd4d40d",
+    "disputeTimestamp": "c3018f98",
 }
 AGREEMENT_RESOLVED = 4
 AGREEMENT_VERDICTS = {1: "TRUE", 2: "FALSE"}
+# How a case was decided. Agreement.sol only sends a case to the AI jury once both sides have
+# submitted evidence; resolveByDefault() needs at most one side's evidence; a mutual settlement
+# never opens a dispute. So the path is read from the case's own state, with no text matching.
+# Registered cases (e.g. TradeFxSettlement) are only ever decided by the jury via the bridge.
+RESOLUTIONS = ("jury", "default", "settlement")
+VERDICT_TEXT = {
+    "jury": "The AI jury ruled Party A's statement {v}.",
+    "default": "No jury: decided by default judgment because evidence came from at most one side. Party A's statement was ruled {v}.",
+    "settlement": "No jury: the parties settled by agreeing that Party A's statement is {v}.",
+}
 
 # --- Bounds -----------------------------------------------------------------------------
 
@@ -168,8 +181,19 @@ def _rpc_post(url: str, payload: list[dict[str, Any]]) -> dict[int, dict[str, An
         _external("rpc_bad_response")
     by_id = {it.get("id"): it for it in items if isinstance(it, dict)}
     for item in payload:
-        if item["id"] not in by_id:
+        got = by_id.get(item["id"])
+        if got is None:
             _transient("rpc_missing_result")
+        error = got.get("error")
+        if error is not None:
+            # A reverted eth_call is an answer (that getter does not exist on that contract). Any
+            # other per-call error, such as the public node's "25/second request limit reached",
+            # says nothing about the chain, so it must never be read as "missing".
+            code = error.get("code") if isinstance(error, dict) else None
+            message = str(error.get("message", "")).lower() if isinstance(error, dict) else ""
+            reverted = item["method"] == "eth_call" and (code == 3 or (code == -32000 and "revert" in message))
+            if not reverted:
+                _transient("rpc_call_error")
     return by_id
 
 
@@ -216,13 +240,25 @@ def _fetch_case(case: str) -> dict[str, Any]:
         party_b = _dec_address(raw["partyB"])
         if party_b is None or party_b == party_a:
             _fail("invalid_case_parties")
+        a_submitted = _dec_uint(raw["evidenceASubmitted"])
+        b_submitted = _dec_uint(raw["evidenceBSubmitted"])
+        disputed_at = _dec_uint(raw["disputeTimestamp"])
+        if a_submitted not in (0, 1) or b_submitted not in (0, 1) or disputed_at is None:
+            _external("case_fields_unreadable")
+        if a_submitted and b_submitted:
+            resolution = "jury"
+        elif disputed_at > 0:
+            resolution = "default"
+        else:
+            resolution = "settlement"
         # The statement is Party A's claim: TRUE means Party A prevailed, FALSE means Party B did.
         evidence = {
             "case_type": "Agreement",
             "case_id": case_id,
+            "resolution": resolution,
             "parties": [{"role": "partyA", "address": party_a}, {"role": "partyB", "address": party_b}],
             "statement": _dec_string(raw["statement"]) or "",
-            "verdict": "The AI jury ruled Party A's statement " + verdict,
+            "verdict": VERDICT_TEXT[resolution].format(v=verdict),
             "reasoning": _dec_string(raw["reasoning"]) or "",
             "prevailing_role": "partyA" if verdict == "TRUE" else "partyB",
         }
@@ -236,6 +272,7 @@ def _fetch_case(case: str) -> dict[str, Any]:
         evidence = {
             "case_type": "TradeFxSettlement",
             "case_id": case_id,
+            "resolution": "jury",
             "parties": [{"role": "exporter", "address": exporter}, {"role": "importer", "address": importer}],
             "statement": _dec_string(raw["shipmentStatement"]) or "",
             "verdict": "See reasoning",
@@ -529,7 +566,7 @@ class AgentScore(gl.Contract):
             evidence = _case_evidence(case)
             judgment = _judge(evidence)
             parties = [{**p, **judgment[p["role"]]} for p in evidence["parties"]]
-            record = {"case_id": evidence["case_id"], "case_type": evidence["case_type"], "parties": parties}
+            record = {"case_id": evidence["case_id"], "case_type": evidence["case_type"], "resolution": evidence["resolution"], "parties": parties}
             self.cases[case] = json.dumps(record, sort_keys=True)
             self.case_order.append(case)
             for p in parties:
@@ -612,15 +649,21 @@ class AgentScore(gl.Contract):
                     out.append((record, mine[0]))
             return out
 
-        wins = fake_wins = loss_penalty = inherited = unclear = ruled = 0
+        wins = fake_wins = uncontested_wins = loss_penalty = inherited = unclear = ruled = jury_cases = 0
         for record, me in rulings(subject):
             ruled += 1
+            by_jury = record.get("resolution", "jury") == "jury"
+            if by_jury:
+                jury_cases += 1
             counterparties = {p["address"] for p in record["parties"] if p["address"] != subject}
             if me["outcome"] == "FAVORABLE":
                 if counterparties & cluster:
                     fake_wins += 1
-                else:
+                elif by_jury:
                     wins += 1
+                else:
+                    # A default or a settlement costs a colluding pair nothing, so it earns nothing.
+                    uncontested_wins += 1
             elif me["outcome"] == "UNFAVORABLE":
                 loss_penalty += LOSS_PENALTY[me["severity"]]
             elif me["outcome"] == "UNCLEAR":
@@ -642,8 +685,12 @@ class AgentScore(gl.Contract):
             flags.append("INHERITED_LOSSES")
         if unclear:
             flags.append("UNCLEAR_RULINGS")
+        if uncontested_wins:
+            flags.append("UNCONTESTED_WINS")
 
-        if ruled == 0 and inherited == 0:
+        # History that can be trusted: a jury ruling, a loss (nobody fakes a loss) or a caught fake
+        # win. Uncontested wins alone do not lift a wallet out of the no-history escrow rule.
+        if jury_cases == 0 and loss_penalty == 0 and inherited == 0 and fake_wins == 0:
             grade, points, limit = NO_HISTORY_GRADE, BASE_POINTS, NO_HISTORY_LIMIT
             flags.append("NO_HISTORY")
         else:
@@ -662,7 +709,9 @@ class AgentScore(gl.Contract):
             "flags": flags,
             "counts": {
                 "ruled_cases": ruled,
+                "jury_cases": jury_cases,
                 "wins": wins,
+                "uncontested_wins": uncontested_wins,
                 "fake_wins": fake_wins,
                 "loss_penalty": loss_penalty,
                 "inherited_penalty": inherited,

@@ -1,0 +1,14 @@
+
+
+· 0x9c985f2536587966f087e2677c81e386d4ab797c: first funded by 0x9a88ebbba9e7f52acaf296ae7706f9b16affad69 on base-sepolia via blockscout: provable
+· 0x9c985f2536587966f087e2677c81e386d4ab797c: Nansen reports no first funder on Base
+
+Nansen credits used: 0
+
+1 provable link(s):
+  first_funded_by 0x9c985f2536587966f087e2677c81e386d4ab797c ↔ 0x9a88ebbba9e7f52acaf296ae7706f9b16affad69
+    0x9a88ebbba9e7f52acaf296ae7706f9b16affad69 gave 0x9c985f2536587966f087e2677c81e386d4ab797c its first funds on base-sepolia (found via blockscout)
+    proof {"funding_tx":"0x1d20cd311a57712a2bac0f166e89769d1d3c42b8e70ef81ae0c2172aa82f0ebb","subject_first_tx":"0xc27de800b994be165bd65db76b3cf040ae338cdd1b01e37c8fc7a49ba495b311"}
+
+Submitting as 0xEAa24431285FE4939e8595AA3a555Bfb657D4002 to 0x07bf2207852FE8F47DDeE26C4f4F0B206D259e74
+  stored 0x9c985f2536587966f087e2677c81e386d4ab797c ↔ 0x9a88ebbba9e7f52acaf296ae7706f9b16affad69 (tx 0xf7ead59e2a506dddf2e5f091019b8709165b8a1b5a0f3bf27d7c6cb9366ccd81)

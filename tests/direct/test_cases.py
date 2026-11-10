@@ -2,7 +2,7 @@
 
 import pytest
 
-from tests.conftest import addr, agreement, enc_string, judge_one, mock_case, mock_judgment, trade_fx
+from tests.conftest import RATE_LIMITED, addr, agreement, enc_string, judge_one, mock_case, mock_judgment, trade_fx
 
 A, B = addr(0xA1), addr(0xB2)
 CASE = addr(0xC001)
@@ -189,3 +189,58 @@ def test_anyone_can_trigger_judgment(score, direct_vm, direct_bob):
     direct_vm.sender = direct_bob
     judge_one(score, direct_vm, CASE, 15, agreement(A, B, STATEMENT, REASONING))
     assert score.get_stats() == {"judged_cases": 1}
+
+
+# --- How the case was decided (jury, default judgment, settlement) ------------------------
+
+
+@pytest.mark.parametrize(
+    "resolution, prompt_says",
+    [
+        ("jury", r".*The AI jury ruled Party A's statement TRUE.*"),
+        ("default", r".*No jury: decided by default judgment.*"),
+        ("settlement", r".*No jury: the parties settled.*"),
+    ],
+)
+def test_records_how_the_case_was_decided_and_tells_validators(score, direct_vm, resolution, prompt_says):
+    direct_vm.clear_mocks()
+    mock_case(direct_vm, 15, agreement(A, B, STATEMENT, REASONING, verdict=1, resolution=resolution))
+    # The judgment mock only matches a prompt that describes the path honestly.
+    mock_judgment(direct_vm, pattern=r"(?s).*finalized ruling from Internet Court" + prompt_says)
+    score.judge_cases([CASE])
+    record = score.get_case(CASE)
+    assert record["resolution"] == resolution
+    assert outcomes(record) == [("partyA", "FAVORABLE", "NONE"), ("partyB", "UNFAVORABLE", "MINOR")]
+
+
+def test_registered_cases_count_as_jury_rulings(score, direct_vm):
+    judge_one(score, direct_vm, CASE, 0, trade_fx(A, B, "Goods shipped as agreed", "Exporter shipped on time."), prevailing="exporter")
+    assert score.get_case(CASE)["resolution"] == "jury"
+
+
+@pytest.mark.parametrize("field, value", [("evidenceASubmitted", None), ("evidenceBSubmitted", "0x" + "0" * 63 + "2"), ("disputeTimestamp", None)])
+def test_unreadable_resolution_fields_fail_closed(score, direct_vm, field, value):
+    getters = {**agreement(A, B, STATEMENT, REASONING, verdict=1), field: value}
+    mock_case(direct_vm, 15, getters)
+    mock_judgment(direct_vm)
+    with pytest.raises(Exception, match="case_fields_unreadable"):
+        score.judge_cases([CASE])
+
+
+def test_a_leader_cannot_upgrade_a_default_into_a_jury_ruling(score, direct_vm):
+    judge_one(score, direct_vm, CASE, 15, agreement(A, B, STATEMENT, REASONING, verdict=1, resolution="default"))
+    honest = dict(direct_vm._captured_validators[0][0])
+    assert honest["resolution"] == "default"
+    assert direct_vm.run_validator(index=0) is True
+    forged = {**honest, "resolution": "jury", "verdict": "The AI jury ruled Party A's statement TRUE."}
+    assert direct_vm.run_validator(index=0, leader_result=forged) is False
+
+
+@pytest.mark.parametrize("field", ["partyA", "statement", "evidenceASubmitted"])
+def test_a_rate_limited_call_is_an_outage_not_a_missing_field(score, direct_vm, field):
+    # Read as "missing", a refused partyA would turn an Agreement into "unsupported_case_type",
+    # a permanent error. It must be a transient failure that the keeper retries.
+    mock_case(direct_vm, 15, {**agreement(A, B, STATEMENT, REASONING, verdict=1), field: RATE_LIMITED})
+    mock_judgment(direct_vm)
+    with pytest.raises(Exception, match=r"\[TRANSIENT\] rpc_call_error"):
+        score.judge_cases([CASE])

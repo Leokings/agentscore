@@ -50,13 +50,14 @@ const FLAG_REASONS: Record<string, string> = {
   FAKE_WINS: "Some court wins were against wallets proven to share this agent's owner, so they do not count.",
   INHERITED_LOSSES: "Wallets proven to share this agent's owner have lost Internet Court cases.",
   UNCLEAR_RULINGS: "Validators could not tell what some rulings meant for this agent; they add nothing.",
-  NO_HISTORY: "No judged Internet Court cases and no inherited losses yet: unknown, so escrow is required.",
+  UNCONTESTED_WINS: "Some wins came from a default judgment or a settlement, not a jury verdict, so they add no points.",
+  NO_HISTORY: "No jury-ruled Internet Court cases, losses or inherited losses yet: unknown, so escrow is required.",
 };
 
 export function toAgentScore(wallet: Address, s: ContractScore, contract: string): AgentScore & { points: number; approvalLimitUsd: number; counts: Record<string, number>; contract: string } {
   const c = s.counts;
   const reasons = [
-    `${c.ruled_cases ?? 0} judged Internet Court case(s): ${c.wins ?? 0} genuine win(s), ${c.loss_penalty ?? 0} points lost to rulings, ${c.inherited_penalty ?? 0} inherited from linked wallets.`,
+    `${c.ruled_cases ?? 0} judged Internet Court case(s), ${c.jury_cases ?? 0} decided by the jury: ${c.wins ?? 0} genuine win(s), ${c.loss_penalty ?? 0} points lost to rulings, ${c.inherited_penalty ?? 0} inherited from linked wallets.`,
     ...s.flags.map((f) => FLAG_REASONS[f] ?? f),
   ];
   return {

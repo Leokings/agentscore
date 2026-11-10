@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from tests.conftest import addr, agreement, judge_one, mock_tx, tx
+from tests.conftest import addr, agreement, judge_one, mock_tx, node, tx
 
 GOOD, CLIENT1, CLIENT2, CLIENT3, CLIENT4 = addr(0x600D), addr(0xC1), addr(0xC2), addr(0xC3), addr(0xC4)
 FARMER, SOCK1, SOCK2, SOCK3 = addr(0xFA), addr(0x51), addr(0x52), addr(0x53)
@@ -12,10 +12,10 @@ BAD, VICTIM1, VICTIM2, FRESH = addr(0xBAD), addr(0x71), addr(0x72), addr(0xF5)
 FUNDER, STRANGER = addr(0xF0), addr(0x5757)
 
 
-def judge(score, vm, n: int, party_a: str, party_b: str, winner: str, **findings):
+def judge(score, vm, n: int, party_a: str, party_b: str, winner: str, resolution: str = "jury", **findings):
     """Judges a standard agreement; the on-chain verdict (TRUE = party A) decides the winner."""
     verdict = 1 if winner == party_a else 2
-    getters = agreement(party_a, party_b, f"Deal number {n} was delivered as agreed", f"Ruling text for deal {n}.", verdict=verdict)
+    getters = agreement(party_a, party_b, f"Deal number {n} was delivered as agreed", f"Ruling text for deal {n}.", verdict=verdict, resolution=resolution)
     judge_one(score, vm, addr(0xCA5E00 + n), n, getters, **findings)
 
 
@@ -282,3 +282,55 @@ def test_score_is_deterministic_and_order_independent(score, direct_vm):
     first = score.get_score(GOOD)
     assert first == score.get_score(GOOD)
     assert (first["points"], first["grade"]) == (50 + 8 - 20, "D")
+
+
+# --- Wins nobody contested ----------------------------------------------------------------
+
+
+def test_uncontested_wins_earn_nothing_and_keep_escrow(score, direct_vm):
+    # Three wins from settlements and defaults with wallets nobody has linked to GOOD: free to stage.
+    judge(score, direct_vm, 50, CLIENT1, GOOD, winner=GOOD, resolution="settlement")
+    judge(score, direct_vm, 51, CLIENT2, GOOD, winner=GOOD, resolution="default")
+    judge(score, direct_vm, 52, CLIENT3, GOOD, winner=GOOD, resolution="settlement")
+    result = score.get_score(GOOD)
+    assert result["counts"]["wins"] == 0
+    assert result["counts"]["uncontested_wins"] == 3
+    assert result["counts"]["jury_cases"] == 0
+    # Still treated as a wallet with no trustworthy history: a cautious C that needs escrow.
+    assert (result["grade"], result["points"], result["approval_limit_usd"]) == ("C", 50, 0)
+    assert result["flags"] == ["UNCONTESTED_WINS", "NO_HISTORY"]
+
+
+def test_only_jury_wins_add_points(score, direct_vm):
+    judge(score, direct_vm, 53, CLIENT1, GOOD, winner=GOOD)  # jury
+    judge(score, direct_vm, 54, CLIENT2, GOOD, winner=GOOD, resolution="default")
+    result = score.get_score(GOOD)
+    assert (result["counts"]["wins"], result["counts"]["uncontested_wins"]) == (1, 1)
+    assert (result["grade"], result["points"], result["approval_limit_usd"]) == ("C", 58, 100)
+
+
+@pytest.mark.parametrize("resolution", ["default", "settlement"])
+def test_losses_count_however_the_case_ended(score, direct_vm, resolution):
+    judge(score, direct_vm, 55, CLIENT1, BAD, winner=CLIENT1, resolution=resolution, non_delivery=True)
+    result = score.get_score(BAD)
+    assert result["counts"]["loss_penalty"] == 20
+    assert "NO_HISTORY" not in result["flags"]
+    assert (result["grade"], result["approval_limit_usd"]) == ("D", 0)
+
+
+def test_a_default_win_against_a_linked_wallet_is_still_a_fake_win(score, direct_vm):
+    # The staged case #19: FARMER wins by default against SOCK1, a wallet FARMER first funded.
+    judge(score, direct_vm, 56, FARMER, SOCK1, winner=FARMER, resolution="default")
+    prove_parent(score, direct_vm, 57, SOCK1, FARMER)
+    result = score.get_score(FARMER)
+    assert (result["counts"]["fake_wins"], result["counts"]["uncontested_wins"]) == (1, 0)
+    assert (result["grade"], result["points"]) == ("D", 40)
+    assert result["flags"] == ["FAKE_WINS"]
+
+
+@pytest.mark.parametrize("method", ["eth_getTransactionByHash", "eth_getTransactionReceipt"])
+def test_a_rate_limited_link_lookup_is_an_outage_not_a_missing_tx(score, direct_vm, method):
+    proof = funding_proof(direct_vm, 60, SOCK1, FARMER)
+    node(direct_vm).rate_limited_methods = {method}
+    with pytest.raises(Exception, match=r"\[TRANSIENT\] rpc_call_error"):
+        score.prove_link(SOCK1, FARMER, "first_funded_by", proof)

@@ -128,12 +128,20 @@ const manifest = {
       evidence: "deployments/studionet/superseded/v5/ (full demo, 12/12 steps proof, own release manifest)",
       why: "Worked as designed, replaced to (1) prove links on Base mainnet as well as Base Sepolia, reading transactions from the public Base RPC nodes instead of Blockscout, so Nansen-discovered mainnet funding can be verified; (2) add the exchange/faucet guard: v5 would have accepted a 'shared first funder' link between two strangers funded by the same faucet (a real case: both sides of Internet Court case 14 were funded by a faucet that had sent 18,881 transactions); (3) apply the user's new scoring table and require escrow for wallets with no history.",
     },
+    {
+      address: "0x07bf2207852FE8F47DDeE26C4f4F0B206D259e74",
+      deploy_tx: "0xd51eca9436d7c6c19f79a638c40e3864d243273c16cdd79214e8409c796a73ee",
+      git_commit: "3d1fd935d1055654edf475de710fa81fa0a2c7b2",
+      evidence: "deployments/studionet/superseded/v6/ (13/13 demo steps proof, keeper passes, staged abuses and their scores, own release manifest)",
+      why: "Worked as designed, replaced because (1) it counted default judgments and settlements as jury rulings: Internet Court's jury relay had stopped delivering verdicts, so every new case was decided without a jury, and two colluding wallets with no provable link could have minted wins for free; (2) it read a rate-limited RPC call (the public Base node allows 25 requests per second and counts every call in a batch) as a missing field, which could store a permanent unsupported_case_type or link_tx_not_found instead of retrying.",
+    },
   ],
   steps,
   readbacks,
   not_proven: [
-    "Internet Court cases used here are the existing testnet cases on Base Sepolia, created by other parties; none of them is a deliberate fake-win or fresh-wallet scenario. Those two abuses are demonstrated in direct-mode tests, not on-chain.",
-    "No Base mainnet link has been proven live yet: that path (Nansen discovery, mainnet RPC verification) is covered by direct-mode tests and the prover's checks, and waits for a Nansen API key.",
+    "Cases 0-18 are existing testnet cases on Base Sepolia created by other parties. Cases 19 and 20 were staged by this project (see staged_abuses) and every party in them is controlled by one operator; they were decided by Internet Court's default-judgment path, not by its AI jury, because the jury relay was not delivering verdicts.",
+    "The Base mainnet link (step 17) was found by Nansen and verified by validators against mainnet.base.org, but its funder has no Internet Court record, so it changes no score today.",
+    "No new case has been decided by Internet Court's AI jury since its relay stopped (last verdict at block ~39.07M): cases 15, 16 and the trade cases are older jury rulings; 19 and 20 are default judgments.",
     "StudioNet is a test network; scores move no funds.",
   ],
 };
@@ -147,6 +155,9 @@ if (existsSync(keeperDir)) {
     for (const line of readFileSync(`${keeperDir}/${f}`, "utf8").split("\n")) {
       const judged = line.match(/judged case #(\d+) (0x[0-9a-f]{40}) \(tx (0x[0-9a-f]{64})\)/);
       const proved = line.match(/proved (\S+) (0x[0-9a-f]{40}) ↔ (0x[0-9a-f]{40}) \(tx (0x[0-9a-f]{64})\)/);
+      // The prover CLI's submit lines: "stored <subject> ↔ <other> (tx 0x…)".
+      const cliStored = line.match(/^\s*stored (0x[0-9a-f]{40}) ↔ (0x[0-9a-f]{40}) \(tx (0x[0-9a-f]{64})\)/);
+      if (cliStored) manifest.keeper.push({ log: f, action: "prove_link", kind: "first_funded_by", subject: cliStored[1], other: cliStored[2], tx: cliStored[3], stored: true, via: "prover cli" });
       const failed = line.match(/(case #\d+ 0x[0-9a-f]{40}|link 0x[0-9a-f]{40} ↔ 0x[0-9a-f]{40}) not (?:judged|stored): (.*)$/);
       if (judged) manifest.keeper.push({ log: f, action: "judge_cases", case_id: Number(judged[1]), case: judged[2], tx: judged[3], stored: true });
       if (proved) manifest.keeper.push({ log: f, action: "prove_link", kind: proved[1], subject: proved[2], other: proved[3], tx: proved[4], stored: true });
@@ -155,6 +166,48 @@ if (existsSync(keeperDir)) {
   }
   manifest.keeper_notes =
     "Case #9 was reported failed in first-pass.log because the StudioNet RPC returned an HTML error page while the keeper polled for the receipt; a later read-back showed the case was judged on-chain anyway. The keeper now reads back after network errors.";
+}
+
+// The staged fake-win and fresh-wallet cases on Base Sepolia (scripts/stage-abuses.ts) and the
+// scores the contract gave the wallets involved.
+const stagedFile = "deployments/base-sepolia/staged-abuses.json";
+if (existsSync(stagedFile)) {
+  const staged = JSON.parse(readFileSync(stagedFile, "utf8"));
+  // Scores come from the live demo's get_score read-backs.
+  const scores = {};
+  for (const [role, wallet] of Object.entries(staged.wallets)) {
+    const block = readbacks[`get_score ${wallet.toLowerCase()}`];
+    if (!block) continue;
+    const field = (name) => block.match(new RegExp(`${name}: '?([A-Za-z0-9_]+)'?`))?.[1] ?? null;
+    scores[role] = {
+      wallet,
+      grade: field("grade"),
+      points: Number(field("points")),
+      approval_limit_usd: Number(field("approval_limit_usd")),
+      flags: [...(block.match(/flags: \[([^\]]*)\]/)?.[1].matchAll(/'([A-Z_]+)'/g) ?? [])].map((m) => m[1]),
+      wins: Number(field("wins")),
+      uncontested_wins: Number(field("uncontested_wins")),
+      fake_wins: Number(field("fake_wins")),
+      inherited_cases: Number(field("inherited_cases")),
+    };
+  }
+  manifest.staged_abuses = {
+    script: "scripts/stage-abuses.ts",
+    network: staged.network,
+    operator: staged.operator,
+    wallets: staged.wallets,
+    cases: staged.cases,
+    base_sepolia_txs: staged.steps,
+    resolution:
+      "Internet Court's jury relay had not delivered a verdict since block ~39.07M (case 18's dispute of 2026-11-09 was still pending), so both cases were resolved through Agreement.resolveByDefault(): one side disputed and submitted evidence, the other stayed silent.",
+    expected: {
+      agentX: "won case 19 against sockS, a wallet agentX itself first funded: the win must count as fake (FAKE_WINS), not as a win",
+      agentY: "lost case 20 to clientZ: one loss",
+      successorN: "first funded by agentY after that loss, no cases of its own: must inherit agentY's loss (INHERITED_LOSSES) instead of scoring as a clean new wallet",
+      clientZ: "won case 20 by default judgment against an unlinked wallet: an uncontested win (UNCONTESTED_WINS), so no points and escrow still required (NO_HISTORY)",
+    },
+    scores,
+  };
 }
 
 // Deployed source must be byte-identical to the file.

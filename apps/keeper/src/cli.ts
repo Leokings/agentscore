@@ -28,7 +28,7 @@ async function pass(): Promise<void> {
     const chain = new StudioNetChain(contract!, dryRun ? ("0x" + "1".repeat(64)) as `0x${string}` : loadSignerKey(log));
     const nansen = new NansenClient(store);
     if (!nansen.enabled) log("NANSEN_API_KEY not set: Base mainnet links are skipped this pass.");
-    const r = await runOnce({ store, chain, nansen, log, dryRun, maxWrites: Number(process.env.KEEPER_MAX_WRITES ?? 20) });
+    const r = await runOnce({ store, chain, nansen, log, dryRun, scope: contract, maxWrites: Number(process.env.KEEPER_MAX_WRITES ?? 20) });
     log(
       `pass done: ${r.judged.length} judged, ${r.alreadyOnChain.length} already on-chain, ${r.linksProven.length} links proven, ` +
         `${r.failed.length} failed, ${r.writes} writes${dryRun ? `, ${r.wouldWrite.length} would be written` : ""}`,

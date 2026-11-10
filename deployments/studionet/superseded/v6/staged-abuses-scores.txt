@@ -1,0 +1,110 @@
+--- get_score agentX 0x36b26d2DF45a2838E6Fe0F8B3c97Cd0033A124Cc
+[genlayer-js] initializeConsensusSmartContract() is deprecated and will be removed in a future release. The consensus contract is now resolved from the static chain definition.
+- Calling method get_score on contract at 0x07bf2207852FE8F47DDeE26C4f4F0B206D259e74...
+Result:
+{
+  approval_limit_usd: 0,
+  counts: {
+    fake_wins: 1,
+    inherited_cases: 0,
+    inherited_penalty: 0,
+    linked_wallets: 1,
+    loss_penalty: 0,
+    ruled_cases: 1,
+    unclear: 0,
+    wins: 0
+  },
+  flags: [ 'FAKE_WINS' ],
+  grade: 'D',
+  points: 40,
+  wallet: '0x36b26d2df45a2838e6fe0f8b3c97cd0033a124cc'
+}
+✔ Read operation successfully executed
+--- get_score sockS 0x2f7d415A7Ec68Fe94c589c8BA6D4959e6AC899Ae
+[genlayer-js] initializeConsensusSmartContract() is deprecated and will be removed in a future release. The consensus contract is now resolved from the static chain definition.
+- Calling method get_score on contract at 0x07bf2207852FE8F47DDeE26C4f4F0B206D259e74...
+Result:
+{
+  approval_limit_usd: 0,
+  counts: {
+    fake_wins: 0,
+    inherited_cases: 0,
+    inherited_penalty: 0,
+    linked_wallets: 1,
+    loss_penalty: 8,
+    ruled_cases: 1,
+    unclear: 0,
+    wins: 0
+  },
+  flags: [],
+  grade: 'D',
+  points: 42,
+  wallet: '0x2f7d415a7ec68fe94c589c8ba6d4959e6ac899ae'
+}
+✔ Read operation successfully executed
+--- get_score agentY 0x9A88EbBbA9e7F52aCaf296ae7706f9b16affaD69
+[genlayer-js] initializeConsensusSmartContract() is deprecated and will be removed in a future release. The consensus contract is now resolved from the static chain definition.
+- Calling method get_score on contract at 0x07bf2207852FE8F47DDeE26C4f4F0B206D259e74...
+Result:
+{
+  approval_limit_usd: 0,
+  counts: {
+    fake_wins: 0,
+    inherited_cases: 0,
+    inherited_penalty: 0,
+    linked_wallets: 1,
+    loss_penalty: 8,
+    ruled_cases: 1,
+    unclear: 0,
+    wins: 0
+  },
+  flags: [],
+  grade: 'D',
+  points: 42,
+  wallet: '0x9a88ebbba9e7f52acaf296ae7706f9b16affad69'
+}
+✔ Read operation successfully executed
+--- get_score clientZ 0x5A5160Eec0435cc20309735715b44898A46b8032
+[genlayer-js] initializeConsensusSmartContract() is deprecated and will be removed in a future release. The consensus contract is now resolved from the static chain definition.
+- Calling method get_score on contract at 0x07bf2207852FE8F47DDeE26C4f4F0B206D259e74...
+Result:
+{
+  approval_limit_usd: 100,
+  counts: {
+    fake_wins: 0,
+    inherited_cases: 0,
+    inherited_penalty: 0,
+    linked_wallets: 0,
+    loss_penalty: 0,
+    ruled_cases: 1,
+    unclear: 0,
+    wins: 1
+  },
+  flags: [],
+  grade: 'C',
+  points: 58,
+  wallet: '0x5a5160eec0435cc20309735715b44898a46b8032'
+}
+✔ Read operation successfully executed
+--- get_score successorN 0x9c985F2536587966F087E2677c81E386D4AB797c
+[genlayer-js] initializeConsensusSmartContract() is deprecated and will be removed in a future release. The consensus contract is now resolved from the static chain definition.
+- Calling method get_score on contract at 0x07bf2207852FE8F47DDeE26C4f4F0B206D259e74...
+Result:
+{
+  approval_limit_usd: 0,
+  counts: {
+    fake_wins: 0,
+    inherited_cases: 1,
+    inherited_penalty: 8,
+    linked_wallets: 1,
+    loss_penalty: 0,
+    ruled_cases: 0,
+    unclear: 0,
+    wins: 0
+  },
+  flags: [ 'INHERITED_LOSSES' ],
+  grade: 'D',
+  points: 42,
+  wallet: '0x9c985f2536587966f087e2677c81e386d4ab797c'
+}
+✔ Read operation successfully executed
