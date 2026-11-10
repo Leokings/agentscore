@@ -17,7 +17,7 @@ if (db.startsWith("file:") && !isAbsolute(db.slice("file:".length))) {
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Workspace packages ship TypeScript source.
-  transpilePackages: ["@agentscore/shared", "@agentscore/indexer", "@agentscore/links", "@agentscore/api"],
+  transpilePackages: ["@agentscore/shared", "@agentscore/indexer", "@agentscore/links", "@agentscore/api", "@agentscore/mcp"],
   // Native / Node-only clients stay outside the server bundle.
   serverExternalPackages: ["@libsql/client", "libsql"],
   env: {

@@ -16,20 +16,21 @@ linked to them, and a judgment made by GenLayer validators.
 
 ## How to call it
 
-Use the MCP tools if the `agentscore` MCP server is connected:
+Use the MCP tools if the `agentscore` MCP server is connected. To connect it (no install):
+`claude mcp add --transport http agentscore https://agentscore-seven.vercel.app/api/mcp`.
 
 | Tool | Use it to |
 |---|---|
 | `check_counterparty(wallet, amount)` | Decide whether a job of `amount` USD can go ahead without escrow |
-| `get_agent_score(wallet)` | Get the grade, reasons and flags |
-| `get_court_record(wallet)` | See the raw Internet Court cases |
-| `get_agent_links(wallet)` | See wallets that are probably the same owner |
+| `get_agent_score(wallet)` | Get the grade, points, approval limit, reasons and flags |
+| `get_court_record(wallet)` | See the Internet Court cases and how each was decided |
+| `get_agent_links(wallet)` | See wallets with the same owner (`proven` on-chain, or `links` signals) |
 
-Without MCP, call the REST API (default `http://localhost:8787`, or `AGENTSCORE_API_URL`):
+Without MCP, call the REST API at `https://agentscore-seven.vercel.app/api`:
 
 ```bash
-curl "$AGENTSCORE_API_URL/v1/check?wallet=0xAGENT&amount=500"
-curl "$AGENTSCORE_API_URL/v1/agents/0xAGENT/score"
+curl "https://agentscore-seven.vercel.app/api/v1/check?wallet=0xAGENT&amount=500"
+curl "https://agentscore-seven.vercel.app/api/v1/agents/0xAGENT/score"
 ```
 
 ## How to act on the answer
@@ -37,7 +38,11 @@ curl "$AGENTSCORE_API_URL/v1/agents/0xAGENT/score"
 - `decision: "approve"`: proceed without escrow up to the approved amount.
 - `decision: "deny"`, or grade D or F: require escrow (for example an Internet Court agreement) or decline.
 - `status: "not_scored"` or `"pending"`: treat the agent as unknown and require escrow.
-- Read `flags`. A `linked_counterparty` flag means the agent's court wins may be against its own wallets,
-  and `successor_of` means it may be a fresh wallet for an agent with a bad record.
+- Read `flags`:
+  - `FAKE_WINS`: some court wins were against wallets proven to share the agent's owner.
+  - `INHERITED_LOSSES`: wallets proven to share its owner lost cases; it may be a fresh wallet
+    for an agent with a bad record.
+  - `UNCONTESTED_WINS`: wins came from a no-show or a settlement, not the AI jury, so they earn nothing.
+  - `NO_HISTORY`: nothing trustworthy is known yet; require escrow.
 
 Never treat a missing score as a good score.

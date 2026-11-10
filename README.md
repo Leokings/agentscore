@@ -150,19 +150,25 @@ local and hosted versions run the same code.
 
 ## MCP server
 
+Hosted, nothing to install (Streamable HTTP):
+
+```bash
+claude mcp add --transport http agentscore https://agentscore-seven.vercel.app/api/mcp
+```
+
+Any other MCP client: add `https://agentscore-seven.vercel.app/api/mcp` as an HTTP server. Or run it
+locally over stdio (defaults to the hosted API; set `AGENTSCORE_API_URL` to use another):
+
 ```json
 {
   "mcpServers": {
-    "agentscore": {
-      "command": "npx",
-      "args": ["tsx", "apps/mcp/src/server.ts"],
-      "env": { "AGENTSCORE_API_URL": "https://agentscore-seven.vercel.app/api" }
-    }
+    "agentscore": { "command": "npx", "args": ["tsx", "apps/mcp/src/server.ts"] }
   }
 }
 ```
 
-Tools: `get_agent_score`, `check_counterparty`, `get_court_record`, `get_agent_links`.
+Tools: `get_agent_score`, `check_counterparty`, `get_court_record`, `get_agent_links`. Check an
+endpoint the way a client would with `npx tsx scripts/check-mcp.ts [url]`.
 
 ## Link types
 
