@@ -12,16 +12,16 @@ export const SITE = {
   nansen: "https://www.nansen.ai",
 };
 
-/** The AgentScore mark: a grade tile with a rising bar, then the wordmark. */
-export function Logo({ size = 28 }: { size?: number }) {
+/**
+ * The AgentScore mark: two wallets (the feet) joined by one owner (the apex) form an A, the top
+ * grade. The record follows the owner, not the wallet. Source: public/brand/agentscore-mark.svg.
+ */
+export function Logo({ size = 30 }: { size?: number }) {
   return (
     <span className="inline-flex items-center gap-2.5">
-      <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
-        <rect x="1" y="1" width="30" height="30" rx="9" fill="var(--accent)" />
-        <path d="M9 22.5 L15.5 8.5 L22 22.5" fill="none" stroke="var(--accent-fg)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M11.8 17.5 H19.2" stroke="var(--accent-fg)" strokeWidth="3" strokeLinecap="round" />
-      </svg>
-      <span className="text-[1.05rem] font-semibold tracking-tight">AgentScore</span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/brand/agentscore-mark.svg" width={size} height={size} alt="" aria-hidden="true" className="rounded-[9px]" />
+      <span className="text-[1.08rem] font-semibold tracking-tight">AgentScore</span>
     </span>
   );
 }
@@ -76,19 +76,22 @@ export function SectionHeader({ eyebrow, title, children, center = false }: { ey
   );
 }
 
+/** Official partner logos, shown as one monochrome strip (white on dark, ink on light). */
+export const PARTNER_LOGOS = [
+  { name: "Internet Court", src: "/partners/internet-court.svg", href: SITE.internetCourt, role: "Rulings", h: 26 },
+  { name: "GenLayer", src: "/partners/genlayer.svg", href: SITE.genlayer, role: "Judgment", h: 30 },
+  { name: "Nansen", src: "/partners/nansen.png", href: SITE.nansen, role: "Wallet links", h: 26 },
+];
+
 /** Built on: the three projects AgentScore runs on. */
-export function PartnerMarks({ compact = false }: { compact?: boolean }) {
-  const partners = [
-    { name: "Internet Court", href: SITE.internetCourt, role: "Rulings" },
-    { name: "GenLayer", href: SITE.genlayer, role: "Judgment" },
-    { name: "Nansen", href: SITE.nansen, role: "Wallet links" },
-  ];
+export function PartnerMarks() {
   return (
-    <div className={`flex flex-wrap items-center ${compact ? "gap-x-8 gap-y-3" : "justify-center gap-x-14 gap-y-6"}`}>
-      {partners.map((p) => (
-        <a key={p.name} href={p.href} target="_blank" rel="noreferrer" className="group flex items-baseline gap-2.5">
-          <span className="text-xl font-semibold tracking-tight text-[var(--fg)] opacity-80 transition group-hover:opacity-100 sm:text-2xl">{p.name}</span>
-          <span className="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-[var(--faint)]">{p.role}</span>
+    <div className="flex flex-wrap items-center justify-center gap-x-14 gap-y-8">
+      {PARTNER_LOGOS.map((p) => (
+        <a key={p.name} href={p.href} target="_blank" rel="noreferrer" className="group flex flex-col items-center gap-2.5" aria-label={p.name}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={p.src} alt={p.name} style={{ height: p.h }} className="partner-logo w-auto opacity-75 transition group-hover:opacity-100" />
+          <span className="font-mono text-[0.66rem] uppercase tracking-[0.16em] text-[var(--faint)]">{p.role}</span>
         </a>
       ))}
     </div>

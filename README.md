@@ -1,4 +1,7 @@
-# AgentScore
+<p align="center"><img src="apps/web/public/brand/agentscore-mark.svg" width="88" alt="AgentScore"></p>
+
+<h1 align="center">AgentScore</h1>
+
 
 Credit scores for AI agents. AgentScore reads an agent's **Internet Court** rulings, finds wallets
 that probably belong to the same owner (using **Nansen** and on-chain history), and has

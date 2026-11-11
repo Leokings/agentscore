@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { AbsoluteFill, Easing, interpolate, Sequence, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Easing, Img, interpolate, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 
 /**
  * The AgentScore explainer: 45 seconds at 30 fps, 1920x1080. It plays on the website (Remotion
@@ -28,6 +28,31 @@ const C = {
 };
 const SANS = "var(--font-sans), Geist, Inter, ui-sans-serif, system-ui, sans-serif";
 const MONO = "var(--font-mono), 'Geist Mono', ui-monospace, Menlo, monospace";
+
+/**
+ * Files from the website's public folder. In the website's Player they are served from the site
+ * root; in a rendered video Remotion serves them through staticFile().
+ */
+function asset(path: string): string {
+  const w = globalThis as { remotion_staticBase?: string };
+  return w.remotion_staticBase !== undefined ? staticFile(path) : `/${path}`;
+}
+
+const PARTNERS = [
+  { name: "Internet Court", src: "partners/internet-court.svg", h: 64 },
+  { name: "GenLayer", src: "partners/genlayer.svg", h: 74 },
+  { name: "Nansen", src: "partners/nansen.png", h: 64 },
+];
+
+/** The AgentScore mark and wordmark. */
+function Brand({ size = 56, opacity = 1 }: { size?: number; opacity?: number }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: size * 0.32, opacity }}>
+      <Img src={asset("brand/agentscore-mark.svg")} style={{ width: size, height: size, borderRadius: size * 0.28 }} />
+      <span style={{ fontFamily: SANS, fontSize: size * 0.62, fontWeight: 650, letterSpacing: "-0.03em", color: C.fg }}>AgentScore</span>
+    </div>
+  );
+}
 
 // Scene timing (frames).
 const S = {
@@ -169,6 +194,9 @@ function Hook() {
   const b = usePop(20);
   return (
     <SceneFade length={S.hook[1] - S.hook[0]}>
+      <div style={{ position: "absolute", left: 80, top: 64 }}>
+        <Brand size={52} opacity={useAppear(0, 14)} />
+      </div>
       <Caption top={170} size={84}>
         Agents now pay agents.
       </Caption>
@@ -436,14 +464,17 @@ function Cta() {
   const logos = useAppear(50);
   return (
     <SceneFade length={S.cta[1] - S.cta[0]}>
-      <Caption top={200} size={92}>
+      <div style={{ position: "absolute", top: 90, width: "100%", display: "flex", justifyContent: "center", transform: `scale(${0.9 + 0.1 * p})`, opacity: p }}>
+        <Brand size={84} />
+      </div>
+      <Caption top={250} size={88}>
         Check any agent before you pay.
       </Caption>
       <div
         style={{
           position: "absolute",
           left: 960,
-          top: 430,
+          top: 450,
           transform: "translateX(-50%)",
           opacity: p,
           padding: "26px 36px",
@@ -458,14 +489,15 @@ function Cta() {
       >
         <span style={{ color: C.accent }}>$ </span>claude mcp add agentscore …/api/mcp
       </div>
-      <div style={{ position: "absolute", top: 640, width: "100%", textAlign: "center", fontFamily: SANS, fontSize: 40, color: C.muted, opacity: p }}>
+      <div style={{ position: "absolute", top: 610, width: "100%", textAlign: "center", fontFamily: SANS, fontSize: 40, color: C.muted, opacity: p }}>
         agentscore-seven.vercel.app
       </div>
-      <div style={{ position: "absolute", top: 800, width: "100%", display: "flex", justifyContent: "center", gap: 90, opacity: logos }}>
-        {["Internet Court", "GenLayer", "Nansen"].map((n) => (
-          <div key={n} style={{ fontFamily: SANS, fontSize: 40, fontWeight: 600, color: C.fg, letterSpacing: "-0.02em" }}>
-            {n}
-          </div>
+      <div style={{ position: "absolute", top: 760, width: "100%", textAlign: "center", fontFamily: MONO, fontSize: 22, letterSpacing: "0.22em", color: C.faint, opacity: logos }}>
+        BUILT ON
+      </div>
+      <div style={{ position: "absolute", top: 830, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", gap: 110, opacity: logos }}>
+        {PARTNERS.map((l) => (
+          <Img key={l.name} src={asset(l.src)} style={{ height: l.h, width: "auto", filter: "brightness(0) invert(1)" }} />
         ))}
       </div>
     </SceneFade>

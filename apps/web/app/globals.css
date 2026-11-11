@@ -94,6 +94,16 @@ pre,
   color: var(--accent);
 }
 
+/* Partner logos as one monochrome strip: ink in light mode, white in dark mode. */
+.partner-logo {
+  filter: brightness(0);
+}
+@media (prefers-color-scheme: dark) {
+  .partner-logo {
+    filter: brightness(0) invert(1);
+  }
+}
+
 .card {
   background: var(--card);
   border: 1px solid var(--border);
