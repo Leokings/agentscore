@@ -5,6 +5,9 @@ Status: **approved 2026-11-09; v7 deployed on StudioNet 2026-11-10 at
 [`contracts/agent_score.py`](../contracts/agent_score.py). This follows the checkpoints in
 `Genlayer/GENLAYER_PORTAL_SUBMISSION_GUIDE.md` (section 8).
 
+Next: **v8 proposal** (safer first-funding links; same deployer, shared cash-out and closed loops
+on-chain, in two tiers): [DESIGN-v8.md](DESIGN-v8.md), waiting for approval.
+
 ## Changes made during the build
 
 These change the approved design. Sections below are kept as approved for reference.
