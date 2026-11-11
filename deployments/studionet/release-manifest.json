@@ -4,7 +4,7 @@
     "name": "studionet",
     "chain_id": 61999,
     "rpc": "https://studio.genlayer.com/api",
-    "explorer": "https://genlayer-explorer.vercel.app"
+    "explorer": "https://explorer-studio.genlayer.com"
   },
   "contract": {
     "address": "0xC7CBE19697ce01581b9F32514014A8ABC0f03A76",

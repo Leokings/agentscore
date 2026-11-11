@@ -65,7 +65,7 @@ const contractCommit = contractClean ? sh("git log -1 --format=%H -- contracts/a
 const contract = readFileSync(`${dir}/CONTRACT`, "utf8").trim();
 const manifest = {
   project: "AgentScore",
-  network: { name: "studionet", chain_id: 61999, rpc: "https://studio.genlayer.com/api", explorer: "https://genlayer-explorer.vercel.app" },
+  network: { name: "studionet", chain_id: 61999, rpc: "https://studio.genlayer.com/api", explorer: "https://explorer-studio.genlayer.com" },
   contract: {
     address: contract,
     file: "contracts/agent_score.py",
