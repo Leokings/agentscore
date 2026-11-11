@@ -625,6 +625,9 @@ function Cta() {
           <Img key={l.name} src={asset(l.src)} style={{ height: l.h, width: "auto", filter: "brightness(0)" }} />
         ))}
       </div>
+      <div style={{ position: "absolute", bottom: 34, width: "100%", textAlign: "center", fontFamily: MONO, fontSize: 18, letterSpacing: "0.08em", color: C.faint, opacity: logos }}>
+        Voice: ElevenLabs · Motion: Remotion · Data: live AgentScore API
+      </div>
     </SceneFade>
   );
 }

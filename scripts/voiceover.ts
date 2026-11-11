@@ -52,7 +52,7 @@ for (const line of VOICE_LINES) {
     writeFileSync(path, Buffer.from(await res.arrayBuffer()));
     texts[line.id] = line.text;
   }
-  const s = seconds(path.replace("apps/web/", ""));
+  const s = seconds(`public/${file}`);
   manifest[line.id] = { file, seconds: s };
   const room = line.sceneEnd - line.at;
   const ok = s <= room;

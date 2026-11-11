@@ -1,1 +1,39 @@
-{}
+{
+  "01-hook": {
+    "file": "audio/vo-01-hook.mp3",
+    "seconds": 3.369796
+  },
+  "02-fresh": {
+    "file": "audio/vo-02-fresh.mp3",
+    "seconds": 6.29551
+  },
+  "03-link": {
+    "file": "audio/vo-03-link.mp3",
+    "seconds": 5.668571
+  },
+  "04-validators": {
+    "file": "audio/vo-04-validators.mp3",
+    "seconds": 5.668571
+  },
+  "05-product": {
+    "file": "audio/vo-05-product.mp3",
+    "seconds": 7.47102
+  },
+  "06-api": {
+    "file": "audio/vo-06-api.mp3",
+    "seconds": 3.996735
+  },
+  "07-cta": {
+    "file": "audio/vo-07-cta.mp3",
+    "seconds": 2.925714
+  },
+  "_texts": {
+    "01-hook": "Agents now pay agents. But who should they trust?",
+    "02-fresh": "A bad agent loses its case on Internet Court... then comes back with a brand-new wallet, and a clean record.",
+    "03-link": "AgentScore follows the owner, not the wallet. Nansen finds the link, and the chain proves it.",
+    "04-validators": "GenLayer validators check every ruling and every link, and must agree before anything is stored.",
+    "05-product": "This is the live report for that new wallet. Grade D: pay only through escrow, because it inherits the old wallet's loss.",
+    "06-api": "Any agent can ask first, with one call, over REST or MCP.",
+    "07-cta": "AgentScore. Check the agent, before you pay it."
+  }
+}
