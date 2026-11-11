@@ -1,4 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
+import { ReportView, type Report } from "../app/agent/[wallet]/ReportView";
+import checkSnapshot from "./data/check-fake-win.json";
+import reportSnapshot from "./data/report-fresh-wallet.json";
 import { AbsoluteFill, Easing, Img, interpolate, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 
 /**
@@ -58,11 +61,12 @@ function Brand({ size = 56, opacity = 1 }: { size?: number; opacity?: number }) 
 
 // Scene timing (frames).
 const S = {
-  hook: [0, 150],
-  fresh: [150, 420],
-  link: [420, 690],
-  validators: [690, 960],
-  score: [960, 1200],
+  hook: [0, 120],
+  fresh: [120, 330],
+  link: [330, 540],
+  validators: [540, 750],
+  product: [750, 1050],
+  api: [1050, 1200],
   cta: [1200, 1350],
 } as const;
 
@@ -147,7 +151,7 @@ function Wallet({ x, y, label, sub, tone = C.fg, scale = 1, opacity = 1, glow }:
     <div style={{ position: "absolute", left: x, top: y, transform: `translate(-50%, -50%) scale(${scale})`, opacity }}>
       <div
         style={{
-          width: 300,
+          width: 360,
           padding: "26px 28px",
           background: C.card,
           border: `1.5px solid ${glow ?? C.line}`,
@@ -235,16 +239,16 @@ function Hook() {
 
 function FreshWallet() {
   const frame = useCurrentFrame();
-  const verdict = usePop(40);
-  const old = interpolate(frame, [130, 170], [1, 0.35], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const fresh = usePop(150);
+  const verdict = usePop(28);
+  const old = interpolate(frame, [95, 125], [1, 0.35], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const fresh = usePop(105);
   return (
     <SceneFade length={S.fresh[1] - S.fresh[0]}>
       <Eyebrow>INTERNET COURT</Eyebrow>
       <Caption top={150} size={64}>
         A bad agent loses its case…
       </Caption>
-      <Wallet x={620} y={600} sub="0xbad…01 · 2 cases" label="Agent B" opacity={old} glow={frame > 40 ? C.red : undefined} />
+      <Wallet x={620} y={600} sub="0xbad…01 · 2 cases" label="Agent B" opacity={old} glow={frame > 28 ? C.red : undefined} />
       <div
         style={{
           position: "absolute",
@@ -264,7 +268,7 @@ function FreshWallet() {
       >
         LOST · DID NOT DELIVER
       </div>
-      <div style={{ position: "absolute", top: 260, width: "100%", textAlign: "center", fontFamily: SANS, fontSize: 50, color: C.muted, opacity: useAppear(150) }}>
+      <div style={{ position: "absolute", top: 260, width: "100%", textAlign: "center", fontFamily: SANS, fontSize: 50, color: C.muted, opacity: useAppear(100) }}>
         …then comes back with a brand-new wallet.
       </div>
       <Wallet x={1300} y={600} sub="0xnew…77 · no history" label="Clean slate?" scale={fresh} glow={C.accent} tone={C.accent} />
@@ -319,8 +323,8 @@ function Validators() {
   const frame = useCurrentFrame();
   const n = 5;
   const center = { x: 960, y: 620 };
-  const agreed = Math.min(n, Math.floor(interpolate(frame, [70, 170], [0, n], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })));
-  const stored = usePop(185);
+  const agreed = Math.min(n, Math.floor(interpolate(frame, [45, 125], [0, n], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })));
+  const stored = usePop(135);
   return (
     <SceneFade length={S.validators[1] - S.validators[0]}>
       <Eyebrow>GENLAYER</Eyebrow>
@@ -420,56 +424,159 @@ function usePopAt(delay: number) {
   return usePop(delay);
 }
 
-function ScoreScene() {
-  const frame = useCurrentFrame();
-  const flip = frame > 70;
-  const p = usePop(10);
-  const flags = [
-    { t: "Inherited losses", c: C.red, d: 90 },
-    { t: "Fake wins don't count", c: C.red, d: 115 },
-    { t: "No-show wins earn nothing", c: C.amber, d: 140 },
-  ];
-  const advice = usePop(175);
+/** A browser window around real product UI. */
+function BrowserFrame({ url, children, style }: { url: string; children: ReactNode; style?: CSSProperties }) {
   return (
-    <SceneFade length={S.score[1] - S.score[0]}>
-      <Caption top={130} size={64}>
-        One score that follows the owner.
-      </Caption>
-      <div style={{ position: "absolute", left: 420, top: 330, transform: `scale(${p})` }}>
-        <Grade letter={flip ? "D" : "C"} color={flip ? C.orange : C.accent} size={300} />
-      </div>
-      <div style={{ position: "absolute", left: 820, top: 340, fontFamily: SANS, color: C.fg }}>
-        <div style={{ fontFamily: MONO, fontSize: 24, color: C.muted }}>0xnew…77</div>
-        <div style={{ fontSize: 52, fontWeight: 600, marginTop: 10, letterSpacing: "-0.02em" }}>{flip ? "42 points · not a clean slate" : "Looks new and clean…"}</div>
-        <div style={{ marginTop: 34, display: "flex", flexDirection: "column", gap: 18 }}>
-          {flags.map((f) => {
-            const fp = usePopAt(f.d);
-            return (
-              <div key={f.t} style={{ display: "flex", alignItems: "center", gap: 16, opacity: fp, transform: `translateX(${(1 - fp) * 30}px)` }}>
-                <div style={{ width: 16, height: 16, borderRadius: 8, background: f.c }} />
-                <div style={{ fontSize: 36, color: C.fg }}>{f.t}</div>
-              </div>
-            );
-          })}
+    <div style={{ position: "absolute", overflow: "hidden", background: "#ffffff", border: `1.5px solid ${C.line}`, borderRadius: 22, boxShadow: SHADOW, ...style }}>
+      <div style={{ height: 58, display: "flex", alignItems: "center", gap: 18, padding: "0 22px", borderBottom: `1.5px solid ${C.line}`, background: C.card2 }}>
+        <div style={{ display: "flex", gap: 9 }}>
+          {["#f04438", "#f79009", "#12b76a"].map((c) => (
+            <div key={c} style={{ width: 14, height: 14, borderRadius: 7, background: c, opacity: 0.85 }} />
+          ))}
+        </div>
+        <div style={{ flex: 1, height: 34, borderRadius: 10, background: "#ffffff", border: `1.5px solid ${C.line}`, display: "flex", alignItems: "center", padding: "0 16px", fontFamily: MONO, fontSize: 19, color: C.muted }}>
+          <span style={{ color: C.green, marginRight: 10 }}>●</span>
+          {url}
         </div>
       </div>
+      {children}
+    </div>
+  );
+}
+
+/**
+ * The real report page for the fresh wallet: the site's own ReportView component, fed with a
+ * snapshot of the live /report response (remotion/data/report-fresh-wallet.json).
+ */
+function ProductReport() {
+  const frame = useCurrentFrame();
+  const enter = usePop(0);
+  // Camera: overview, push in on the grade and advice, then glide down to the inherited loss.
+  const zoom = interpolate(frame, [40, 85, 150, 190], [1, 1.32, 1.32, 1.18], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: ease });
+  const panY = interpolate(frame, [40, 85, 150, 200], [0, -40, -40, -470], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: ease });
+  const panX = interpolate(frame, [40, 85, 150, 200], [0, 110, 110, 40], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: ease });
+  const note1 = usePop(70) * interpolate(frame, [150, 175], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const note2 = usePop(205);
+  const short = `${reportSnapshot.wallet.slice(0, 6)}…${reportSnapshot.wallet.slice(-4)}`;
+  return (
+    <SceneFade length={S.product[1] - S.product[0]}>
+      <Eyebrow top={56}>THE LIVE PRODUCT</Eyebrow>
+      <Caption top={96} size={52}>
+        The real report for that new wallet.
+      </Caption>
+      <BrowserFrame url={`agentscore-seven.vercel.app/agent/${short}`} style={{ left: 260, top: 200, width: 1400, height: 820, transform: `translateY(${(1 - enter) * 60}px)`, opacity: enter }}>
+        <div style={{ position: "absolute", top: 58, left: 0, right: 0, bottom: 0, overflow: "hidden", background: "var(--bg)" }}>
+          <div
+            style={{
+              position: "absolute",
+              left: 200,
+              top: 36,
+              width: 1000,
+              transformOrigin: "30% 0%",
+              transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
+            }}
+          >
+            <p className="eyebrow" style={{ marginBottom: 14 }}>
+              Agent report
+            </p>
+            <ReportView report={reportSnapshot as unknown as Report} />
+          </div>
+        </div>
+      </BrowserFrame>
+      <Callout right={70} y={330} p={note1} color={C.orange}>
+        Grade D · pay only through escrow
+      </Callout>
+      <Callout right={70} y={690} p={note2} color={C.red}>
+        Inherits the old wallet&apos;s loss
+      </Callout>
+    </SceneFade>
+  );
+}
+
+function Callout({ right, y, p, color, children }: { right: number; y: number; p: number; color: string; children: ReactNode }) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        right,
+        top: y,
+        opacity: Math.min(1, p * 1.2),
+        transform: `scale(${0.85 + 0.15 * p})`,
+        transformOrigin: "right center",
+        padding: "16px 24px",
+        borderRadius: 16,
+        background: "#ffffff",
+        border: `2px solid ${color}`,
+        boxShadow: SHADOW,
+        fontFamily: SANS,
+        fontSize: 28,
+        fontWeight: 600,
+        color,
+        whiteSpace: "nowrap",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** A real API call: the command types out, then the live answer (remotion/data/check-fake-win.json). */
+function ApiTerminal() {
+  const frame = useCurrentFrame();
+  const cmd = `curl "agentscore-seven.vercel.app/api/v1/check?wallet=0x36b2…24Cc&amount=500"`;
+  const typed = Math.floor(interpolate(frame, [8, 50], [0, cmd.length], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }));
+  const c = checkSnapshot as { advice: string; decision: string; grade: string; points: number; approvalLimitUsd: number; flags: string[] };
+  const lines: Array<[string, string, string]> = [
+    ["advice", JSON.stringify(c.advice), C.fg],
+    ["decision", JSON.stringify(c.decision), C.red],
+    ["grade", JSON.stringify(c.grade), C.orange],
+    ["points", String(c.points), C.fg],
+    ["approvalLimitUsd", String(c.approvalLimitUsd), C.fg],
+    ["flags", JSON.stringify(c.flags), C.red],
+  ];
+  const mcp = useAppear(96);
+  return (
+    <SceneFade length={S.api[1] - S.api[0]}>
+      <Eyebrow top={70}>FOR AGENTS AND DEVELOPERS</Eyebrow>
+      <Caption top={112} size={56}>
+        One call before paying an agent.
+      </Caption>
       <div
         style={{
           position: "absolute",
-          left: 960,
-          top: 880,
-          transform: `translateX(-50%) scale(${advice})`,
-          padding: "20px 34px",
-          borderRadius: 18,
-          background: `${C.amber}1a`,
-          border: `2px solid ${C.amber}`,
-          fontFamily: SANS,
-          fontSize: 36,
-          color: C.amber,
-          whiteSpace: "nowrap",
+          left: 240,
+          top: 250,
+          width: 1440,
+          height: 640,
+          borderRadius: 22,
+          background: "#0b1220",
+          boxShadow: SHADOW,
+          padding: "34px 44px",
+          fontFamily: MONO,
+          fontSize: 27,
+          lineHeight: 1.6,
+          color: "#e6ebf5",
         }}
       >
-        Advice to the payer: use escrow.
+        <div>
+          <span style={{ color: "#7c9cff" }}>$ </span>
+          {cmd.slice(0, typed)}
+          {typed < cmd.length && <span style={{ background: "#e6ebf5", marginLeft: 2 }}>&nbsp;</span>}
+        </div>
+        <div style={{ marginTop: 18 }}>{frame > 56 ? "{" : ""}</div>
+        {lines.map(([k, v, color], i) => {
+          const show = interpolate(frame, [58 + i * 6, 64 + i * 6], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+          return (
+            <div key={k} style={{ opacity: show, paddingLeft: 30, whiteSpace: "pre-wrap" }}>
+              <span style={{ color: "#93a4c3" }}>&quot;{k}&quot;</span>: <span style={{ color: color === C.fg ? "#e6ebf5" : color }}>{v}</span>
+              {i < lines.length - 1 ? "," : ""}
+            </div>
+          );
+        })}
+        <div>{frame > 100 ? "}" : ""}</div>
+      </div>
+      <div style={{ position: "absolute", top: 930, width: "100%", textAlign: "center", fontFamily: SANS, fontSize: 32, color: C.muted, opacity: mcp }}>
+        Same answer for any agent over MCP: <span style={{ fontFamily: MONO, color: C.accent }}>check_agent</span>
       </div>
     </SceneFade>
   );
@@ -536,8 +643,11 @@ export function Explainer() {
       <Sequence from={S.validators[0]} durationInFrames={S.validators[1] - S.validators[0]}>
         <Validators />
       </Sequence>
-      <Sequence from={S.score[0]} durationInFrames={S.score[1] - S.score[0]}>
-        <ScoreScene />
+      <Sequence from={S.product[0]} durationInFrames={S.product[1] - S.product[0]}>
+        <ProductReport />
+      </Sequence>
+      <Sequence from={S.api[0]} durationInFrames={S.api[1] - S.api[0]}>
+        <ApiTerminal />
       </Sequence>
       <Sequence from={S.cta[0]} durationInFrames={S.cta[1] - S.cta[0]}>
         <Cta />

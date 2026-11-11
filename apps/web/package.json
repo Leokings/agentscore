@@ -28,6 +28,7 @@
   "devDependencies": {
     "@remotion/cli": "4.0.537",
     "@remotion/google-fonts": "4.0.537",
+    "@remotion/tailwind-v4": "4.0.537",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

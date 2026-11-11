@@ -13,3 +13,4 @@ data/demo-wallets.json
 
 .vercel
 apps/web/public/skill.md
+apps/web/out/
