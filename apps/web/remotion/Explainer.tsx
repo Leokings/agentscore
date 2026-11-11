@@ -2,7 +2,9 @@ import type { CSSProperties, ReactNode } from "react";
 import { ReportView, type Report } from "../app/agent/[wallet]/ReportView";
 import checkSnapshot from "./data/check-fake-win.json";
 import reportSnapshot from "./data/report-fresh-wallet.json";
-import { AbsoluteFill, Easing, Img, interpolate, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import voiceManifest from "./data/voiceover.json";
+import { VOICE_LINES, type VoiceManifest } from "./voiceover";
+import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 
 /**
  * The AgentScore explainer: 45 seconds at 30 fps, 1920x1080. It plays on the website (Remotion
@@ -627,9 +629,24 @@ function Cta() {
   );
 }
 
+/** The ElevenLabs voiceover (scripts/voiceover.ts): each line starts at its own time. */
+function Voiceover() {
+  const manifest = voiceManifest as unknown as VoiceManifest;
+  return (
+    <>
+      {VOICE_LINES.filter((l) => manifest[l.id]).map((l) => (
+        <Sequence key={l.id} from={Math.round(l.at * FPS)} durationInFrames={Math.ceil(manifest[l.id]!.seconds * FPS) + 6}>
+          <Audio src={asset(manifest[l.id]!.file)} />
+        </Sequence>
+      ))}
+    </>
+  );
+}
+
 export function Explainer() {
   return (
     <AbsoluteFill style={{ background: C.bg }}>
+      <Voiceover />
       <AbsoluteFill style={{ background: `radial-gradient(1000px 520px at 50% 0%, ${C.accent}10, transparent 70%)` }} />
       <Sequence from={S.hook[0]} durationInFrames={S.hook[1] - S.hook[0]}>
         <Hook />
