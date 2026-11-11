@@ -1,6 +1,7 @@
 import { createClient } from "genlayer-js";
 import { localnet, studionet, testnetBradbury } from "genlayer-js/chains";
 import type { Address, AgentScore, Grade } from "@agentscore/shared";
+import type { ContractCase } from "./report.js";
 
 /** Shape returned by the contract's get_score view (contracts/agent_score.py). */
 export interface ContractScore {
@@ -43,6 +44,24 @@ export class ScoreReader {
       jsonSafeReturn: true,
     });
     return raw as unknown as ContractScore;
+  }
+
+  /** What the contract stored for a case, or null if it has not judged it. */
+  async case(caseAddress: string): Promise<ContractCase | null> {
+    if (!this.contract) return null;
+    try {
+      const raw = await this.client.readContract({
+        address: this.contract,
+        functionName: "get_case",
+        args: [caseAddress],
+        jsonSafeReturn: true,
+      });
+      return (raw ?? null) as ContractCase | null;
+    } catch (e) {
+      // The contract raises [EXPECTED] case_not_judged for cases it has not judged yet.
+      if (/case_not_judged|execution failed/i.test(String((e as Error).message))) return null;
+      throw e;
+    }
   }
 
   /** Same-owner links the contract has verified and stored: other wallet -> description. */

@@ -5,6 +5,7 @@ import { courtRecord, Store, syncInternetCourt } from "@agentscore/indexer";
 import { buildLinks, gatherGraph, NansenClient } from "@agentscore/links";
 import { isAddress, normalizeAddress, type Address, type AgentScore } from "@agentscore/shared";
 import { ScoreReader, toAgentScore } from "./contract.js";
+import { adviceFor, buildReport } from "./report.js";
 
 /** How stale the Internet Court index may get before a request triggers a sync. */
 const SYNC_INTERVAL_MS = 2 * 60 * 1000;
@@ -73,10 +74,11 @@ export function createApp(store: Store, reader: ScoreReader = new ScoreReader())
       name: "AgentScore API",
       version: "v1",
       endpoints: [
+        "GET /v1/check?wallet=0x...&amount=500   (quick advice; amount optional)",
+        "GET /v1/agents/:wallet/report           (full history)",
         "GET /v1/agents/:wallet/score",
         "GET /v1/agents/:wallet/court-record",
         "GET /v1/agents/:wallet/links",
-        "GET /v1/check?wallet=0x...&amount=500",
         "GET /v1/cases",
       ],
     }),
@@ -111,14 +113,49 @@ export function createApp(store: Store, reader: ScoreReader = new ScoreReader())
     return c.json({ ...s, court: record.totals, links: walletLinks.length, strongLinks: walletLinks.filter((l) => l.strength === "strong").length });
   });
 
+  /**
+   * Quick advice for whoever is about to pay this agent. With an amount, `decision` is "approve"
+   * (pay directly) or "deny" (pay only through escrow); without one, `advice` gives the limit.
+   */
   app.get("/v1/check", async (c) => {
     const wallet = walletParam(c.req.query("wallet"));
-    const amount = Number(c.req.query("amount") ?? "0");
-    if (!Number.isFinite(amount) || amount < 0) throw new HTTPException(400, { message: "amount must be a non-negative number" });
+    const rawAmount = c.req.query("amount");
+    const amount = rawAmount === undefined || rawAmount === "" ? undefined : Number(rawAmount);
+    if (amount !== undefined && (!Number.isFinite(amount) || amount < 0)) throw new HTTPException(400, { message: "amount must be a non-negative number" });
     const s = await score(wallet);
     // Only a real grade can approve; unknown or unreadable agents always need escrow.
-    const decision = s.status !== "scored" ? null : amount <= (s.approvalLimitUsd ?? 0) ? "approve" : "deny";
-    return c.json({ ...s, amount, decision });
+    const { advice } = adviceFor(s, amount);
+    const decision = s.status !== "scored" || amount === undefined ? null : amount <= (s.approvalLimitUsd ?? 0) && (s.approvalLimitUsd ?? 0) > 0 ? "approve" : "deny";
+    return c.json({ ...s, amount: amount ?? null, decision, advice });
+  });
+
+  /**
+   * The agent's full history: every Internet Court case (claim, result, how it was decided, what
+   * the validators found, what it did to the score) and every linked wallet with its evidence and
+   * the losses it passes on. Everything is read from the index and the GenLayer contract.
+   */
+  app.get("/v1/agents/:wallet/report", async (c) => {
+    const wallet = walletParam(c.req.param("wallet"));
+    await ensureFresh();
+    const [s, record, signals, proven] = await Promise.all([score(wallet), courtRecord(store, wallet), links(wallet), provenLinks(wallet)]);
+    const readCase = async (address: string) => {
+      try {
+        return await reader.case(address);
+      } catch (e) {
+        console.error("GenLayer case read failed", e);
+        return null;
+      }
+    };
+    const judged = new Map(await Promise.all(record.cases.map(async (k) => [k.address, await readCase(k.address)] as const)));
+    const linkedCases = new Map(
+      await Promise.all(
+        Object.keys(proven).map(async (other) => {
+          const theirs = await courtRecord(store, other as Address);
+          return [other, await Promise.all(theirs.cases.map(async (courtCase) => ({ courtCase, judged: await readCase(courtCase.address) })))] as const;
+        }),
+      ),
+    );
+    return c.json(buildReport({ wallet, score: s, cases: record.cases, judged, proven, signals, linkedCases }));
   });
 
   return app;

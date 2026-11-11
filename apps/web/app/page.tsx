@@ -2,12 +2,11 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import type { CourtRecord, WalletLink } from "@agentscore/shared";
+import type { WalletLink } from "@agentscore/shared";
 
 const LinkGraph = dynamic(() => import("./LinkGraph").then((m) => m.LinkGraph), { ssr: false });
 
 const API = process.env.NEXT_PUBLIC_AGENTSCORE_API_URL ?? "/api";
-const CASE_EXPLORER = "https://base-sepolia.blockscout.com/address/";
 
 /** Real wallets on Internet Court, picked to show each part of the score. */
 const EXAMPLES = [
@@ -17,22 +16,36 @@ const EXAMPLES = [
   { label: "Jury rulings", wallet: "0xce413FFE2628b60cdaF4413d63d7838B8d4309AC", note: "Lost two cases decided by the AI jury" },
 ];
 
-interface ScoreResponse {
+/** GET /v1/agents/:wallet/report (apps/api/src/report.ts). */
+interface Report {
+  wallet: string;
+  advice: string;
   grade: string | null;
   status: string;
-  reasons: string[];
-  flags: string[];
-  points?: number;
-  approvalLimitUsd?: number;
-  contract?: string;
-  counts?: Record<string, number>;
-}
-
-interface Result {
-  wallet: string;
-  score: ScoreResponse;
-  record: CourtRecord;
-  links: WalletLink[];
+  points: number | null;
+  approvalLimitUsd: number | null;
+  flags: Array<{ code: string; meaning: string }>;
+  summary: string | null;
+  contract: string | null;
+  cases: Array<{
+    id: number;
+    address: string;
+    explorer: string;
+    role: string;
+    claim: string | null;
+    reasoning: string | null;
+    decidedBy: string;
+    result: string;
+    severity: string | null;
+    effect: string;
+  }>;
+  linkedWallets: Array<{
+    wallet: string;
+    proven: boolean;
+    evidence: string;
+    inheritedLosses: Array<{ caseId: number; explorer: string; claim: string | null; severity: string; effect: string }>;
+  }>;
+  signals: WalletLink[];
   proven: Record<string, string>;
 }
 
@@ -44,46 +57,33 @@ const FLAG_LABEL: Record<string, string> = {
   NO_HISTORY: "No trusted history",
 };
 
-const GRADE_COLOR: Record<string, string> = {
-  A: "var(--good)",
-  B: "var(--good)",
-  C: "var(--warn)",
-  D: "var(--bad)",
-  F: "var(--bad)",
-};
-
-const RESOLUTION: Record<string, { label: string; tone: string }> = {
-  jury: { label: "AI jury", tone: "var(--good)" },
-  default: { label: "Default · no jury", tone: "var(--warn)" },
-  settlement: { label: "Settled · no jury", tone: "var(--warn)" },
-};
+const GRADE_COLOR: Record<string, string> = { A: "var(--good)", B: "var(--good)", C: "var(--warn)", D: "var(--bad)", F: "var(--bad)" };
 
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 
-async function getJson<T>(path: string): Promise<T> {
-  const res = await fetch(`${API}${path}`);
-  const body = await res.json();
-  if (!res.ok) throw new Error(body.error ?? `Request failed (${res.status})`);
-  return body as T;
+/** Green for points gained, red for points lost, muted for nothing. */
+function effectColor(effect: string): string {
+  if (effect.startsWith("+")) return "var(--good)";
+  if (effect.startsWith("−")) return "var(--bad)";
+  return "var(--muted)";
 }
 
-/** What a standard agreement's verdict meant for this wallet (the statement is Party A's claim). */
-function outcomeFor(c: CourtRecord["cases"][number]): "Won" | "Lost" | null {
-  if (c.contractType !== "Agreement" || !c.statementVerdict || c.statementVerdict === "UNDETERMINED") return null;
-  const aWon = c.statementVerdict === "TRUE";
-  return (c.role === "partyA") === aWon ? "Won" : "Lost";
+function decidedTone(decidedBy: string): string {
+  if (decidedBy.includes("AI jury")) return "var(--good)";
+  if (decidedBy.includes("no jury")) return "var(--warn)";
+  return "var(--muted)";
 }
 
-/** Why a win does not count, mirroring the contract's get_score. */
-function winCaveat(c: CourtRecord["cases"][number], me: string, proven: Record<string, string>): string | null {
-  if (c.parties.some((p) => p.address !== me && p.address in proven)) return "doesn't count: own wallet";
-  if (c.resolution && c.resolution !== "jury") return "no points: no jury";
-  return null;
+function decidedLabel(decidedBy: string): string {
+  if (decidedBy.includes("AI jury")) return "AI jury";
+  if (decidedBy.startsWith("default")) return "Default · no jury";
+  if (decidedBy.startsWith("settlement")) return "Settled · no jury";
+  return "Not ruled yet";
 }
 
 export default function Home() {
   const [wallet, setWallet] = useState("");
-  const [result, setResult] = useState<Result | null>(null);
+  const [report, setReport] = useState<Report | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -94,22 +94,20 @@ export default function Home() {
     setLoading(true);
     setError(null);
     try {
-      const [score, record, links] = await Promise.all([
-        getJson<ScoreResponse>(`/v1/agents/${w}/score`),
-        getJson<CourtRecord>(`/v1/agents/${w}/court-record`),
-        getJson<{ links: WalletLink[]; proven?: Record<string, string> }>(`/v1/agents/${w}/links`),
-      ]);
-      setResult({ wallet: w.toLowerCase(), score, record, links: links.links, proven: links.proven ?? {} });
+      const res = await fetch(`${API}/v1/agents/${w}/report`);
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? `Request failed (${res.status})`);
+      setReport(body as Report);
     } catch (err) {
       setError((err as Error).message);
-      setResult(null);
+      setReport(null);
     } finally {
       setLoading(false);
     }
   }
 
-  const s = result?.score;
-  const limit = s?.approvalLimitUsd ?? 0;
+  const r = report;
+  const limit = r?.approvalLimitUsd ?? 0;
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-12">
@@ -119,7 +117,7 @@ export default function Home() {
         <p className="mt-3 max-w-2xl text-[var(--muted)]">
           A credit score for AI agents, built from their Internet Court rulings. Nansen finds wallets with the same owner,
           and GenLayer validators prove those links and judge each ruling, so a bad record can't be dodged with a new
-          wallet or padded with fake wins.
+          wallet or padded with fake wins. Check an agent before you pay it.
         </p>
       </header>
 
@@ -157,55 +155,59 @@ export default function Home() {
 
       {error && <p className="mt-4 text-sm text-[var(--bad)]">{error}</p>}
 
-      {result && s && (
+      {r && (
         <div className="mt-10 grid min-w-0 gap-6 [overflow-wrap:anywhere]">
           <section className="min-w-0 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-6">
             <div className="flex flex-wrap items-center gap-6">
               <div
-                className="flex h-20 w-20 shrink-0 sm:h-24 sm:w-24 items-center justify-center rounded-2xl text-6xl font-bold"
-                style={{ color: GRADE_COLOR[s.grade ?? ""] ?? "var(--muted)", background: "var(--chip)" }}
+                className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl text-6xl font-bold sm:h-24 sm:w-24"
+                style={{ color: GRADE_COLOR[r.grade ?? ""] ?? "var(--muted)", background: "var(--chip)" }}
               >
-                {s.grade ?? "–"}
+                {r.grade ?? "–"}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="font-mono text-sm text-[var(--muted)]">{short(result.wallet)}</p>
-                {s.status === "scored" ? (
+                <p className="font-mono text-sm text-[var(--muted)]">{short(r.wallet)}</p>
+                {r.status === "scored" ? (
                   <>
                     <p className="mt-1 text-xl font-semibold">
-                      {limit > 0 ? `Can take jobs up to $${limit.toLocaleString()} without escrow` : "Escrow required for any job"}
+                      {limit > 0 ? `Can be paid directly for jobs up to $${limit.toLocaleString()}` : "Pay this agent only through escrow"}
                     </p>
-                    <p className="mt-1 text-sm text-[var(--muted)]">{s.points} points · graded on-chain by GenLayer</p>
+                    <p className="mt-1 text-sm text-[var(--muted)]">{r.points} points · graded on-chain by GenLayer</p>
                   </>
                 ) : (
-                  <p className="mt-1 text-xl font-semibold">{s.status === "pending" ? "Score unavailable right now" : "Not scored"}</p>
+                  <p className="mt-1 text-xl font-semibold">{r.status === "pending" ? "Score unavailable right now" : "Not scored"}</p>
                 )}
               </div>
             </div>
+            <p className="mt-4 rounded-lg px-3 py-2 text-sm" style={{ background: "var(--chip)" }}>
+              <span className="font-medium">Advice for whoever pays this agent: </span>
+              {r.advice}
+            </p>
 
-            {s.flags.length > 0 && (
-              <div className="mt-5 flex flex-wrap gap-2">
-                {s.flags.map((f) => (
-                  <span key={f} className="rounded-full px-3 py-1 text-xs font-medium" style={{ background: "var(--chip)", color: f === "NO_HISTORY" ? "var(--muted)" : "var(--bad)" }}>
-                    {FLAG_LABEL[f] ?? f}
-                  </span>
+            {r.flags.length > 0 && (
+              <ul className="mt-4 grid gap-2">
+                {r.flags.map((f) => (
+                  <li key={f.code} className="flex flex-wrap items-baseline gap-x-2 text-sm">
+                    <span className="rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ background: "var(--chip)", color: f.code === "NO_HISTORY" ? "var(--muted)" : "var(--bad)" }}>
+                      {FLAG_LABEL[f.code] ?? f.code}
+                    </span>
+                    <span className="text-[var(--muted)]">{f.meaning}</span>
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
-            <ul className="mt-4 grid gap-1 text-sm text-[var(--muted)]">
-              {s.reasons.map((r) => (
-                <li key={r}>{r}</li>
-              ))}
-            </ul>
-            {s.contract && <p className="mt-4 font-mono text-xs text-[var(--muted)]">GenLayer contract {s.contract}</p>}
+            {r.summary && <p className="mt-4 text-sm text-[var(--muted)]">{r.summary}</p>}
+            {r.contract && <p className="mt-2 font-mono text-xs text-[var(--muted)]">GenLayer contract {r.contract}</p>}
           </section>
 
           <section className="min-w-0 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-6">
-            <h2 className="font-semibold">Internet Court record</h2>
+            <h2 className="font-semibold">Internet Court history</h2>
             <p className="mt-1 text-sm text-[var(--muted)]">
-              {result.record.totals.cases} case{result.record.totals.cases === 1 ? "" : "s"} · {result.record.totals.ruled} ruled ·{" "}
-              {result.record.totals.jury ?? 0} by the AI jury · {result.record.totals.pendingRuling} awaiting a ruling
+              {r.cases.length === 0
+                ? "No cases yet."
+                : "Every case this wallet is a party to, what the validators found, and what it did to the score."}
             </p>
-            {result.record.cases.length > 0 && (
+            {r.cases.length > 0 && (
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-left text-sm">
                   <thead className="text-[var(--muted)]">
@@ -213,42 +215,36 @@ export default function Home() {
                       <th className="py-2 pr-4 font-medium">Case</th>
                       <th className="py-2 pr-4 font-medium">Result</th>
                       <th className="py-2 pr-4 font-medium">Decided by</th>
+                      <th className="py-2 pr-4 font-medium">Effect on score</th>
                       <th className="py-2 font-medium">Claim and reasoning</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {result.record.cases.map((c) => {
-                      const outcome = outcomeFor(c);
-                      const caveat = outcome === "Won" ? winCaveat(c, result.wallet, result.proven) : null;
-                      const how = c.resolution ? RESOLUTION[c.resolution] : undefined;
-                      return (
-                        <tr key={c.address} className="border-t border-[var(--border)] align-top">
-                          <td className="py-3 pr-4">
-                            <a href={CASE_EXPLORER + c.address} target="_blank" rel="noreferrer" className="font-mono hover:text-[var(--accent)]">
-                              #{c.id}
-                            </a>
-                            <div className="text-xs text-[var(--muted)]">{c.role}</div>
-                          </td>
-                          <td className="py-3 pr-4 font-medium" style={{ color: outcome === "Won" ? "var(--good)" : outcome === "Lost" ? "var(--bad)" : "var(--muted)" }}>
-                            {outcome ?? (c.resolution ? "Ruled" : "Open")}
-                            {caveat && <div className="text-xs font-normal text-[var(--warn)]">{caveat}</div>}
-                          </td>
-                          <td className="py-3 pr-4">
-                            {how ? (
-                              <span className="whitespace-nowrap rounded-full px-2 py-0.5 text-xs" style={{ background: "var(--chip)", color: how.tone }}>
-                                {how.label}
-                              </span>
-                            ) : (
-                              <span className="text-[var(--muted)]">–</span>
-                            )}
-                          </td>
-                          <td className="min-w-[14rem] py-3 text-[var(--muted)]">
-                            {c.statement && <p className="text-[var(--fg)]">{c.statement}</p>}
-                            {c.reasoning && <p className="mt-1">{c.reasoning}</p>}
-                          </td>
-                        </tr>
-                      );
-                    })}
+                    {r.cases.map((c) => (
+                      <tr key={c.address} className="border-t border-[var(--border)] align-top">
+                        <td className="py-3 pr-4">
+                          <a href={c.explorer} target="_blank" rel="noreferrer" className="font-mono hover:text-[var(--accent)]">
+                            #{c.id}
+                          </a>
+                          <div className="text-xs text-[var(--muted)]">{c.role}</div>
+                        </td>
+                        <td className="py-3 pr-4 font-medium capitalize" style={{ color: c.result === "won" ? "var(--good)" : c.result === "lost" ? "var(--bad)" : "var(--muted)" }}>
+                          {c.result}
+                        </td>
+                        <td className="py-3 pr-4">
+                          <span className="whitespace-nowrap rounded-full px-2 py-0.5 text-xs" style={{ background: "var(--chip)", color: decidedTone(c.decidedBy) }} title={c.decidedBy}>
+                            {decidedLabel(c.decidedBy)}
+                          </span>
+                        </td>
+                        <td className="min-w-[10rem] py-3 pr-4 text-xs" style={{ color: effectColor(c.effect) }}>
+                          {c.effect}
+                        </td>
+                        <td className="min-w-[14rem] py-3 text-[var(--muted)]">
+                          {c.claim && <p className="text-[var(--fg)]">{c.claim}</p>}
+                          {c.reasoning && <p className="mt-1">{c.reasoning}</p>}
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -259,37 +255,36 @@ export default function Home() {
             <h2 className="font-semibold">Wallets with the same owner</h2>
             <p className="mt-1 text-sm text-[var(--muted)]">
               Solid lines are proven on-chain by GenLayer and count in the grade. Dashed lines are signals from Nansen and
-              wallet history.
+              wallet history that do not.
             </p>
-            {result.links.length === 0 && Object.keys(result.proven).length === 0 ? (
+            {r.linkedWallets.length === 0 ? (
               <p className="mt-4 text-sm text-[var(--muted)]">No linked wallets found.</p>
             ) : (
               <>
                 <div className="mt-4">
-                  <LinkGraph subject={result.wallet} links={result.links} proven={result.proven} />
+                  <LinkGraph subject={r.wallet} links={r.signals} proven={r.proven} />
                 </div>
-                <ul className="mt-4 grid gap-2 text-sm">
-                  {Object.keys(result.proven).map((other) => {
-                    // The contract stores one description for both wallets; the link builder's
-                    // evidence says which way the funds went from this wallet's side.
-                    const seen = result.links.find((l) => l.other === other && (l.type === "funded" || l.type === "funded_by"));
-                    return (
-                      <li key={`proven:${other}`} className="flex flex-wrap gap-x-3">
-                        <span className="font-medium text-[var(--bad)]">Proven by GenLayer</span>
-                        <span className="font-mono text-[var(--muted)]">{short(other)}</span>
-                        <span className="text-[var(--muted)]">{seen?.evidence[0]?.description ?? "first-funding proof verified on-chain"}</span>
-                      </li>
-                    );
-                  })}
-                  {result.links
-                    .filter((l) => !(l.other in result.proven))
-                    .map((l) => (
-                      <li key={`${l.type}:${l.other}`} className="flex flex-wrap gap-x-3">
-                        <span className="font-medium">{l.type.replaceAll("_", " ")}</span>
-                        <span className="font-mono text-[var(--muted)]">{short(l.other)}</span>
-                        <span className="text-[var(--muted)]">{l.evidence[0]?.description}</span>
-                      </li>
-                    ))}
+                <ul className="mt-4 grid gap-3 text-sm">
+                  {r.linkedWallets.map((l) => (
+                    <li key={l.wallet}>
+                      <div className="flex flex-wrap gap-x-3">
+                        <span className="font-medium" style={{ color: l.proven ? "var(--bad)" : "var(--fg)" }}>
+                          {l.proven ? "Proven by GenLayer" : "Signal only"}
+                        </span>
+                        <span className="font-mono text-[var(--muted)]">{short(l.wallet)}</span>
+                        <span className="text-[var(--muted)]">{l.evidence}</span>
+                      </div>
+                      {l.inheritedLosses.map((x) => (
+                        <p key={x.caseId} className="mt-1 pl-4 text-xs" style={{ color: "var(--bad)" }}>
+                          Lost{" "}
+                          <a href={x.explorer} target="_blank" rel="noreferrer" className="font-mono underline">
+                            case #{x.caseId}
+                          </a>{" "}
+                          → {x.effect}
+                        </p>
+                      ))}
+                    </li>
+                  ))}
                 </ul>
               </>
             )}

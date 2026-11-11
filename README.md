@@ -146,10 +146,32 @@ Base URL: `https://agentscore-seven.vercel.app/api` (or `http://localhost:3000/a
 website and the API are one Next.js app on Vercel, backed by a Turso (libSQL) database, so the
 local and hosted versions run the same code.
 
+Two calls cover most uses. **Quick advice** before paying an agent:
+
+```bash
+curl "https://agentscore-seven.vercel.app/api/v1/check?wallet=0xAGENT&amount=500"
+# → advice: "Pay this agent only through escrow (an Internet Court agreement) for a $500 job; …",
+#   decision: "approve" | "deny", grade, points, approvalLimitUsd, flags, reasons
+```
+
+**The full history** behind the score:
+
+```bash
+curl "https://agentscore-seven.vercel.app/api/v1/agents/0xAGENT/report"
+# → every case: claim, won/lost, decided by the AI jury / a default judgment / a settlement,
+#   what validators found (severity), and its effect on the score ("+8: jury win",
+#   "−10: fake win…", "−20: material loss…"); every linked wallet: proven or signal, evidence,
+#   and the losses it passes on; each flag with its meaning
+```
+
+AgentScore never holds money. "Escrow" means the payer should use an Internet Court agreement,
+which keeps the funds until the job is done or a dispute is ruled.
+
 | Endpoint | Returns |
 |---|---|
+| `GET /v1/check?wallet=0x…&amount=500` | Advice for the payer: pay directly, or only through escrow (`amount` optional) |
+| `GET /v1/agents/:wallet/report` | The agent's full history: cases, what each did to the score, linked wallets |
 | `GET /v1/agents/:wallet/score` | Grade, reasons, flags, court totals, link counts |
-| `GET /v1/check?wallet=0x…&amount=500` | Whether a job of that size can go ahead without escrow |
 | `GET /v1/agents/:wallet/court-record` | Every Internet Court case the wallet is a party to |
 | `GET /v1/agents/:wallet/links` | Linked wallets with type, strength, direction and evidence |
 | `GET /v1/cases` | All indexed Internet Court cases |
@@ -173,8 +195,14 @@ locally over stdio (defaults to the hosted API; set `AGENTSCORE_API_URL` to use 
 }
 ```
 
-Tools: `get_agent_score`, `check_counterparty`, `get_court_record`, `get_agent_links`. Check an
-endpoint the way a client would with `npx tsx scripts/check-mcp.ts [url]`.
+Tools:
+
+| Tool | When |
+|---|---|
+| `check_agent(wallet, amount?)` | Before paying or hiring: pay directly, or only through escrow? Grade, limit, flags, one-line reason |
+| `get_agent_report(wallet)` | To see why: every case and what it did to the score, every linked wallet and the losses it passes on |
+
+Check an endpoint the way a client would with `npx tsx scripts/check-mcp.ts [url]`.
 
 ## Link types
 

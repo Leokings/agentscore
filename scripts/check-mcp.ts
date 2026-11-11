@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 /**
- * Smoke test for the hosted MCP endpoint, as a real MCP client: lists the tools and calls each.
+ * Smoke test for an MCP endpoint, as a real MCP client: lists the tools and calls each.
  *   npx tsx scripts/check-mcp.ts                                       # the live site
  *   npx tsx scripts/check-mcp.ts http://localhost:3000/api/mcp         # local dev server
  */
@@ -17,17 +17,16 @@ const { tools } = await client.listTools();
 console.log(`${url}: ${tools.length} tools: ${tools.map((t) => t.name).join(", ")}`);
 
 const calls: Array<[string, Record<string, unknown>]> = [
-  ["get_agent_score", { wallet: AGENT_X }],
-  ["check_counterparty", { wallet: AGENT_X, amount: 50 }],
-  ["get_court_record", { wallet: AGENT_X }],
-  ["get_agent_links", { wallet: AGENT_X }],
+  ["check_agent", { wallet: AGENT_X }],
+  ["check_agent", { wallet: AGENT_X, amount: 50 }],
+  ["get_agent_report", { wallet: AGENT_X }],
 ];
 let failed = 0;
 for (const [name, args] of calls) {
   const r = await client.callTool({ name, arguments: args });
   const text = (r.content as Array<{ type: string; text?: string }>)[0]?.text ?? "";
   if (r.isError) failed++;
-  console.log(`${r.isError ? "✗" : "✓"} ${name}: ${text.slice(0, 140)}${text.length > 140 ? "…" : ""}`);
+  console.log(`${r.isError ? "✗" : "✓"} ${name}(${JSON.stringify(args)}): ${text.replace(/\s+/g, " ").slice(0, 160)}…`);
 }
 await client.close();
 process.exit(failed ? 1 : 0);

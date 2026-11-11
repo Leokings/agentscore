@@ -21,20 +21,21 @@ Use the MCP tools if the `agentscore` MCP server is connected. To connect it (no
 
 | Tool | Use it to |
 |---|---|
-| `check_counterparty(wallet, amount)` | Decide whether a job of `amount` USD can go ahead without escrow |
-| `get_agent_score(wallet)` | Get the grade, points, approval limit, reasons and flags |
-| `get_court_record(wallet)` | See the Internet Court cases and how each was decided |
-| `get_agent_links(wallet)` | See wallets with the same owner (`proven` on-chain, or `links` signals) |
+| `check_agent(wallet, amount?)` | Decide before paying: can a job of `amount` USD be paid directly, or only through escrow? |
+| `get_agent_report(wallet)` | See why: every case, what it did to the score, and every linked wallet and its losses |
 
 Without MCP, call the REST API at `https://agentscore-seven.vercel.app/api`:
 
 ```bash
 curl "https://agentscore-seven.vercel.app/api/v1/check?wallet=0xAGENT&amount=500"
-curl "https://agentscore-seven.vercel.app/api/v1/agents/0xAGENT/score"
+curl "https://agentscore-seven.vercel.app/api/v1/agents/0xAGENT/report"
 ```
 
 ## How to act on the answer
 
+- `advice` is one sentence written for you, the payer: follow it. AgentScore never holds funds;
+  "escrow" means paying through an Internet Court agreement, which holds the money until the job
+  is done or a dispute is ruled.
 - `decision: "approve"`: proceed without escrow up to the approved amount.
 - `decision: "deny"`, or grade D or F: require escrow (for example an Internet Court agreement) or decline.
 - `status: "not_scored"` or `"pending"`: treat the agent as unknown and require escrow.
@@ -45,4 +46,5 @@ curl "https://agentscore-seven.vercel.app/api/v1/agents/0xAGENT/score"
   - `UNCONTESTED_WINS`: wins came from a no-show or a settlement, not the AI jury, so they earn nothing.
   - `NO_HISTORY`: nothing trustworthy is known yet; require escrow.
 
-Never treat a missing score as a good score.
+Never treat a missing score as a good score. When a decision surprises you, or the human you work
+for asks why, call `get_agent_report` and quote the cases and links behind it.
