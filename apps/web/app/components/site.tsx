@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MobileMenu } from "./MobileMenu";
 import type { ReactNode } from "react";
 
 export const SITE = {
@@ -52,14 +53,15 @@ export function Nav() {
             href={SITE.github}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex h-9 items-center gap-2 rounded-full border border-[var(--border)] px-3.5 text-sm text-[var(--muted)] hover:border-[var(--border-strong)] hover:text-[var(--fg)]"
+            className="hidden h-9 items-center gap-2 rounded-full border border-[var(--border)] px-3.5 text-sm text-[var(--muted)] hover:border-[var(--border-strong)] hover:text-[var(--fg)] md:inline-flex"
           >
             <GitHubIcon />
-            <span className="hidden sm:inline">GitHub</span>
+            <span>GitHub</span>
           </a>
-          <a href="/#check" className="inline-flex h-9 items-center rounded-full bg-[var(--accent)] px-4 text-sm font-medium text-[var(--accent-fg)] hover:opacity-90">
+          <a href="/#check" className="inline-flex h-10 items-center rounded-full bg-[var(--accent)] px-4 text-sm font-medium text-[var(--accent-fg)] hover:opacity-90 md:h-9">
             Check an agent
           </a>
+          <MobileMenu />
         </div>
       </div>
     </header>
@@ -101,8 +103,8 @@ export function PartnerMarks() {
 export function Footer() {
   return (
     <footer className="border-t border-[var(--border)]">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
-        <div>
+      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+        <div className="col-span-2 md:col-span-1">
           <Logo />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-[var(--muted)]">
             Credit scores for AI agents. Built for the Internet Court Builders mission. Test networks only: Base Sepolia and GenLayer StudioNet.
@@ -123,10 +125,10 @@ function FooterCol({ title, links }: { title: string; links: Array<[string, stri
   return (
     <div>
       <p className="text-sm font-medium">{title}</p>
-      <ul className="mt-3 grid gap-2 text-sm text-[var(--muted)]">
+      <ul className="mt-2 grid text-sm text-[var(--muted)]">
         {links.map(([label, href]) => (
           <li key={label}>
-            <a href={href} className="hover:text-[var(--fg)]" {...(href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}>
+            <a href={href} className="inline-block py-1.5 hover:text-[var(--fg)]" {...(href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}>
               {label}
             </a>
           </li>

@@ -115,7 +115,7 @@ export default function Home() {
         </section>
 
         {/* Problem */}
-        <section className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:py-24 sm:px-6">
           <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-end">
             <SectionHeader eyebrow="The problem" title={<>Agents pay each other now. Nobody can see who they&apos;re dealing with.</>} />
             <p className="text-[1.05rem] leading-relaxed text-[var(--muted)]">
@@ -127,9 +127,9 @@ export default function Home() {
         </section>
 
         {/* How it works */}
-        <section id="how" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-24 sm:px-6">
+        <section id="how" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-16 sm:pb-24 sm:px-6">
           <SectionHeader eyebrow="How it works" title="Three partners, one score." />
-          <div className="mt-12 grid gap-5 lg:grid-cols-3">
+          <div className="mt-10 grid gap-4 sm:mt-12 sm:gap-5 lg:grid-cols-3">
             {STEPS.map((s) => (
               <article key={s.n} className="card flex flex-col overflow-hidden">
                 <div className="flex h-44 items-center justify-center border-b border-[var(--border)] bg-[var(--card-2)]">{s.visual}</div>
@@ -151,12 +151,12 @@ export default function Home() {
 
         {/* Defenses */}
         <section id="defenses" className="scroll-mt-20 border-t border-[var(--border)] bg-[var(--bg-2)]">
-          <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24 sm:px-6">
             <SectionHeader eyebrow="What it stops" title="Every trick, tried live on-chain.">
               Each attack below was staged with real wallets on Base Sepolia and run through the GenLayer contract. Click through to see the
               score it produced.
             </SectionHeader>
-            <div className="mt-12 grid gap-5 md:grid-cols-2">
+            <div className="mt-10 grid gap-4 sm:mt-12 sm:gap-5 md:grid-cols-2">
               {DEFENSES.map((d) => (
                 <article key={d.tag} className="card p-6">
                   <span className="inline-flex rounded-full px-2.5 py-0.5 font-mono text-[0.7rem] uppercase tracking-[0.12em]" style={{ color: d.tone, background: "var(--chip)" }}>
@@ -167,7 +167,7 @@ export default function Home() {
                     {d.attack}
                   </p>
                   <p className="mt-2 text-[1.02rem] leading-relaxed">{d.answer}</p>
-                  <a href={`/agent/${d.example.wallet}`} className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-[var(--accent)] hover:underline">
+                  <a href={`/agent/${d.example.wallet}`} className="mt-3 inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-[var(--accent)] hover:underline">
                     See the live score <span aria-hidden>→</span>
                   </a>
                 </article>
@@ -183,7 +183,7 @@ export default function Home() {
         </section>
 
         {/* Grades */}
-        <section id="grades" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-24 sm:px-6">
+        <section id="grades" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:py-24 sm:px-6">
           <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:items-center">
             <SectionHeader eyebrow="The grade" title="A plain formula anyone can check.">
               Start at 50. +8 for each jury win (up to 5). −8, −20 or −40 for each loss, depending on what the jury found, including losses of
@@ -191,12 +191,12 @@ export default function Home() {
             </SectionHeader>
             <div className="card overflow-hidden">
               {GRADES.map((g, i) => (
-                <div key={g.g} className={`flex items-center gap-5 px-5 py-4 ${i ? "border-t border-[var(--border)]" : ""}`}>
+                <div key={g.g} className={`flex items-center gap-3 px-4 py-3.5 sm:gap-5 sm:px-5 sm:py-4 ${i ? "border-t border-[var(--border)]" : ""}`}>
                   <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl font-bold" style={{ color: g.color, background: "var(--chip)" }}>
                     {g.g}
                   </span>
-                  <span className="font-mono text-sm text-[var(--muted)]">{g.min} points</span>
-                  <span className="ml-auto text-right text-sm font-medium">{g.limit === "Escrow" ? "Pay only through escrow" : `Pay directly up to ${g.limit}`}</span>
+                  <span className="font-mono text-[0.8rem] text-[var(--muted)] sm:text-sm">{g.min} pts</span>
+                  <span className="ml-auto text-right text-[0.82rem] font-medium leading-snug sm:text-sm">{g.limit === "Escrow" ? "Pay only through escrow" : `Pay directly up to ${g.limit}`}</span>
                 </div>
               ))}
               <div className="border-t border-[var(--border)] bg-[var(--card-2)] px-5 py-3 text-xs text-[var(--muted)]">
@@ -208,7 +208,7 @@ export default function Home() {
 
         {/* Developers */}
         <section id="developers" className="scroll-mt-20 border-t border-[var(--border)] bg-[var(--bg-2)]">
-          <div className="mx-auto grid max-w-6xl gap-12 px-4 py-24 sm:px-6 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="mx-auto grid max-w-6xl gap-12 px-4 py-16 sm:py-24 sm:px-6 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="min-w-0">
               <SectionHeader eyebrow="For developers and agents" title="Two calls. Any agent can use them.">
                 Ask for quick advice before paying, or pull the full history behind a score. Same data over REST, MCP, the agent skill or
@@ -241,7 +241,7 @@ export default function Home() {
         {/* Closing */}
         <section className="relative overflow-hidden">
           <div className="glow pointer-events-none absolute inset-x-0 top-0 h-[360px]" />
-          <div className="relative mx-auto max-w-3xl px-4 py-24 text-center sm:px-6">
+          <div className="relative mx-auto max-w-3xl px-4 py-16 sm:py-24 text-center sm:px-6">
             <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl">Check the agent. Then pay it.</h2>
             <p className="mx-auto mt-4 max-w-xl text-[var(--muted)]">Paste a wallet, or give your agent the skill and let it check every counterparty on its own.</p>
             <div className="mx-auto mt-8 max-w-xl text-left">

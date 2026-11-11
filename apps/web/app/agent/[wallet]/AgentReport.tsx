@@ -118,20 +118,20 @@ export function AgentReport({ wallet }: { wallet: string }) {
   return (
     <div className="grid gap-6">
       {/* Score */}
-      <section className="card relative overflow-hidden p-6 sm:p-8">
+      <section className="card relative overflow-hidden p-5 sm:p-8">
         <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full blur-3xl" style={{ background: gradeColor, opacity: 0.12 }} />
         <div className="relative flex flex-wrap items-center gap-6 sm:gap-8">
           <div
-            className="flex h-28 w-28 shrink-0 items-center justify-center rounded-3xl text-7xl font-bold sm:h-32 sm:w-32"
+            className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl text-5xl font-bold sm:h-32 sm:w-32 sm:rounded-3xl sm:text-7xl"
             style={{ color: gradeColor, background: "var(--chip)", boxShadow: `0 0 0 1px ${gradeColor}33` }}
           >
             {r.grade ?? "–"}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="font-mono text-sm text-[var(--muted)]">{r.wallet}</p>
+            <p className="font-mono text-xs text-[var(--muted)] sm:text-sm">{r.wallet}</p>
             {r.status === "scored" ? (
               <>
-                <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+                <h1 className="mt-2 text-xl font-semibold tracking-tight sm:text-3xl">
                   {limit > 0 ? `Can be paid directly for jobs up to $${limit.toLocaleString()}` : "Pay this agent only through escrow"}
                 </h1>
                 <p className="mt-2 text-sm text-[var(--muted)]">
@@ -163,7 +163,7 @@ export function AgentReport({ wallet }: { wallet: string }) {
       </section>
 
       {/* History */}
-      <section className="card p-6 sm:p-8">
+      <section className="card p-5 sm:p-8">
         <h2 className="text-lg font-semibold">Internet Court history</h2>
         <p className="mt-1 text-sm text-[var(--muted)]">
           {r.cases.length === 0 ? "No cases on Internet Court yet." : "Every case this wallet is a party to, what the validators found, and what it did to the score."}
@@ -175,7 +175,7 @@ export function AgentReport({ wallet }: { wallet: string }) {
               return (
                 <article key={c.address} className="rounded-xl border border-[var(--border)] bg-[var(--card-2)] p-4">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                    <a href={c.explorer} target="_blank" rel="noreferrer" className="font-mono text-sm font-medium hover:text-[var(--accent)]">
+                    <a href={c.explorer} target="_blank" rel="noreferrer" className="-my-2 inline-flex min-h-10 items-center font-mono text-sm font-medium hover:text-[var(--accent)]">
                       Case #{c.id}
                     </a>
                     <span className="text-xs text-[var(--faint)]">{c.role}</span>
@@ -185,7 +185,7 @@ export function AgentReport({ wallet }: { wallet: string }) {
                     <span className="rounded-full px-2 py-0.5 text-xs" style={{ background: "var(--chip)", color: d.tone }} title={c.decidedBy}>
                       {d.label}
                     </span>
-                    <span className="ml-auto text-xs font-medium [overflow-wrap:normal]" style={{ color: effectColor(c.effect) }}>
+                    <span className="basis-full text-xs font-medium sm:ml-auto sm:basis-auto sm:text-right" style={{ color: effectColor(c.effect) }}>
                       {c.effect}
                     </span>
                   </div>
@@ -199,7 +199,7 @@ export function AgentReport({ wallet }: { wallet: string }) {
       </section>
 
       {/* Links */}
-      <section className="card p-6 sm:p-8">
+      <section className="card p-5 sm:p-8">
         <h2 className="text-lg font-semibold">Wallets with the same owner</h2>
         <p className="mt-1 text-sm text-[var(--muted)]">
           <Dot color="var(--bad)" /> proven by GenLayer: losses count here · <Dot color="var(--warn)" /> verified signal: escrow above $100 · <Dot color="var(--faint)" /> hint: not counted
@@ -220,7 +220,7 @@ export function AgentReport({ wallet }: { wallet: string }) {
                       <span className="font-medium" style={{ color: t.color }}>
                         {t.label}
                       </span>
-                      <a href={`/agent/${l.wallet}`} className="font-mono text-[var(--muted)] hover:text-[var(--fg)]">
+                      <a href={`/agent/${l.wallet}`} className="-my-2 inline-flex min-h-10 items-center font-mono text-[var(--muted)] underline decoration-[var(--border-strong)] underline-offset-4 hover:text-[var(--fg)]">
                         {short(l.wallet)}
                       </a>
                     </div>
@@ -259,7 +259,7 @@ function Dot({ color }: { color: string }) {
 function ReportSkeleton({ wallet }: { wallet: string }) {
   return (
     <div className="grid gap-6" aria-busy="true">
-      <section className="card p-6 sm:p-8">
+      <section className="card p-5 sm:p-8">
         <div className="flex items-center gap-6">
           <div className="h-28 w-28 animate-pulse rounded-3xl bg-[var(--chip)] sm:h-32 sm:w-32" />
           <div className="min-w-0 flex-1">

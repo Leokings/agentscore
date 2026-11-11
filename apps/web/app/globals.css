@@ -1,60 +1,31 @@
 @import "tailwindcss";
 
-/* AgentScore design tokens. Dark is the primary look; light mode is fully supported. */
+/* AgentScore design tokens: a white, light-only look with ink type and one electric-blue accent. */
 :root {
   color-scheme: light;
-  --bg: #f6f7f9;
-  --bg-2: #eef1f5;
+  --bg: #ffffff;
+  --bg-2: #f7f8fb;
   --card: #ffffff;
-  --card-2: #f3f5f8;
-  --chip: #eef1f5;
-  --border: rgba(10, 15, 25, 0.09);
-  --border-strong: rgba(10, 15, 25, 0.16);
-  --fg: #0a0f19;
-  --muted: #566070;
-  --faint: #8a93a3;
-  --accent: #0e9f6e;
+  --card-2: #f9fafc;
+  --chip: #f1f3f8;
+  --border: #e7e9ef;
+  --border-strong: #d4d8e1;
+  --fg: #0b1220;
+  --muted: #586174;
+  --faint: #98a1b3;
+  --accent: #2d5bff;
   --accent-fg: #ffffff;
-  --accent-soft: rgba(14, 159, 110, 0.1);
-  --glow: rgba(14, 159, 110, 0.18);
-  --good: #16a34a;
-  --warn: #c2790b;
-  --bad: #dc2626;
-  --grade-a: #16a34a;
-  --grade-b: #65a30d;
-  --grade-c: #ca8a04;
-  --grade-d: #ea580c;
-  --grade-f: #dc2626;
-  --shadow: 0 1px 2px rgba(10, 15, 25, 0.04), 0 8px 24px rgba(10, 15, 25, 0.06);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --bg: #07090d;
-    --bg-2: #0b0f15;
-    --card: #0e131a;
-    --card-2: #131a23;
-    --chip: #18202b;
-    --border: rgba(255, 255, 255, 0.07);
-    --border-strong: rgba(255, 255, 255, 0.14);
-    --fg: #eef2f7;
-    --muted: #919bab;
-    --faint: #5e6878;
-    --accent: #6ee7b7;
-    --accent-fg: #04130d;
-    --accent-soft: rgba(110, 231, 183, 0.1);
-    --glow: rgba(110, 231, 183, 0.16);
-    --good: #4ade80;
-    --warn: #fbbf24;
-    --bad: #f87171;
-    --grade-a: #4ade80;
-    --grade-b: #a3e635;
-    --grade-c: #facc15;
-    --grade-d: #fb923c;
-    --grade-f: #f87171;
-    --shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 20px 50px rgba(0, 0, 0, 0.35);
-  }
+  --accent-soft: rgba(45, 91, 255, 0.08);
+  --glow: rgba(45, 91, 255, 0.1);
+  --good: #12b76a;
+  --warn: #f79009;
+  --bad: #f04438;
+  --grade-a: #12b76a;
+  --grade-b: #66c61c;
+  --grade-c: #eaaa08;
+  --grade-d: #f79009;
+  --grade-f: #f04438;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 12px 32px -12px rgba(16, 24, 40, 0.1);
 }
 
 html {
@@ -86,6 +57,13 @@ pre,
   background: radial-gradient(600px 300px at 50% 0%, var(--glow), transparent 70%);
 }
 
+/* One focus ring for keyboard users, in the brand blue. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
 .eyebrow {
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.72rem;
@@ -94,14 +72,9 @@ pre,
   color: var(--accent);
 }
 
-/* Partner logos as one monochrome strip: ink in light mode, white in dark mode. */
+/* Partner logos as one monochrome ink strip. */
 .partner-logo {
   filter: brightness(0);
-}
-@media (prefers-color-scheme: dark) {
-  .partner-logo {
-    filter: brightness(0) invert(1);
-  }
 }
 
 .card {

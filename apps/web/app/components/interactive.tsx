@@ -36,7 +36,7 @@ export function HeroLookup() {
           spellCheck={false}
           className="min-w-0 flex-1 bg-transparent px-3 py-2.5 font-mono text-sm outline-none placeholder:text-[var(--faint)]"
         />
-        <button className="rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-fg)] hover:opacity-90">Check agent</button>
+        <button className="min-h-11 rounded-xl bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--accent-fg)] hover:opacity-90">Check agent</button>
       </form>
       {error && <p className="mt-2 text-sm text-[var(--bad)]">{error}</p>}
       <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -47,7 +47,7 @@ export function HeroLookup() {
             type="button"
             onClick={() => go(ex.wallet)}
             title={ex.note}
-            className="rounded-full border border-[var(--border)] px-3 py-1 text-xs text-[var(--muted)] transition hover:border-[var(--accent)] hover:text-[var(--fg)]"
+            className="min-h-10 rounded-full border border-[var(--border)] px-3.5 text-[0.8rem] text-[var(--muted)] transition hover:border-[var(--accent)] hover:text-[var(--fg)] sm:min-h-8 sm:text-xs"
           >
             {ex.label}
           </button>
@@ -68,7 +68,7 @@ function CopyButton({ text }: { text: string }) {
           setTimeout(() => setCopied(false), 1500);
         });
       }}
-      className="shrink-0 rounded-lg border border-[var(--border)] px-2.5 py-1 font-mono text-[0.7rem] text-[var(--muted)] hover:text-[var(--fg)]"
+      className="min-h-10 shrink-0 rounded-lg border border-[var(--border)] px-3 font-mono text-[0.72rem] text-[var(--muted)] hover:text-[var(--fg)] sm:min-h-8"
       aria-label="Copy command"
     >
       {copied ? "copied" : "copy"}
@@ -94,7 +94,7 @@ export function InstallBox() {
             key={x.id}
             type="button"
             onClick={() => setTab(x.id)}
-            className={`px-4 py-2.5 font-mono text-[0.72rem] uppercase tracking-[0.12em] transition ${
+            className={`min-h-11 flex-1 px-2 font-mono text-[0.66rem] uppercase tracking-[0.1em] transition sm:flex-none sm:px-4 sm:text-[0.72rem] sm:tracking-[0.12em] ${
               tab === x.id ? "text-[var(--fg)] shadow-[inset_0_-2px_0_var(--accent)]" : "text-[var(--faint)] hover:text-[var(--muted)]"
             }`}
           >
@@ -166,7 +166,7 @@ export function DevTabs() {
             key={id}
             type="button"
             onClick={() => setTab(id)}
-            className={`rounded-lg px-3 py-1.5 text-sm transition ${tab === id ? "bg-[var(--chip)] text-[var(--fg)]" : "text-[var(--muted)] hover:text-[var(--fg)]"}`}
+            className={`min-h-10 rounded-lg px-3 text-sm transition ${tab === id ? "bg-[var(--chip)] text-[var(--fg)]" : "text-[var(--muted)] hover:text-[var(--fg)]"}`}
           >
             {x.title}
           </button>

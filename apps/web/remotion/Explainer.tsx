@@ -11,21 +11,23 @@ export const DURATION = 45 * FPS;
 export const WIDTH = 1920;
 export const HEIGHT = 1080;
 
+// The site's white palette: ink type, one electric-blue accent.
 const C = {
-  bg: "#07090d",
-  card: "#0e131a",
-  card2: "#131a23",
-  line: "rgba(255,255,255,0.08)",
-  fg: "#eef2f7",
-  muted: "#919bab",
-  faint: "#5e6878",
-  accent: "#6ee7b7",
-  red: "#f87171",
-  amber: "#fbbf24",
-  orange: "#fb923c",
-  green: "#4ade80",
-  violet: "#a5b4fc",
+  bg: "#ffffff",
+  card: "#ffffff",
+  card2: "#f7f8fb",
+  line: "#e7e9ef",
+  fg: "#0b1220",
+  muted: "#586174",
+  faint: "#98a1b3",
+  accent: "#2d5bff",
+  red: "#f04438",
+  amber: "#f79009",
+  orange: "#f79009",
+  green: "#12b76a",
+  violet: "#6b7cff",
 };
+const SHADOW = "0 2px 4px rgba(16,24,40,0.04), 0 24px 60px -18px rgba(16,24,40,0.18)";
 const SANS = "var(--font-sans), Geist, Inter, ui-sans-serif, system-ui, sans-serif";
 const MONO = "var(--font-mono), 'Geist Mono', ui-monospace, Menlo, monospace";
 
@@ -129,7 +131,7 @@ function Panel({ x, y, w, h, children, style }: { x: number; y: number; w: numbe
         background: C.card,
         border: `1.5px solid ${C.line}`,
         borderRadius: 28,
-        boxShadow: "0 30px 80px rgba(0,0,0,0.45)",
+        boxShadow: SHADOW,
         fontFamily: SANS,
         color: C.fg,
         ...style,
@@ -150,7 +152,7 @@ function Wallet({ x, y, label, sub, tone = C.fg, scale = 1, opacity = 1, glow }:
           background: C.card,
           border: `1.5px solid ${glow ?? C.line}`,
           borderRadius: 24,
-          boxShadow: glow ? `0 0 60px ${glow}55` : "0 24px 60px rgba(0,0,0,0.4)",
+          boxShadow: glow ? `0 0 0 4px ${glow}1f, ${SHADOW}` : SHADOW,
           fontFamily: SANS,
         }}
       >
@@ -219,7 +221,7 @@ function Hook() {
           fontFamily: MONO,
           fontSize: 26,
           fontWeight: 700,
-          color: "#04130d",
+          color: "#ffffff",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -325,6 +327,23 @@ function Validators() {
       <Caption top={150} size={64}>
         Validators check every ruling and every link.
       </Caption>
+      {/* All connecting lines first, so they sit under the validator nodes. */}
+      <svg width={WIDTH} height={HEIGHT} style={{ position: "absolute", inset: 0 }}>
+        {Array.from({ length: n }, (_, i) => {
+          const angle = (-90 + (360 / n) * i) * (Math.PI / 180);
+          return (
+            <line
+              key={i}
+              x1={center.x}
+              y1={center.y}
+              x2={center.x + Math.cos(angle) * 300}
+              y2={center.y + Math.sin(angle) * 230}
+              stroke={i < agreed ? C.accent : C.line}
+              strokeWidth={3}
+            />
+          );
+        })}
+      </svg>
       {Array.from({ length: n }, (_, i) => {
         const angle = (-90 + (360 / n) * i) * (Math.PI / 180);
         const x = center.x + Math.cos(angle) * 300;
@@ -332,31 +351,28 @@ function Validators() {
         const on = i < agreed;
         const p = usePopAt(10 + i * 8);
         return (
-          <div key={i}>
-            <svg width={WIDTH} height={HEIGHT} style={{ position: "absolute", inset: 0 }}>
-              <line x1={center.x} y1={center.y} x2={x} y2={y} stroke={on ? C.accent : C.line} strokeWidth={3} />
-            </svg>
-            <div
-              style={{
-                position: "absolute",
-                left: x,
-                top: y,
-                transform: `translate(-50%,-50%) scale(${p})`,
-                width: 120,
-                height: 120,
-                borderRadius: 60,
-                background: on ? `${C.accent}22` : C.card,
-                border: `2px solid ${on ? C.accent : C.line}`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontFamily: MONO,
-                fontSize: on ? 54 : 26,
-                color: on ? C.accent : C.muted,
-              }}
-            >
-              {on ? "✓" : `V${i + 1}`}
-            </div>
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              left: x,
+              top: y,
+              transform: `translate(-50%,-50%) scale(${p})`,
+              width: 120,
+              height: 120,
+              borderRadius: 60,
+              background: on ? "#eef2ff" : C.card,
+              border: `2px solid ${on ? C.accent : C.line}`,
+              boxShadow: SHADOW,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontFamily: MONO,
+              fontSize: on ? 54 : 26,
+              color: on ? C.accent : C.muted,
+            }}
+          >
+            {on ? "✓" : `V${i + 1}`}
           </div>
         );
       })}
@@ -424,7 +440,7 @@ function ScoreScene() {
       </div>
       <div style={{ position: "absolute", left: 820, top: 340, fontFamily: SANS, color: C.fg }}>
         <div style={{ fontFamily: MONO, fontSize: 24, color: C.muted }}>0xnew…77</div>
-        <div style={{ fontSize: 52, fontWeight: 600, marginTop: 10, letterSpacing: "-0.02em" }}>{flip ? "30 points · not a clean slate" : "Looks new and clean…"}</div>
+        <div style={{ fontSize: 52, fontWeight: 600, marginTop: 10, letterSpacing: "-0.02em" }}>{flip ? "42 points · not a clean slate" : "Looks new and clean…"}</div>
         <div style={{ marginTop: 34, display: "flex", flexDirection: "column", gap: 18 }}>
           {flags.map((f) => {
             const fp = usePopAt(f.d);
@@ -497,7 +513,7 @@ function Cta() {
       </div>
       <div style={{ position: "absolute", top: 830, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", gap: 110, opacity: logos }}>
         {PARTNERS.map((l) => (
-          <Img key={l.name} src={asset(l.src)} style={{ height: l.h, width: "auto", filter: "brightness(0) invert(1)" }} />
+          <Img key={l.name} src={asset(l.src)} style={{ height: l.h, width: "auto", filter: "brightness(0)" }} />
         ))}
       </div>
     </SceneFade>
@@ -507,7 +523,7 @@ function Cta() {
 export function Explainer() {
   return (
     <AbsoluteFill style={{ background: C.bg }}>
-      <AbsoluteFill style={{ background: `radial-gradient(900px 500px at 50% 0%, ${C.accent}14, transparent 70%)` }} />
+      <AbsoluteFill style={{ background: `radial-gradient(1000px 520px at 50% 0%, ${C.accent}10, transparent 70%)` }} />
       <Sequence from={S.hook[0]} durationInFrames={S.hook[1] - S.hook[0]}>
         <Hook />
       </Sequence>

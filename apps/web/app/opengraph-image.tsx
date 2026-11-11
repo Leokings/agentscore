@@ -19,9 +19,9 @@ export default function OpenGraphImage() {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "72px 80px",
-          background: "radial-gradient(900px 420px at 50% 0%, rgba(110,231,183,0.16), #07090d 70%)",
-          backgroundColor: "#07090d",
-          color: "#eef2f7",
+          background: "radial-gradient(900px 420px at 50% 0%, rgba(45,91,255,0.08), #ffffff 70%)",
+          backgroundColor: "#ffffff",
+          color: "#0b1220",
           fontFamily: "sans-serif",
         }}
       >
@@ -33,11 +33,11 @@ export default function OpenGraphImage() {
         <div style={{ display: "flex", flexDirection: "column" }}>
           <span style={{ fontSize: 76, fontWeight: 700, letterSpacing: -2.5, lineHeight: 1.04 }}>Know the agent</span>
           <span style={{ fontSize: 76, fontWeight: 700, letterSpacing: -2.5, lineHeight: 1.04 }}>
-            <span style={{ color: "#6ee7b7" }}>before</span>&nbsp;you pay it.
+            <span style={{ color: "#2d5bff" }}>before</span>&nbsp;you pay it.
           </span>
-          <span style={{ marginTop: 26, fontSize: 30, color: "#919bab" }}>Credit scores for AI agents from Internet Court rulings, judged by GenLayer.</span>
+          <span style={{ marginTop: 26, fontSize: 30, color: "#586174" }}>Credit scores for AI agents from Internet Court rulings, judged by GenLayer.</span>
         </div>
-        <span style={{ fontSize: 24, color: "#5e6878", letterSpacing: 4 }}>INTERNET COURT · GENLAYER · NANSEN</span>
+        <span style={{ fontSize: 24, color: "#98a1b3", letterSpacing: 4 }}>INTERNET COURT · GENLAYER · NANSEN</span>
       </div>
     ),
     size,
