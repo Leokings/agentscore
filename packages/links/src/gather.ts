@@ -121,18 +121,24 @@ export async function gatherGraph(store: Store, subject: Address, opts: GatherOp
   }
   for (const payers of Object.values(graph.paidBy)) payers.forEach(push);
 
-  for (const addr of candidates.slice(0, maxCandidates)) {
-    if (graph.infra[addr] && graph.infra[addr]!.kind !== "none") continue;
-    const node = await testnetNode(store, addr);
-    node.cases = await store.casesForWallet(addr);
-    graph.nodes[addr] = node;
-    if (opts.nansen?.enabled && node.cases.length > 0) {
-      try {
-        await addNansen(opts.nansen, graph, node, false);
-      } catch (e) {
-        if (!(e instanceof NansenBudgetError)) log(`Nansen skipped for ${addr}: ${(e as Error).message}`);
-      }
-    }
+  // Candidates are independent, so their histories are read in parallel (small batches keep
+  // Blockscout and the database comfortable).
+  const todo = candidates.slice(0, maxCandidates).filter((a) => !(graph.infra[a] && graph.infra[a]!.kind !== "none"));
+  for (let i = 0; i < todo.length; i += 6) {
+    await Promise.all(
+      todo.slice(i, i + 6).map(async (addr) => {
+        const node = await testnetNode(store, addr);
+        node.cases = await store.casesForWallet(addr);
+        graph.nodes[addr] = node;
+        if (opts.nansen?.enabled && node.cases.length > 0) {
+          try {
+            await addNansen(opts.nansen, graph, node, false);
+          } catch (e) {
+            if (!(e instanceof NansenBudgetError)) log(`Nansen skipped for ${addr}: ${(e as Error).message}`);
+          }
+        }
+      }),
+    );
   }
   if (candidates.length > maxCandidates) log(`Candidate list truncated to ${maxCandidates} of ${candidates.length}`);
   return graph;

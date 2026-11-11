@@ -12,3 +12,4 @@ __pycache__/
 data/demo-wallets.json
 
 .vercel
+apps/web/public/skill.md

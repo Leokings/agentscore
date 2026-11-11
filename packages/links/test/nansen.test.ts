@@ -97,6 +97,21 @@ describe("Nansen credit protection", () => {
     await expect(client.relatedWallets(W2, "base")).rejects.toThrow(/cap for this run/);
   });
 
+  it("stops asking for the rest of the day once Nansen refuses for its daily limit", async () => {
+    let calls = 0;
+    vi.stubGlobal("fetch", vi.fn(async () => {
+      calls++;
+      return new Response(JSON.stringify({ message: "This API key would exceed its daily credit limit (40 of 40 credits used)" }), { status: 429 });
+    }));
+    const client = () => new NansenClient(store, "key", 40, 8, now);
+    await expect(client().relatedWallets(W, "base")).rejects.toBeInstanceOf(NansenBudgetError);
+    await expect(client().relatedWallets(W2, "base")).rejects.toBeInstanceOf(NansenBudgetError);
+    expect(calls).toBe(1);
+    advance(DAY);
+    await expect(client().relatedWallets(W2, "base")).rejects.toBeInstanceOf(NansenBudgetError);
+    expect(calls).toBe(2); // a new UTC day: asked again
+  });
+
   it("reuses an answer cached under the old date-based key instead of paying again", async () => {
     const calls = fakeNansen(() => earliest);
     const day = new Date(t).toISOString().slice(0, 10);

@@ -1,35 +1,149 @@
 @import "tailwindcss";
 
+/* AgentScore design tokens. Dark is the primary look; light mode is fully supported. */
 :root {
-  --bg: #f7f6f2;
-  --fg: #16161a;
-  --muted: #6b6b76;
+  color-scheme: light;
+  --bg: #f6f7f9;
+  --bg-2: #eef1f5;
   --card: #ffffff;
-  --chip: #f0eee7;
-  --border: #e4e2da;
-  --accent: #3d5afe;
+  --card-2: #f3f5f8;
+  --chip: #eef1f5;
+  --border: rgba(10, 15, 25, 0.09);
+  --border-strong: rgba(10, 15, 25, 0.16);
+  --fg: #0a0f19;
+  --muted: #566070;
+  --faint: #8a93a3;
+  --accent: #0e9f6e;
+  --accent-fg: #ffffff;
+  --accent-soft: rgba(14, 159, 110, 0.1);
+  --glow: rgba(14, 159, 110, 0.18);
   --good: #16a34a;
   --warn: #c2790b;
   --bad: #dc2626;
+  --grade-a: #16a34a;
+  --grade-b: #65a30d;
+  --grade-c: #ca8a04;
+  --grade-d: #ea580c;
+  --grade-f: #dc2626;
+  --shadow: 0 1px 2px rgba(10, 15, 25, 0.04), 0 8px 24px rgba(10, 15, 25, 0.06);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #101014;
-    --fg: #ececf1;
-    --muted: #9a9aa6;
-    --card: #18181f;
-    --chip: #23232c;
-    --border: #2a2a33;
-    --accent: #7c8cff;
+    color-scheme: dark;
+    --bg: #07090d;
+    --bg-2: #0b0f15;
+    --card: #0e131a;
+    --card-2: #131a23;
+    --chip: #18202b;
+    --border: rgba(255, 255, 255, 0.07);
+    --border-strong: rgba(255, 255, 255, 0.14);
+    --fg: #eef2f7;
+    --muted: #919bab;
+    --faint: #5e6878;
+    --accent: #6ee7b7;
+    --accent-fg: #04130d;
+    --accent-soft: rgba(110, 231, 183, 0.1);
+    --glow: rgba(110, 231, 183, 0.16);
     --good: #4ade80;
     --warn: #fbbf24;
     --bad: #f87171;
+    --grade-a: #4ade80;
+    --grade-b: #a3e635;
+    --grade-c: #facc15;
+    --grade-d: #fb923c;
+    --grade-f: #f87171;
+    --shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 20px 50px rgba(0, 0, 0, 0.35);
   }
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   overflow-wrap: anywhere;
   background: var(--bg);
   color: var(--fg);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+code,
+pre,
+.font-mono {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Faint grid used behind the hero and section headers. */
+.bg-grid {
+  background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black 30%, transparent 75%);
+}
+
+.glow {
+  background: radial-gradient(600px 300px at 50% 0%, var(--glow), transparent 70%);
+}
+
+.eyebrow {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.reveal {
+  animation: reveal 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.marquee {
+  animation: marquee 30s linear infinite;
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.pulse-dot {
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .marquee,
+  .pulse-dot {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
 }

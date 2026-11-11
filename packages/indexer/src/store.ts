@@ -222,6 +222,9 @@ function rowToCase(row: Record<string, unknown>, parties: CaseParty[]): CourtCas
     verdictCode: opt<number>(row.verdict_code) === undefined ? undefined : Number(row.verdict_code),
     verdictBlock: opt<number>(row.verdict_block) === undefined ? undefined : Number(row.verdict_block),
     statementVerdict: opt<StatementVerdict>(row.statement_verdict),
-    resolution: opt<CaseResolution>(row.resolution),
+    // Registered cases (e.g. TradeFxSettlement) are only ever decided by Internet Court's jury, and
+    // only the factory's VerdictReceived event proves it happened: an app can write its own reason.
+    resolution:
+      row.contract_type === "Agreement" ? opt<CaseResolution>(row.resolution) : row.verdict_code === null || row.verdict_code === undefined ? undefined : "jury",
   };
 }

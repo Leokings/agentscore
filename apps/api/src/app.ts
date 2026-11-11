@@ -95,6 +95,25 @@ export function createApp(store: Store, reader: ScoreReader = new ScoreReader())
 
   app.get("/v1/health", (c) => c.json({ ok: true }));
 
+  /** Headline numbers for the website: the Internet Court index and the GenLayer contract. */
+  app.get("/v1/stats", async (c) => {
+    await ensureFresh();
+    const cases = await store.allCases();
+    let judged: number | null = null;
+    try {
+      judged = await reader.judgedCases();
+    } catch (e) {
+      console.error("GenLayer stats read failed", e);
+    }
+    return c.json({
+      casesIndexed: cases.length,
+      casesRuled: cases.filter((k) => k.verdictCode !== undefined || k.resolution !== undefined).length,
+      juryCases: cases.filter((k) => k.resolution === "jury").length,
+      casesJudgedOnChain: judged,
+      contract: reader.contract ?? null,
+    });
+  });
+
   app.get("/v1/cases", async (c) => {
     await ensureFresh();
     return c.json({ cases: await store.allCases() });

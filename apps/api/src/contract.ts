@@ -46,6 +46,13 @@ export class ScoreReader {
     return raw as unknown as ContractScore;
   }
 
+  /** How many cases the contract has judged. */
+  async judgedCases(): Promise<number | null> {
+    if (!this.contract) return null;
+    const raw = (await this.client.readContract({ address: this.contract, functionName: "get_stats", args: [], jsonSafeReturn: true })) as { judged_cases?: number };
+    return typeof raw?.judged_cases === "number" ? raw.judged_cases : null;
+  }
+
   /** What the contract stored for a case, or null if it has not judged it. */
   async case(caseAddress: string): Promise<ContractCase | null> {
     if (!this.contract) return null;

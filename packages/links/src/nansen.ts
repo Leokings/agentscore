@@ -103,6 +103,10 @@ export class NansenClient {
     if (this.spent + credits > this.maxCredits) {
       throw new NansenBudgetError(`Nansen credit cap for this run reached (${this.spent}/${this.maxCredits})`);
     }
+    // Nansen already refused today (its own per-key daily limit): don't ask again until tomorrow.
+    if (await this.store.getMeta(`${this.dayKey()}:refused`)) {
+      throw new NansenBudgetError("Nansen refused further calls today (the key's daily limit)");
+    }
     const today = await this.spentToday();
     if (today + credits > this.dailyCredits) {
       throw new NansenBudgetError(`Nansen daily credit budget reached (${today}/${this.dailyCredits} today)`);
@@ -112,7 +116,14 @@ export class NansenClient {
       headers: { apikey: this.apiKey, "content-type": "application/json", accept: "application/json" },
       body: JSON.stringify(body),
     });
-    if (!res.ok) throw new Error(`Nansen ${res.status} for ${path}: ${(await res.text()).slice(0, 200)}`);
+    if (!res.ok) {
+      const text = (await res.text()).slice(0, 200);
+      if (res.status === 429 && /daily credit limit/i.test(text)) {
+        await this.store.setMeta(`${this.dayKey()}:refused`, "1");
+        throw new NansenBudgetError(`Nansen refused: ${text}`);
+      }
+      throw new Error(`Nansen ${res.status} for ${path}: ${text}`);
+    }
     // Nansen only charges for 2xx responses.
     this.spent += credits;
     await this.store.setMeta(this.dayKey(), String((await this.spentToday()) + credits));
