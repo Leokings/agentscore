@@ -41,12 +41,15 @@ interface Report {
   }>;
   linkedWallets: Array<{
     wallet: string;
+    tier?: "proven" | "signal" | "hint";
     proven: boolean;
+    effect?: string;
     evidence: string;
     inheritedLosses: Array<{ caseId: number; explorer: string; claim: string | null; severity: string; effect: string }>;
   }>;
   signals: WalletLink[];
   proven: Record<string, string>;
+  verifiedSignals?: Record<string, string>;
 }
 
 const FLAG_LABEL: Record<string, string> = {
@@ -55,6 +58,14 @@ const FLAG_LABEL: Record<string, string> = {
   UNCONTESTED_WINS: "No-show wins",
   UNCLEAR_RULINGS: "Unclear rulings",
   NO_HISTORY: "No trusted history",
+  POSSIBLE_SAME_OWNER: "Possible same owner",
+};
+
+/** How each tier of link looks and what it is called. */
+const TIER: Record<string, { label: string; color: string }> = {
+  proven: { label: "Proven by GenLayer", color: "var(--bad)" },
+  signal: { label: "Signal verified by GenLayer", color: "var(--warn)" },
+  hint: { label: "Hint only", color: "var(--muted)" },
 };
 
 const GRADE_COLOR: Record<string, string> = { A: "var(--good)", B: "var(--good)", C: "var(--warn)", D: "var(--bad)", F: "var(--bad)" };
@@ -254,26 +265,27 @@ export default function Home() {
           <section className="min-w-0 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-6">
             <h2 className="font-semibold">Wallets with the same owner</h2>
             <p className="mt-1 text-sm text-[var(--muted)]">
-              Solid lines are proven on-chain by GenLayer and count in the grade. Dashed lines are signals from Nansen and
-              wallet history that do not.
+              Red: proven by GenLayer, so its losses count here. Amber: a signal GenLayer verified, which costs no points
+              but means escrow above $100. Dashed: hints from Nansen and wallet history that do not count.
             </p>
             {r.linkedWallets.length === 0 ? (
               <p className="mt-4 text-sm text-[var(--muted)]">No linked wallets found.</p>
             ) : (
               <>
                 <div className="mt-4">
-                  <LinkGraph subject={r.wallet} links={r.signals} proven={r.proven} />
+                  <LinkGraph subject={r.wallet} links={r.signals} proven={r.proven} verifiedSignals={r.verifiedSignals ?? {}} />
                 </div>
                 <ul className="mt-4 grid gap-3 text-sm">
                   {r.linkedWallets.map((l) => (
                     <li key={l.wallet}>
                       <div className="flex flex-wrap gap-x-3">
-                        <span className="font-medium" style={{ color: l.proven ? "var(--bad)" : "var(--fg)" }}>
-                          {l.proven ? "Proven by GenLayer" : "Signal only"}
+                        <span className="font-medium" style={{ color: TIER[l.tier ?? (l.proven ? "proven" : "hint")]!.color }}>
+                          {TIER[l.tier ?? (l.proven ? "proven" : "hint")]!.label}
                         </span>
                         <span className="font-mono text-[var(--muted)]">{short(l.wallet)}</span>
                         <span className="text-[var(--muted)]">{l.evidence}</span>
                       </div>
+                      {l.effect && <p className="mt-0.5 pl-4 text-xs text-[var(--muted)]">{l.effect}</p>}
                       {l.inheritedLosses.map((x) => (
                         <p key={x.caseId} className="mt-1 pl-4 text-xs" style={{ color: "var(--bad)" }}>
                           Lost{" "}

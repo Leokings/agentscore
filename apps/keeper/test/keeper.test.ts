@@ -21,6 +21,10 @@ class FakeChain implements AgentScoreChain {
   async links(w: Address) {
     return this.links_.get(w) ?? {};
   }
+  signals_ = new Map<string, Record<string, string>>();
+  async signals(w: Address) {
+    return this.signals_.get(w) ?? {};
+  }
   async judgeCase(c: Address): Promise<TxOutcome> {
     this.writes.push(`judge ${c}`);
     const error = this.failNext[c];
@@ -33,7 +37,8 @@ class FakeChain implements AgentScoreChain {
   }
   async proveLink(p: LinkProof): Promise<TxOutcome> {
     this.writes.push(`link ${p.subject} ${p.other}`);
-    for (const [x, y] of [[p.subject, p.other], [p.other, p.subject]] as const) this.links_.set(x, { ...(this.links_.get(x) ?? {}), [y]: "proven" });
+    const store = p.kind === "shared_cashout" || p.kind === "closed_loop" ? this.signals_ : this.links_;
+    for (const [x, y] of [[p.subject, p.other], [p.other, p.subject]] as const) store.set(x, { ...(store.get(x) ?? {}), [y]: "stored" });
     return { tx: "0xlink", status: "FINALIZED", leader: "SUCCESS" };
   }
 }
@@ -166,6 +171,18 @@ describe("runOnce", () => {
     const fresh = new FakeChain();
     const r = await runOnce({ store, chain: fresh, sync: noSync, discover: async () => [], scope: "0xnew" });
     expect(r.judged).toHaveLength(2);
+  });
+
+  it("submits v8 signals and reads them back from the signal registry", async () => {
+    const discoverV8 = async (ps: Address[]): Promise<LinkProof[]> =>
+      ps.includes(A) && ps.includes(B)
+        ? [{ subject: A, other: B, kind: "shared_cashout", proof: { subject_tx: h(1), other_tx: h(2), cashout_tx: h(3) }, network: "base-sepolia", source: "blockscout", explanation: "both paid C" }]
+        : [];
+    const r = await runOnce({ store, chain, sync: noSync, discover: async () => [], discoverV8 });
+    expect(r.linksProven).toEqual([`${A} ↔ ${B}`]);
+    expect(await chain.signals(A)).toEqual({ [B]: "stored" });
+    const again = await runOnce({ store, chain, sync: noSync, discover: async () => [], discoverV8 });
+    expect(again.writes).toBe(0);
   });
 
   it("stops at the write budget", async () => {

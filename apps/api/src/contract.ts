@@ -64,6 +64,21 @@ export class ScoreReader {
     }
   }
 
+  /**
+   * Signal links the contract verified (shared cash-out, closed loop): they cap the escrow-free
+   * limit at $100 but never cost points. {} on contracts older than v8, which have no get_signals.
+   */
+  async signals(wallet: Address): Promise<Record<string, string>> {
+    if (!this.contract) return {};
+    try {
+      const raw = await this.client.readContract({ address: this.contract, functionName: "get_signals", args: [wallet], jsonSafeReturn: true });
+      return (raw ?? {}) as Record<string, string>;
+    } catch (e) {
+      if (/execution failed|get_signals/i.test(String((e as Error).message))) return {};
+      throw e;
+    }
+  }
+
   /** Same-owner links the contract has verified and stored: other wallet -> description. */
   async links(wallet: Address): Promise<Record<string, string>> {
     if (!this.contract) return {};
@@ -83,6 +98,7 @@ const FLAG_REASONS: Record<string, string> = {
   UNCLEAR_RULINGS: "Validators could not tell what some rulings meant for this agent; they add nothing.",
   UNCONTESTED_WINS: "Some wins came from a default judgment or a settlement, not a jury verdict, so they add no points.",
   NO_HISTORY: "No jury-ruled Internet Court cases, losses or inherited losses yet: unknown, so escrow is required.",
+  POSSIBLE_SAME_OWNER: "A shared cash-out wallet or a closed loop of payments suggests another owner; it costs no points, but jobs above $100 need escrow.",
 };
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;

@@ -135,6 +135,20 @@ const manifest = {
       evidence: "deployments/studionet/superseded/v6/ (13/13 demo steps proof, keeper passes, staged abuses and their scores, own release manifest)",
       why: "Worked as designed, replaced because (1) it counted default judgments and settlements as jury rulings: Internet Court's jury relay had stopped delivering verdicts, so every new case was decided without a jury, and two colluding wallets with no provable link could have minted wins for free; (2) it read a rate-limited RPC call (the public Base node allows 25 requests per second and counts every call in a batch) as a missing field, which could store a permanent unsupported_case_type or link_tx_not_found instead of retrying.",
     },
+    {
+      address: "0xF1a3D4079b19968D31FC47326849906C9F03EB89",
+      deploy_tx: "0x6dc40dd9305820a8ce84c3cd52913a1c8fcc50355f4d768bec88c59c492210b3",
+      git_commit: "5b3983587cc1767ddedcd3d200461826581af564",
+      evidence: "deployments/studionet/superseded/v7/ (18/18 demo steps proof, keeper pass judging all 16 ruled cases, own release manifest)",
+      why: "Worked as designed, replaced to (1) close a first-funding gap: v7 accepted any payment that arrived before a wallet's first transaction, so a stranger who saw an unused address could send dust first and prove 'first funded by me'; v8 also requires the funding to be the wallet's first money in (historical balance 0 before) and above a minimum amount; (2) put the remaining link kinds on-chain in two tiers: proven (direct deployer, shared deployer, multisig operator) and signals that only cap the escrow-free limit at $100 (shared cash-out, closed loop).",
+    },
+    {
+      address: "0x07b633032CF870deca9829b85F3177cd7Fcca4A3",
+      deploy_tx: "0x689c06e1b096017477adc7dc6f6e3db982b0ec71e13c1a26304e435c0dabbb18",
+      git_commit: null,
+      evidence: "deployments/studionet/superseded/v8-first-attempt/ (26 steps; all v8 link steps as intended)",
+      why: "First v8 deployment, never committed separately: its source is the v8.1 file without the no-jury branch in judge_cases. Every new link step worked live (4 links stored, 5 attacks rejected with the intended errors), but staged case 20, decided by default judgment, finalized as MAJORITY_DISAGREE: validators were asked whether the loser failed to deliver with only Internet Court's stock default-judgment text to go on, and split. v8.1 never sends a case without a jury to validators; a loss in it is MINOR by rule.",
+    },
   ],
   steps,
   readbacks,
@@ -207,6 +221,22 @@ if (existsSync(stagedFile)) {
       clientZ: "won case 20 by default judgment against an unlinked wallet: an uncontested win (UNCONTESTED_WINS), so no points and escrow still required (NO_HISTORY)",
     },
     scores,
+  };
+}
+
+// The v8 link kinds staged on Base Sepolia (scripts/stage-v8-links.ts): the proofs the live demo
+// submits as steps 18-26 and what each was expected to do.
+const stagedV8File = "deployments/base-sepolia/staged-v8-links.json";
+if (existsSync(stagedV8File)) {
+  const v8 = JSON.parse(readFileSync(stagedV8File, "utf8"));
+  manifest.staged_v8_links = {
+    script: "scripts/stage-v8-links.ts",
+    network: v8.network,
+    operator: v8.operator,
+    wallets: v8.wallets,
+    base_sepolia_txs: v8.steps,
+    proofs: v8.proofs,
+    note: "Every wallet is controlled by one operator. The busy wallet is an unrelated Base Sepolia bot that had sent over 100,000 transactions, used as an example of infrastructure.",
   };
 }
 

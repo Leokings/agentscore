@@ -18,7 +18,19 @@ export interface AgentScoreChain {
   isJudged(caseAddress: Address): Promise<boolean>;
   judgeCase(caseAddress: Address): Promise<TxOutcome>;
   links(wallet: Address): Promise<Record<string, string>>;
+  /** Signal links (v8): shared cash-out and closed loops. */
+  signals(wallet: Address): Promise<Record<string, string>>;
   proveLink(p: LinkProof): Promise<TxOutcome>;
+}
+
+/** Signal kinds are stored apart from proven links (contracts/agent_score.py SIGNAL_KINDS). */
+export const SIGNAL_KINDS: ReadonlySet<string> = new Set(["shared_cashout", "closed_loop"]);
+
+/** Whether the contract already holds this link: a proven link always counts; a signal also
+ * counts as held when the pair is already proven (the contract rejects it as link_already_proven). */
+export async function linkStored(chain: AgentScoreChain, p: Pick<LinkProof, "subject" | "other" | "kind">): Promise<boolean> {
+  if (p.other in (await chain.links(p.subject))) return true;
+  return SIGNAL_KINDS.has(p.kind) && p.other in (await chain.signals(p.subject));
 }
 
 const ERROR_RE = /\[(?:EXPECTED|EXTERNAL|TRANSIENT|LLM_ERROR)\] [a-z0-9_]+/;
@@ -46,6 +58,10 @@ export class StudioNetChain implements AgentScoreChain {
 
   async links(wallet: Address): Promise<Record<string, string>> {
     return (await this.client.readContract({ address: this.contract, functionName: "get_links", args: [wallet], jsonSafeReturn: true })) as Record<string, string>;
+  }
+
+  async signals(wallet: Address): Promise<Record<string, string>> {
+    return (await this.client.readContract({ address: this.contract, functionName: "get_signals", args: [wallet], jsonSafeReturn: true })) as Record<string, string>;
   }
 
   judgeCase(caseAddress: Address): Promise<TxOutcome> {

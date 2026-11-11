@@ -1,6 +1,6 @@
 import { syncInternetCourt, type Store } from "@agentscore/indexer";
 import type { NansenClient } from "@agentscore/links";
-import { buildProofs, firstFundingFromBlockscout, firstFundingFromNansen, type AgentScoreChain, type FirstFunding, type LinkProof, type TxOutcome } from "@agentscore/prover";
+import { buildProofs, discoverV8Proofs, firstFundingFromBlockscout, firstFundingFromNansen, linkStored, type AgentScoreChain, type FirstFunding, type LinkProof, type TxOutcome } from "@agentscore/prover";
 import type { Address } from "@agentscore/shared";
 import { isDue, isJudgeable, type Attempt } from "./plan.js";
 
@@ -12,6 +12,12 @@ export interface KeeperDeps {
   sync?: (store: Store) => Promise<unknown>;
   /** Finds first-funding facts for a wallet. Defaults to Blockscout (testnet) + Nansen (mainnet). */
   discover?: (wallet: Address) => Promise<FirstFunding[]>;
+  /**
+   * Finds v8 proofs (deployers, shared cash-outs, closed loops) among the judged parties.
+   * Defaults to Blockscout + the Base Sepolia RPC node; when a custom `discover` is given (tests),
+   * it defaults to finding nothing, so tests never reach the network.
+   */
+  discoverV8?: (parties: Address[]) => Promise<LinkProof[]>;
   log?: (msg: string) => void;
   dryRun?: boolean;
   /** Upper bound on contract writes per pass (StudioNet rate-limits per IP). */
@@ -130,13 +136,14 @@ export async function runOnce(deps: KeeperDeps): Promise<KeeperReport> {
     });
   const facts: FirstFunding[] = [];
   for (const w of judgedParties) facts.push(...(await discover(w)));
-  const proofs: LinkProof[] = buildProofs(facts, known);
+  const discoverV8 = deps.discoverV8 ?? (deps.discover ? async () => [] : (ps: Address[]) => discoverV8Proofs(store, ps, log));
+  const proofs: LinkProof[] = [...buildProofs(facts, known), ...(await discoverV8([...judgedParties]))];
 
   for (const p of proofs) {
     const key = linkKey(deps.scope, p.subject, p.other);
     const attempt = await getAttempt(store, key);
     if (attempt?.outcome === "stored" || !isDue(attempt, now())) continue;
-    if (p.other in (await chain.links(p.subject))) {
+    if (await linkStored(chain, p)) {
       await setAttempt(store, key, { at: now(), outcome: "stored" });
       continue;
     }
@@ -153,7 +160,7 @@ export async function runOnce(deps: KeeperDeps): Promise<KeeperReport> {
     } catch (e) {
       err = e;
     }
-    const stored = await readBack(async () => p.other in (await chain.links(p.subject)));
+    const stored = await readBack(() => linkStored(chain, p));
     if (stored) {
       await setAttempt(store, key, { at: now(), outcome: "stored", tx: outcome?.tx });
       report.linksProven.push(`${p.subject} ↔ ${p.other}`);

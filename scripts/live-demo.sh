@@ -86,7 +86,28 @@ NANSEN_CHILD=0xb5fe6011cee8974c24c630afdf3c15f5620925b7
 NANSEN_FUNDER=0xf171c23607b892797eb5eb4e52fc668f924df0a3
 tx 17-prove-mainnet-link-found-by-nansen "$C" prove_link "$NANSEN_CHILD" "$NANSEN_FUNDER" first_funded_by "{\"network\":\"base\",\"funding_tx\":\"0x69752dea622c52a0bf066ceb64316f9d03c618a65aaeaac9ea0f8d75a45b324d\",\"subject_first_tx\":\"0x258f0bc72f7a6ccc50244fd8739302b7418bd1711d6103deb532f6d38fa85848\"}"
 
+# --- v8 link kinds, staged on Base Sepolia by scripts/stage-v8-links.ts. Proofs are read from its
+# output so the hashes are never copied by hand.
+V8=deployments/base-sepolia/staged-v8-links.json
+v8() { node -e "const c=require('./$V8').proofs['$1'];process.stdout.write([c.subject,c.other,c.kind,JSON.stringify(c.proof)].join('\n'))"; }
+v8tx() { local label="$1" name="$2"; mapfile -t P < <(v8 "$name"); tx "$label" "$C" prove_link "${P[0]}" "${P[1]}" "${P[2]}" "${P[3]}"; }
+v8tx 18-prove-signal-shared-cashout shared-cashout-signal
+v8tx 19-prove-signal-closed-loop closed-loop-signal
+v8tx 20-prove-direct-deployment deployed-by
+v8tx 21-prove-multisig-operator operated-by
+v8tx 22-EXPECTED-dust-breaks-owner-link EXPECTED-dust-breaks-owner-link
+v8tx 23-EXPECTED-dust-is-below-minimum EXPECTED-dust-is-below-minimum
+v8tx 24-EXPECTED-call-is-not-a-deployment EXPECTED-call-is-not-a-deployment
+v8tx 25-EXPECTED-loop-below-minimum EXPECTED-loop-below-minimum
+v8tx 26-EXPECTED-cashout-to-infrastructure EXPECTED-cashout-to-infrastructure
+V8_P=$(node -p "require('./$V8').wallets.v8P.toLowerCase()")
+V8_Q=$(node -p "require('./$V8').wallets.v8Q.toLowerCase()")
+V8_K=$(node -p "require('./$V8').wallets.contractK.toLowerCase()")
+V8_SAFE=$(node -p "require('./$V8').wallets.safe.toLowerCase()")
+
 # --- Read-backs
+for w in $V8_P $V8_Q; do echo "--- get_signals $w"; read_view get_signals --args "$w"; done
+for w in $V8_K $V8_SAFE; do echo "--- get_links $w"; read_view get_links --args "$w"; done
 echo "--- get_stats";               read_view get_stats
 for case in $CASE15 $CASE16 $TRADE0 $TRADE1 $CASE19 $CASE20; do echo "--- get_case $case"; read_view get_case --args "$case"; done
 for w in $CHILD $PARTY_B $SOCK_S $SUCCESSOR_N $NANSEN_CHILD; do echo "--- get_links $w"; read_view get_links --args "$w"; done

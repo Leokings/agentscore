@@ -1,12 +1,13 @@
 # AgentScore scoring contract: design for approval
 
-Status: **approved 2026-11-09; v7 deployed on StudioNet 2026-11-10 at
-`0xF1a3D4079b19968D31FC47326849906C9F03EB89`** (see `deployments/studionet/release-manifest.json`). Contract:
+Status: **approved 2026-11-09; v8.1 deployed on StudioNet 2026-11-11 at
+`0xC7CBE19697ce01581b9F32514014A8ABC0f03A76`** (see `deployments/studionet/release-manifest.json`). Contract:
 [`contracts/agent_score.py`](../contracts/agent_score.py). This follows the checkpoints in
 `Genlayer/GENLAYER_PORTAL_SUBMISSION_GUIDE.md` (section 8).
 
-Next: **v8 proposal** (safer first-funding links; same deployer, shared cash-out and closed loops
-on-chain, in two tiers): [DESIGN-v8.md](DESIGN-v8.md), waiting for approval.
+**v8 / v8.1** (safer first-funding links; deployer, multisig, shared cash-out and closed loops
+on-chain in two tiers; no judgment without a jury): [DESIGN-v8.md](DESIGN-v8.md), approved and
+deployed.
 
 ## Changes made during the build
 

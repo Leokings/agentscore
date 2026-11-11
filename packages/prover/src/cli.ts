@@ -10,7 +10,7 @@ import { createAccount } from "genlayer-js";
 import { Store, syncInternetCourt } from "@agentscore/indexer";
 import { NansenClient } from "@agentscore/links";
 import { isAddress, normalizeAddress, type Address } from "@agentscore/shared";
-import { StudioNetChain } from "./chain.js";
+import { linkStored, StudioNetChain } from "./chain.js";
 import { buildProofs, firstFundingFromBlockscout, firstFundingFromNansen, type FirstFunding } from "./discover.js";
 import { loadSignerKey } from "./signer.js";
 import { submitProof } from "./submit.js";
@@ -67,7 +67,7 @@ try {
     const chain = new StudioNetChain(contract, key);
     console.log(`\nSubmitting as ${createAccount(key).address} to ${contract}`);
     for (const p of proofs) {
-      if (p.other in (await chain.links(p.subject))) {
+      if (await linkStored(chain, p)) {
         console.log(`  skip ${p.subject} ↔ ${p.other}: already proven`);
         continue;
       }

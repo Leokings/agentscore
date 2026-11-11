@@ -116,17 +116,37 @@ class FakeBaseNode:
             return {"jsonrpc": "2.0", "id": rid, "result": result}
         if method in self.rate_limited_methods:
             return {"jsonrpc": "2.0", "id": rid, "error": RATE_LIMIT_ERROR}
+        if method == "eth_getBalance":
+            return {"jsonrpc": "2.0", "id": rid, "result": hex(self.balance(network, params[0].lower(), int(params[1], 16)))}
         tx = self.txs[network].get(params[0].lower())
         if method == "eth_getTransactionByHash":
             if tx is None:
                 return {"jsonrpc": "2.0", "id": rid, "result": None}
-            fields = {k: v for k, v in tx.items() if k != "receipt_status"}
-            return {"jsonrpc": "2.0", "id": rid, "result": {**fields, "gasPrice": "0x5", "input": "0x"}}
+            fields = {k: v for k, v in tx.items() if k not in ("receipt_status", "creates", "logs")}
+            return {"jsonrpc": "2.0", "id": rid, "result": {**fields, "gasPrice": "0x5"}}
         if method == "eth_getTransactionReceipt":
             if tx is None or tx["receipt_status"] is None:
                 return {"jsonrpc": "2.0", "id": rid, "result": None}
-            return {"jsonrpc": "2.0", "id": rid, "result": {"status": tx["receipt_status"], "transactionHash": params[0]}}
+            receipt = {"status": tx["receipt_status"], "transactionHash": params[0], "contractAddress": tx["creates"], "logs": tx["logs"]}
+            return {"jsonrpc": "2.0", "id": rid, "result": receipt}
         return {"jsonrpc": "2.0", "id": rid, "error": {"code": -32601, "message": "method not found"}}
+
+
+def _balance(self: "FakeBaseNode", network: str, wallet: str, block: int) -> int:
+    """A wallet's native balance at the end of a block, from the mocked successful transactions
+    (gas ignored): everything received minus everything sent, never below zero."""
+    total = 0
+    for t in self.txs[network].values():
+        if t["receipt_status"] != "0x1" or int(t["blockNumber"], 16) > block:
+            continue
+        if (t["to"] or "").lower() == wallet:
+            total += int(t["value"], 16)
+        if t["from"].lower() == wallet:
+            total -= int(t["value"], 16)
+    return max(total, 0)
+
+
+FakeBaseNode.balance = _balance
 
 
 def node(vm) -> FakeBaseNode:
@@ -176,8 +196,22 @@ def mock_judgment(vm, prevailing: str | None = None, deception: bool = False, no
     vm.mock_llm(pattern, json.dumps(answer))
 
 
-def mock_tx(vm, tx_hash: str, sender: str, receiver: str, value: int = 10**15, nonce: int = 5, block: int = 100, status: str = "ok", network: str = "base-sepolia") -> None:
-    """Adds a mined transaction to the fake node. status: ok | failed | pending."""
+def mock_tx(
+    vm,
+    tx_hash: str,
+    sender: str,
+    receiver: str | None,
+    value: int = 10**15,
+    nonce: int = 5,
+    block: int = 100,
+    status: str = "ok",
+    network: str = "base-sepolia",
+    creates: str | None = None,
+    data: str = "0x",
+    logs: list | None = None,
+) -> None:
+    """Adds a mined transaction to the fake node. status: ok | failed | pending.
+    A contract creation has receiver=None and `creates` set to the new contract's address."""
     node(vm).txs[network][tx_hash.lower()] = {
         "hash": tx_hash,
         "from": sender,
@@ -185,7 +219,10 @@ def mock_tx(vm, tx_hash: str, sender: str, receiver: str, value: int = 10**15, n
         "value": hex(value),
         "nonce": hex(nonce),
         "blockNumber": hex(block),
+        "input": data,
         "receipt_status": {"ok": "0x1", "failed": "0x0", "pending": None}[status],
+        "creates": creates,
+        "logs": logs or [],
     }
 
 

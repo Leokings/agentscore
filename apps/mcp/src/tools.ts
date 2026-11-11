@@ -55,7 +55,7 @@ export function createAgentScoreServer(get: ApiGet, describeApi = "the AgentScor
 
   server.tool(
     "get_agent_report",
-    "The agent's full history behind its score: every Internet Court case (the claim, whether it won or lost, whether the AI jury, a default judgment or a settlement decided it, what validators found such as non-delivery or deception, and how many points it added or cost), plus every wallet linked to it — proven same-owner links with their evidence and the losses they pass on, and weaker signals from Nansen and wallet history that do not count.",
+    "The agent's full history behind its score: every Internet Court case (the claim, whether it won or lost, whether the AI jury, a default judgment or a settlement decided it, what validators found such as non-delivery or deception, and how many points it added or cost), plus every wallet linked to it, in three tiers: proven same-owner links (their losses count, wins against them are fake), verified signals such as a shared cash-out wallet or a closed loop of payments (no points lost, but jobs above $100 need escrow), and hints from Nansen and wallet history that do not count.",
     { wallet },
     async (args) => call(`/v1/agents/${args.wallet}/report`),
   );

@@ -1,0 +1,31 @@
+[genlayer-js] initializeConsensusSmartContract() is deprecated and will be removed in a future release. The consensus contract is now resolved from the static chain definition.
+- Calling write method prove_link on contract at 0xC7CBE19697ce01581b9F32514014A8ABC0f03A76...
+
+Write Transaction Hash:
+0x2e52017addad4e3cab2f19c3fa73c4d042ae05984d0066dd1312e61f0047da79
+GenLayer RPC error (eth_getTransactionByHash): fetch failed
+
+Error:
+UnknownRpcError: An unknown RPC error occurred.
+
+Details: fetch failed
+Version: viem@2.37.2
+    at withRetry.delay.count.count (file:///C:/Users/leoki/AppData/Roaming/npm/node_modules/genlayer/dist/index.js:27109:19)
+    at async attemptRetry (file:///C:/Users/leoki/AppData/Roaming/npm/node_modules/genlayer/dist/index.js:25476:22) {
+  details: 'fetch failed',
+  docsPath: undefined,
+  metaMessages: undefined,
+  shortMessage: 'An unknown RPC error occurred.',
+  version: '2.37.2',
+  code: -1,
+  [cause]: [TypeError: fetch failed] {
+    [cause]: Error: read ECONNRESET
+        at TLSWrap.onStreamRead (node:internal/stream_base_commons:216:20) {
+      errno: -4077,
+      code: 'ECONNRESET',
+      syscall: 'read'
+    }
+  }
+}
+
+✖ Error during write operation

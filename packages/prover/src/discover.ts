@@ -1,7 +1,7 @@
 import { blockscoutGet } from "@agentscore/indexer";
 import { classifyLabel, NansenBudgetError, type NansenClient } from "@agentscore/links";
 import { isAddress, normalizeAddress, type Address, type TxHash } from "@agentscore/shared";
-import { checkFirstFunding, fetchTxs, type FundingCheck, type ProofNetwork } from "./rpc.js";
+import { checkFirstFunding, checkFirstMoneyIn, fetchTxs, type FundingCheck, type ProofNetwork } from "./rpc.js";
 
 /** One first-funding fact about a wallet: who gave it gas before its nonce-0 transaction. */
 export interface FirstFunding {
@@ -20,7 +20,7 @@ export interface FirstFunding {
 export interface LinkProof {
   subject: Address;
   other: Address;
-  kind: "first_funded_by" | "shared_first_funder";
+  kind: "first_funded_by" | "shared_first_funder" | "deployed_by" | "shared_deployer" | "operated_by" | "shared_cashout" | "closed_loop";
   proof: Record<string, string>;
   network: ProofNetwork;
   source: FirstFunding["source"];
@@ -48,6 +48,7 @@ export async function firstFundingFromNansen(nansen: NansenClient, wallet: Addre
     const txs = await fetchTxs("base", [fundingTx, ...earliest.map((h) => h.toLowerCase() as TxHash)]);
     const first = [...txs.values()].find((t) => t.from === wallet && t.nonce === 0);
     let check = checkFirstFunding(wallet, funder, txs.get(fundingTx), first);
+    if (check.ok) check = await checkFirstMoneyIn("base", wallet, txs.get(fundingTx)!);
     if (check.ok && classifyLabel(label) !== "none") check = { ok: false, reason: `Nansen labels the funder "${label}"` };
     return { wallet, funder, network: "base", fundingTx, firstTx: (first?.hash ?? "0x") as TxHash, source: "nansen", funderLabel: label, check };
   } catch (e) {
@@ -92,7 +93,8 @@ export async function firstFundingFromBlockscout(wallet: Address): Promise<First
     const firstTx = nonce0.hash.toLowerCase() as TxHash;
     const funder = normalizeAddress(funding.from.hash);
     const txs = await fetchTxs("base-sepolia", [fundingTx, firstTx]);
-    const check = checkFirstFunding(wallet, funder, txs.get(fundingTx), txs.get(firstTx));
+    let check = checkFirstFunding(wallet, funder, txs.get(fundingTx), txs.get(firstTx));
+    if (check.ok) check = await checkFirstMoneyIn("base-sepolia", wallet, txs.get(fundingTx)!);
     return { wallet, funder, network: "base-sepolia", fundingTx, firstTx, source: "blockscout", check };
   } catch (e) {
     return { wallet, error: `Blockscout lookup failed: ${(e as Error).message}` };

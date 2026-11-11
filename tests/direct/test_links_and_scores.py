@@ -125,17 +125,22 @@ def test_accepts_cli_style_calldata_proofs(score, direct_vm):
 def test_link_evidence_needs_exact_agreement(score, direct_vm):
     prove_parent(score, direct_vm, 7, FRESH, BAD)
     # One evidence block fetches every transaction in the proof from the RPC node.
+    # One evidence block fetches every transaction in the proof, plus the funded wallet's balance
+    # just before and at the funding block.
     honest = direct_vm._captured_validators[0][0]
     funding = tx(1000 + 14)
     assert direct_vm.run_validator(index=0) is True
+    assert set(honest["balances"]) == {f"{FRESH}@99", f"{FRESH}@100"}
 
     def forged(**changes):
-        return {**honest, funding: {**honest[funding], **changes}}
+        return {**honest, "txs": {**honest["txs"], funding: {**honest["txs"][funding], **changes}}}
 
-    assert direct_vm.run_validator(index=0, leader_result=forged(block=honest[funding]["block"] - 50)) is False
+    assert direct_vm.run_validator(index=0, leader_result=forged(block=honest["txs"][funding]["block"] - 50)) is False
     assert direct_vm.run_validator(index=0, leader_result=forged(**{"from": STRANGER})) is False
-    assert direct_vm.run_validator(index=0, leader_result=forged(value=honest[funding]["value"] + 1)) is False
+    assert direct_vm.run_validator(index=0, leader_result=forged(value=honest["txs"][funding]["value"] + 1)) is False
     assert direct_vm.run_validator(index=0, leader_result=forged(nonce=0)) is False
+    # A leader claiming the wallet was empty before (to hide earlier money) is caught too.
+    assert direct_vm.run_validator(index=0, leader_result={**honest, "balances": {**honest["balances"], f"{FRESH}@99": 1}}) is False
 
 
 def test_failed_pending_or_missing_link_transactions(score, direct_vm):
@@ -313,7 +318,8 @@ def test_only_jury_wins_add_points(score, direct_vm):
 def test_losses_count_however_the_case_ended(score, direct_vm, resolution):
     judge(score, direct_vm, 55, CLIENT1, BAD, winner=CLIENT1, resolution=resolution, non_delivery=True)
     result = score.get_score(BAD)
-    assert result["counts"]["loss_penalty"] == 20
+    # Without a jury there are no findings: the loss counts, as minor (validators are not asked).
+    assert result["counts"]["loss_penalty"] == 8
     assert "NO_HISTORY" not in result["flags"]
     assert (result["grade"], result["approval_limit_usd"]) == ("D", 0)
 

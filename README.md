@@ -12,8 +12,8 @@ wallet or inflated with fake wins.
 > Status: in development for the Internet Court Builders Working Group mission (Nov 9–23, 2026).
 > The indexer, link builder, REST API, MCP server, skill, website and the GenLayer contract
 > ([contracts/agent_score.py](contracts/agent_score.py), design in [docs/DESIGN.md](docs/DESIGN.md))
-> work. The contract (v7) is live on **GenLayer StudioNet** at
-> `0xF1a3D4079b19968D31FC47326849906C9F03EB89`, where it has judged every ruled Internet Court
+> work. The contract (v8.1) is live on **GenLayer StudioNet** at
+> `0xC7CBE19697ce01581b9F32514014A8ABC0f03A76`, where it has judged every ruled Internet Court
 > case on Base Sepolia. Every transaction is recorded in
 > [deployments/studionet/release-manifest.json](deployments/studionet/release-manifest.json).
 
@@ -32,6 +32,11 @@ wallet or inflated with fake wins.
 | Record a real faucet (18,881 txs sent) as a wallet's owner | rejected: `funder_is_infrastructure` |
 | Judge staged cases 19 and 20 (default judgments) and prove their two links | FINALIZED, leader SUCCESS; both recorded as `resolution: default` |
 | Prove a **Base mainnet** link found by **Nansen** (`0xf171…` first funded `0xb5fe…`, party B of case 17) | FINALIZED, leader SUCCESS: validators verified it against `mainnet.base.org` |
+| v8 links staged on Base Sepolia: a shared cash-out and a closed loop (signals), a direct deployment and a **Safe multisig** run by its owner (proven) | All four stored |
+| Dust sent to a fresh wallet before its real funding | rejected: `not_first_money_in` (owner's link), `funding_below_minimum` (the dust) |
+| A contract call cited as a deployment | rejected: `not_a_direct_deployment` |
+| A loop below the minimum payment | rejected: `payment_below_minimum` |
+| A shared "cash-out" wallet that is a bot with 100,000+ transactions | rejected: `cashout_wallet_is_infrastructure` |
 
 Reproduce with `scripts/live-demo.sh` (deploys a fresh contract) or `scripts/live-demo.sh <address>`.
 
@@ -45,8 +50,8 @@ cases and proved the links between the wallets:
 | Wallet | What happened | AgentScore |
 |---|---|---|
 | Agent X | Won case #19 against S, a wallet X itself first funded | Win counted as fake (`FAKE_WINS`): D (40) |
-| Agent Y | Lost case #20 to client Z; validators found non-delivery | Material loss: D (30) |
-| New wallet N | First funded by agent Y right after that loss | Inherits Y's loss (`INHERITED_LOSSES`): D (30), not a clean C |
+| Agent Y | Lost case #20 to client Z by default (it never answered) | A loss without a jury counts as minor: D (42) |
+| New wallet N | First funded by agent Y right after that loss | Inherits Y's loss (`INHERITED_LOSSES`): D (42), not a clean C |
 | Client Z | Won case #20, but only because Y never answered | Uncontested win (`UNCONTESTED_WINS`): no points, still needs escrow (C, $0) |
 
 ### Only a jury verdict earns points
@@ -55,7 +60,9 @@ An Internet Court case ends one of three ways, and the contract reads which from
 state: **jury** (both sides submitted evidence, the only way a case reaches the AI jury),
 **default** (one side never answered) or **settlement** (the parties agreed). A default or a
 settlement costs a colluding pair nothing, so a win that way earns no points and does not lift a
-wallet out of the no-history escrow rule. Losses count however the case ended: nobody fakes a loss.
+wallet out of the no-history escrow rule. Losses count however the case ended (nobody fakes a
+loss), but only a jury's reasoning can make a loss material or severe: a case without a jury is
+never sent to validators, and its loss counts as minor.
 
 Every transaction and score is in the release manifest under `staged_abuses`.
 
@@ -64,7 +71,8 @@ Every transaction and score is in the release manifest under `staged_abuses`.
 | Method | Who | What it does |
 |---|---|---|
 | `judge_cases([case, …])` | anyone | Reads up to 5 finalized Internet Court cases from Base Sepolia and has validators classify what each ruling means for each party. Final once stored. |
-| `prove_link(subject, other, kind, proof)` | anyone | Stores chain-verified proof that two wallets share an owner (`first_funded_by`, `shared_first_funder`: funding mined before the wallet's own nonce-0 transaction, so strangers can't create it). Works on Base mainnet or Base Sepolia, read from the public Base RPC nodes. Funders that had sent over 1,000 transactions (exchanges, faucets) are rejected. Permanent. |
+| `prove_link(subject, other, kind, proof)` | anyone | Stores chain-verified evidence that two wallets share an owner, as a proven link or a signal (see [Link types](#link-types)). Works on Base mainnet or Base Sepolia, read from the public Base RPC nodes, including historical balances. Permanent. |
+| `get_links(wallet)` / `get_signals(wallet)` | view | Proven links / signals stored for a wallet. |
 
 ### Keeping scores current
 
@@ -206,15 +214,24 @@ Check an endpoint the way a client would with `npx tsx scripts/check-mcp.ts [url
 
 ## Link types
 
-| Type | Meaning |
-|---|---|
-| `funded_by` / `funded` | One wallet sent the other its first funds |
-| `shared_funder` | The same wallet first funded both (strong if within 24 hours) |
-| `shared_cashout` | Both send funds to the same private wallet |
-| `same_deployer` / `same_signer` | Same deployer or controlling signer |
-| `linked_counterparty` | A court counterparty is linked to the agent: a possible fake win |
-| `closed_loop` | Funds go around a short circle back to the agent |
-| `successor_of` | The agent appeared as a linked wallet with ruled cases went quiet |
+A same-owner link matters because the agent inherits the linked wallet's losses. So a link only
+counts in full when an outsider cannot create it. The contract (v8) checks every link against the
+chain and sorts it into a tier:
+
+| Tier | Link kinds (on-chain) | What GenLayer validators check | Effect on the score |
+|---|---|---|---|
+| **Proven** | `first_funded_by`, `shared_first_funder` | The funding was the wallet's **first money in** (balance 0 the block before), came before its first transaction, was at least the minimum, and the funder had sent ≤ 1,000 transactions | Losses carry over; wins against it are fake wins |
+| **Proven** | `deployed_by`, `shared_deployer` | The agent's contract was created **directly** by an ordinary wallet (its signature); factory deployments never count | Same |
+| **Proven** | `operated_by` | An owner **ran** a successful transaction on the agent's Safe multisig itself (a v=1 owner approval by the sender); being listed as an owner, or relaying others' signatures, proves nothing | Same |
+| **Signal** | `shared_cashout` | Both wallets paid at least the minimum into the same wallet within 30 days, and that wallet had sent ≤ 1,000 transactions | No points lost; jobs above **$100** need escrow (`POSSIBLE_SAME_OWNER`) |
+| **Signal** | `closed_loop` | One paid the other at least the minimum and got ≥ 80% back within a day | Same |
+
+Minimum payment: 0.001 ETH on Base mainnet (faking a link costs real money, paid to the victim),
+0.00001 ETH on Base Sepolia. Design and reasoning: [docs/DESIGN-v8.md](docs/DESIGN-v8.md).
+
+The off-chain link builder (`packages/links`) also reports **hints** from Nansen and wallet
+history (same signer listed on a multisig, successor wallets, longer loops). Hints are shown but
+never count. The keeper turns provable findings into on-chain proofs automatically.
 
 Exchanges, bridges, faucets and protocols are filtered out by label and by transaction volume, so
 two agents that used the same faucet are not linked.

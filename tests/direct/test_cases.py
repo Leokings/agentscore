@@ -194,23 +194,30 @@ def test_anyone_can_trigger_judgment(score, direct_vm, direct_bob):
 # --- How the case was decided (jury, default judgment, settlement) ------------------------
 
 
-@pytest.mark.parametrize(
-    "resolution, prompt_says",
-    [
-        ("jury", r".*The AI jury ruled Party A's statement TRUE.*"),
-        ("default", r".*No jury: decided by default judgment.*"),
-        ("settlement", r".*No jury: the parties settled.*"),
-    ],
-)
-def test_records_how_the_case_was_decided_and_tells_validators(score, direct_vm, resolution, prompt_says):
+def test_a_jury_case_is_judged_by_validators_with_an_honest_prompt(score, direct_vm):
     direct_vm.clear_mocks()
-    mock_case(direct_vm, 15, agreement(A, B, STATEMENT, REASONING, verdict=1, resolution=resolution))
-    # The judgment mock only matches a prompt that describes the path honestly.
-    mock_judgment(direct_vm, pattern=r"(?s).*finalized ruling from Internet Court" + prompt_says)
+    mock_case(direct_vm, 15, agreement(A, B, STATEMENT, REASONING, verdict=1, resolution="jury"))
+    # The judgment mock only matches a prompt that says the AI jury ruled.
+    mock_judgment(direct_vm, non_delivery=True, pattern=r"(?s).*finalized ruling from Internet Court.*The AI jury ruled Party A's statement TRUE.*")
+    score.judge_cases([CASE])
+    record = score.get_case(CASE)
+    assert record["resolution"] == "jury"
+    assert outcomes(record) == [("partyA", "FAVORABLE", "NONE"), ("partyB", "UNFAVORABLE", "MATERIAL")]
+
+
+@pytest.mark.parametrize("resolution", ["default", "settlement"])
+def test_a_case_without_a_jury_is_never_sent_to_validators_and_its_loss_is_minor(score, direct_vm, resolution):
+    # Its only reasoning is Internet Court's stock text, so there is nothing to judge: validators
+    # are not asked (no LLM mock is registered; any LLM call would fail this test) and the loss is
+    # MINOR by rule. On v8, validators split on exactly this question for staged case 20.
+    direct_vm.clear_mocks()
+    mock_case(direct_vm, 20, agreement(A, B, STATEMENT, "Resolved by default - only dispute initiator submitted evidence", verdict=2, resolution=resolution))
     score.judge_cases([CASE])
     record = score.get_case(CASE)
     assert record["resolution"] == resolution
-    assert outcomes(record) == [("partyA", "FAVORABLE", "NONE"), ("partyB", "UNFAVORABLE", "MINOR")]
+    assert outcomes(record) == [("partyA", "UNFAVORABLE", "MINOR"), ("partyB", "FAVORABLE", "NONE")]
+    # One deterministic block (the chain evidence) and no judgment block.
+    assert len(direct_vm._captured_validators) == 1
 
 
 def test_registered_cases_count_as_jury_rulings(score, direct_vm):

@@ -1,0 +1,285 @@
+- Setting up the deployment environment...
+[genlayer-js] initializeConsensusSmartContract() is deprecated and will be removed in a future release. The consensus contract is now resolved from the static chain definition.
+
+Deployment Parameters:
+{
+  code: '# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }\n' +
+    '"""AgentScore: a ruling counts once per owner, not once per wallet.\n' +
+    '\n' +
+    'Validators judge what each finalized Internet Court ruling means for each party. Anyone can\n' +
+    'add chain-verified proof that two wallets share an owner. Grades are derived by ordinary code\n' +
+    'from both registries: wins against same-owner wallets never raise a grade, and losses follow\n' +
+    'the owner to every proven linked wallet.\n' +
+    '"""\n' +
+    '\n' +
+    'from genlayer import *\n' +
+    'import json\n' +
+    'from typing import Any, NoReturn\n' +
+    '\n' +
+    '# --- External sources -------------------------------------------------------------------\n' +
+    '\n' +
+    '# Internet Court lives on Base Sepolia. Ownership links can be proven on Base Sepolia or on Base\n' +
+    "# mainnet, where agents' wallets have real history (and where Nansen finds the links).\n" +
+    'RPC_URL = "https://sepolia.base.org"\n' +
+    'NETWORK_RPC = {"base-sepolia": "https://sepolia.base.org", "base": "https://mainnet.base.org"}\n' +
+    'FACTORY = "0xd533cb0b52e85b3f506b6f0c28b8f6bc4e449dda"\n' +
+    '\n' +
+    '# 4-byte selectors (keccak256 of the signature), computed off-chain.\n' +
+    'SEL_AGREEMENT_IDS = "943a5009"  # agreementIds(address)\n' +
+    'SEL_AGREEMENTS = "bd14de96"  # agreements(uint256)\n' +
+    'CASE_GETTERS = {\n' +
+    '    "partyA": "10e1d8ca",\n' +
+    '    "partyB": "29040113",\n' +
+    '    "status": "200d2ed2",\n' +
+    '    "verdict": "6aba253c",\n' +
+    '    "statement": "e42cb9f3",\n' +
+    '    "reasoning": "512b69fe",\n' +
+    '    "exporter": "4bbbe0cc",\n' +
+    '    "importer": "62932301",\n' +
+    '    "shipmentStatement": "34120d79",\n' +
+    '    "shipmentVerdictReason": "503ae34e",\n' +
+    '    "evidenceASubmitted": "b442c81d",\n' +
+    '    "evidenceBSubmitted": "dbd4d40d",\n' +
+    '    "disputeTimestamp": "c3018f98",\n' +
+    '}\n' +
+    'AGREEMENT_RESOLVED = 4\n' +
+    'AGREEMENT_VERDICTS = {1: "TRUE", 2: "FALSE"}\n' +
+    '# How a case was decided. Agreement.sol only sends a case to the AI jury once both sides have\n' +
+    "# submitted evidence; resolveByDefault() needs at most one side's evidence; a mutual settlement\n" +
+    "# never opens a dispute. So the path is read from the case's own state, with no text matching.\n" +
+    '# Registered cases (e.g. TradeFxSettlement) are only ever decided by the jury via the bridge.\n' +
+    'RESOLUTIONS = ("jury", "default", "settlement")\n' +
+    'VERDICT_TEXT = {\n' +
+    `    "jury": "The AI jury ruled Party A's statement {v}.",\n` +
+    `    "default": "No jury: decided by default judgment because evidence came from at most one side. Party A's statement was ruled {v}.",\n` +
+    `    "settlement": "No jury: the parties settled by agreeing that Party A's statement is {v}.",\n` +
+    '}\n' +
+    '\n' +
+    '# --- Bounds -----------------------------------------------------------------------------\n' +
+    '\n' +
+    'MAX_CASES_PER_CALL = 5\n' +
+    'MAX_EVIDENCE_CHARS = 4000\n' +
+    'MAX_RESPONSE_BYTES = 64_000\n' +
+    'MAX_LINKS_PER_WALLET = 30\n' +
+    'MAX_CASES_PER_WALLET = 100\n' +
+    '# A funder that had already sent more than this many transactions when it funded a wallet is an\n' +
+    '# exchange, faucet or payout service, not an owner, so it cannot link wallets. The number comes\n' +
+    "# from the funding transaction's own nonce, so every validator sees the same value.\n" +
+    'MAX_FUNDER_NONCE = 1000\n' +
+    '\n' +
+    '# --- Judgment allowlists and the deterministic scoring table ----------------------------\n' +
+    '\n' +
+    'OUTCOMES = ("FAVORABLE", "UNFAVORABLE", "NEUTRAL", "UNCLEAR")\n' +
+    'SEVERITIES = ("MINOR", "MATERIAL", "SEVERE")\n' +
+    'BASE_POINTS = 50\n' +
+    'WIN_POINTS = 8\n' +
+    'MAX_COUNTED_WINS = 5\n' +
+    'FAKE_WIN_PENALTY = 10\n' +
+    'LOSS_PENALTY = {"MINOR": 8, "MATERIAL": 20, "SEVERE": 40}\n' +
+    '# (grade, minimum points, approval limit in USD without escrow)\n' +
+    'GRADE_TABLE = (("A", 80, 5000), ("B", 65, 1000), ("C", 50, 100), ("D", 30, 0))\n' +
+    '# A wallet with no judged cases and no inherited losses is unknown: shown as C, but needs escrow.\n' +
+    'NO_HISTORY_GRADE, NO_HISTORY_LIMIT = "C", 0\n' +
+    "# Only first-funding evidence counts: it is anchored to the wallet's own nonce-0 transaction, so a\n" +
+    '# stranger cannot create it. (A plain payment can be sent to anyone, so it proves nothing about\n' +
+    '# ownership and was removed after the first live run.)\n' +
+    'LINK_KINDS = ("first_funded_by", "shared_first_funder")\n' +
+    '\n' +
+    '\n' +
+    'def _fail(code: str) -> NoReturn:\n' +
+    '    raise gl.vm.UserError(f"[EXPECTED] {code}")\n' +
+    '\n' +
+    '\n' +
+    'def _external(code: str) -> NoReturn:\n' +
+    '    raise gl.vm.UserError(f"[EXTERNAL] {code}")\n' +
+    '\n' +
+    '\n' +
+    'def _transient(code: str) -> NoReturn:\n' +
+    '    raise gl.vm.UserError(f"[TRANSIENT] {code}")\n' +
+    '\n' +
+    '\n' +
+    'def _is_hex(value: str, length: int) -> bool:\n' +
+    '    if not isinstance(value, str) or len(value) != length + 2 or not value.startswith("0x"):\n' +
+    '        return False\n' +
+    '    try:\n' +
+    '        int(value[2:], 16)\n' +
+    '        return True\n' +
+    '    except ValueError:\n' +
+    '        return False\n' +
+    '\n' +
+    '\n' +
+    'def _addr(value: Any) -> str:\n' +
+    '    # Clients such as the GenLayer CLI encode 0x-strings as the calldata Address type.\n' +
+    '    if isinstance(value, Address):\n' +
+    '        value = value.as_hex\n' +
+    '    if not _is_hex(value, 40) or int(value[2:], 16) == 0:\n' +
+    '        _fail("invalid_address")\n' +
+    '    return value.lower()\n' +
+    '\n' +
+    '\n' +
+    'def _tx_hash(value: Any) -> str:\n' +
+    '    if not _is_hex(value, 64):\n' +
+    '        _fail("invalid_tx_hash")\n' +
+    '    return value.lower()\n' +
+    '\n' +
+    '\n' +
+    '# --- ABI decoding (results are 0x-prefixed hex strings, or None when the call reverted) --\n' +
+    '\n' +
+    '\n' +
+    'def _bytes(result: str | None) -> bytes:\n' +
+    '    if result is None:\n' +
+    '        return b""\n' +
+    '    return bytes.fromhex(result[2:])\n' +
+    '\n' +
+    '\n' +
+    'def _dec_uint(result: str | None) -> int | None:\n' +
+    '    data = _bytes(result)\n' +
+    '    return int.from_bytes(data[:32], "big") if len(data) >= 32 else None\n' +
+    '\n' +
+    '\n' +
+    'def _dec_address(result: str | None) -> str | None:\n' +
+    '    value = _dec_uint(result)\n' +
+    '    if value is None or value == 0 or value >= 1 << 160:\n' +
+    '        return None\n' +
+    '    return "0x" + value.to_bytes(20, "big").hex()\n' +
+    '\n' +
+    '\n' +
+    'def _dec_string(result: str | None) -> str | None:\n' +
+    '    data = _bytes(result)\n' +
+    '    if len(data) < 64:\n' +
+    '        return None\n' +
+    '    offset = int.from_bytes(data[:32], "big")\n' +
+    '    if offset + 32 > len(data):\n' +
+    '        return None\n' +
+    '    length = int.from_bytes(data[offset : offset + 32], "big")\n' +
+    '    raw = data[offset + 32 : offset + 32 + length]\n' +
+    '    if len(raw) != length:\n' +
+    '        return None\n' +
+    '    try:\n' +
+    '        return raw.decode("utf-8")\n' +
+    '    except UnicodeDecodeError:\n' +
+    '        _external("evidence_invalid_utf8")\n' +
+    '\n' +
+    '\n' +
+    'def _word(value: int) -> str:\n' +
+    '    return format(value, "064x")\n' +
+    '\n' +
+    '\n' +
+    '# --- Evidence fetchers (deterministic results, compared with strict equality) -----------\n' +
+    '\n' +
+    '\n' +
+    'def _rpc_post(url: str, payload: list[dict[str, Any]]) -> dict[int, dict[str, Any]]:\n' +
+    '    """Sends one JSON-RPC batch and returns the responses by id. Fails closed on anything odd."""\n' +
+    '    res = gl.nondet.web.post(url, body=json.dumps(payload), headers={"Content-Type": "application/json"})\n' +
+    '    if res.status >= 500 or res.status == 429:\n' +
+    '        _transient(f"rpc_status_{res.status}")\n' +
+    '    if res.status != 200:\n' +
+    '        _external(f"rpc_status_{res.status}")\n' +
+    '    body = res.body or b""\n' +
+    '    if len(body) > MAX_RESPONSE_BYTES:\n' +
+    '        _external("rpc_response_too_large")\n' +
+    '    try:\n' +
+    '        items = json.loads(body.decode("utf-8"))\n' +
+    '    except Exception:\n' +
+    '        _external("rpc_bad_response")\n' +
+    '    if not isinstance(items, list):\n' +
+    '        _external("rpc_bad_response")\n' +
+    '    by_id = {it.get("id"): it for it in items if isinstance(it, dict)}\n' +
+    '    for item in payload:\n' +
+    '        got = by_id.get(item["id"])\n' +
+    '        if got is None:\n' +
+    '            _transient("rpc_missing_result")\n' +
+    '        error = got.get("error")\n' +
+    '        if error is not None:\n' +
+    '            # A reverted eth_call is an answer (that getter does not exist on that contract). Any\n' +
+    `            # other per-call error, such as the public node's "25/second request limit reached",\n` +
+    '            # says nothing about the chain, so it must never be read as "missing".\n' +
+    '            code = error.get("code") if isinstance(error, dict) else None\n' +
+    '            message = str(error.get("message", "")).lower() if isinstance(error, dict) else ""\n' +
+    '            reverted = item["method"] == "eth_call" and (code == 3 or (code == -32000 and "revert" in message))\n' +
+    '            if not reverted:\n' +
+    '                _transient("rpc_call_error")\n' +
+    '    return by_id\n' +
+    '\n' +
+    '\n' +
+    'def _rpc_batch(calls: list[tuple[str, str]]) -> list[str | None]:\n' +
+    '    """eth_call batch against Base Sepolia. Returns raw results, None for reverted calls."""\n' +
+    '    payload = [\n' +
+    '        {"jsonrpc": "2.0", "id": i + 1, "method": "eth_call", "params": [{"to": to, "data": "0x" + data}, "latest"]}\n' +
+    '        for i, (to, data) in enumerate(calls)\n' +
+    '    ]\n' +
+    '    by_id = _rpc_post(RPC_URL, payload)\n' +
+    '    out: list[str | None] = []\n' +
+    '    for i in range(len(calls)):\n' +
+    '        item = by_id[i + 1]\n' +
+    '        result = item.get("result")\n' +
+    '        valid = isinstance(result, str) and len(result) > 2 and len(result) % 2 == 0 and _is_hex(result, len(result) - 2)\n' +
+    '        out.append(result.lower() if valid else None)\n' +
+    '    return out\n' +
+    '\n' +
+    '\n' +
+    'def _fetch_case(case: str) -> dict[str, Any]:\n' +
+    '    """Reads a case from the chain and normalizes it. Fails closed on anything unexpected."""\n' +
+    '    pad_case = "0" * 24 + case[2:]\n' +
+    '    getters = list(CASE_GETTERS.items())\n' +
+    '    calls = [(FACTORY, SEL_AGREEMENT_IDS + pad_case), (FACTORY, SEL_AGREEMENTS + _word(0))]\n' +
+    '    calls += [(case, selector) for _, selector in getters]\n' +
+    '    results = _rpc_batch(calls)\n' +
+    '    raw = {name: results[i + 2] for i, (name, _) in enumerate(getters)}\n' +
+    '\n' +
+    '    # Registered with the Internet Court factory: agreementIds(case) is only set on registration;\n' +
+    '    # id 0 is ambiguous with "unset", so it must round-trip through agreements(0).\n' +
+    '    case_id = _dec_uint(results[0])\n' +
+    '    if case_id is None:\n' +
+    '        _external("factory_unreadable")\n' +
+    '    if case_id == 0 and _dec_address(results[1]) != case:\n' +
+    '        _fail("case_not_registered")\n' +
+    '\n' +
+    '    party_a = _dec_address(raw["partyA"])\n' +
+    '    exporter = _dec_address(raw["exporter"])\n' +
+    '    if party_a is not None:\n' +
+    '        status = _dec_uint(raw["status"])\n' +
+    '        verdict = AGREEMENT_VERDICTS.get(_dec_uint(raw["verdict"]) or 0)\n' +
+    '        if status != AGREEMENT_RESOLVED or verdict is None:\n' +
+    '            _fail("case_not_ruled")\n' +
+    '        party_b = _dec_address(raw["partyB"])\n' +
+    '        if party_b is None or party_b == party_a:\n' +
+    '            _fail("invalid_case_parties")\n' +
+    '        a_submitted = _dec_uint(raw["evidenceASubmitted"])\n' +
+    '        b_submitted = _dec_uint(raw["evidenceBSubmitted"])\n' +
+    '        disputed_at = _dec_uint(raw["disputeTimestamp"])\n' +
+    '        if a_submitted not in (0, 1) or b_submitted not in (0, 1) or disputed_at is None'... 20548 more characters,
+  args: [],
+  leaderOnly: false
+}
+
+Deployment Transaction Hash:
+0x6dc40dd9305820a8ce84c3cd52913a1c8fcc50355f4d768bec88c59c492210b3
+GenLayer RPC error (eth_getTransactionByHash): fetch failed
+
+Error:
+UnknownRpcError: An unknown RPC error occurred.
+
+Details: fetch failed
+Version: viem@2.37.2
+    at withRetry.delay.count.count (file:///C:/Users/leoki/AppData/Roaming/npm/node_modules/genlayer/dist/index.js:27109:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async attemptRetry (file:///C:/Users/leoki/AppData/Roaming/npm/node_modules/genlayer/dist/index.js:25476:22) {
+  details: 'fetch failed',
+  docsPath: undefined,
+  metaMessages: undefined,
+  shortMessage: 'An unknown RPC error occurred.',
+  version: '2.37.2',
+  code: -1,
+  [cause]: [TypeError: fetch failed] {
+    [cause]: Error: getaddrinfo ENOTFOUND studio.genlayer.com
+        at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26) {
+      errno: -3008,
+      code: 'ENOTFOUND',
+      syscall: 'getaddrinfo',
+      hostname: 'studio.genlayer.com'
+    }
+  }
+}
+
+✖ Error deploying contract

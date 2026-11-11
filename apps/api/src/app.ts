@@ -47,6 +47,15 @@ export function createApp(store: Store, reader: ScoreReader = new ScoreReader())
     }
   }
 
+  async function verifiedSignals(wallet: Address): Promise<Record<string, string>> {
+    try {
+      return await reader.signals(wallet);
+    } catch (e) {
+      console.error("GenLayer signal read failed", e);
+      return {};
+    }
+  }
+
   /** Reads the grade from the GenLayer contract; never invents one when it is unavailable. */
   async function score(wallet: Address): Promise<AgentScore & { approvalLimitUsd?: number }> {
     if (!reader.configured) {
@@ -101,9 +110,10 @@ export function createApp(store: Store, reader: ScoreReader = new ScoreReader())
     const wallet = walletParam(c.req.param("wallet"));
     await ensureFresh();
     // `links` are what the link builder sees (Nansen + on-chain history, some only flags);
-    // `proven` are the links the GenLayer contract verified and counts in the grade.
-    const [walletLinks, proven] = await Promise.all([links(wallet), provenLinks(wallet)]);
-    return c.json({ wallet, links: walletLinks, proven });
+    // `proven` are the links the GenLayer contract verified and counts in the grade;
+    // `verifiedSignals` are links it verified that only cap the escrow-free limit at $100.
+    const [walletLinks, proven, signalLinks] = await Promise.all([links(wallet), provenLinks(wallet), verifiedSignals(wallet)]);
+    return c.json({ wallet, links: walletLinks, proven, verifiedSignals: signalLinks });
   });
 
   app.get("/v1/agents/:wallet/score", async (c) => {
@@ -137,7 +147,7 @@ export function createApp(store: Store, reader: ScoreReader = new ScoreReader())
   app.get("/v1/agents/:wallet/report", async (c) => {
     const wallet = walletParam(c.req.param("wallet"));
     await ensureFresh();
-    const [s, record, signals, proven] = await Promise.all([score(wallet), courtRecord(store, wallet), links(wallet), provenLinks(wallet)]);
+    const [s, record, signals, proven, signalLinks] = await Promise.all([score(wallet), courtRecord(store, wallet), links(wallet), provenLinks(wallet), verifiedSignals(wallet)]);
     const readCase = async (address: string) => {
       try {
         return await reader.case(address);
@@ -155,7 +165,7 @@ export function createApp(store: Store, reader: ScoreReader = new ScoreReader())
         }),
       ),
     );
-    return c.json(buildReport({ wallet, score: s, cases: record.cases, judged, proven, signals, linkedCases }));
+    return c.json(buildReport({ wallet, score: s, cases: record.cases, judged, proven, verifiedSignals: signalLinks, signals, linkedCases }));
   });
 
   return app;

@@ -36,6 +36,7 @@ export const FLAG_MEANING: Record<string, string> = {
   UNCONTESTED_WINS: "Some wins came from a no-show or a settlement, not a jury verdict, so they earn nothing.",
   UNCLEAR_RULINGS: "Validators could not tell what some rulings meant for this agent; they add nothing.",
   NO_HISTORY: "Nothing trustworthy is known yet (no jury ruling, loss or linked loss).",
+  POSSIBLE_SAME_OWNER: "A shared cash-out wallet or a closed loop of payments suggests another owner; an outsider could have paid to fake it, so it costs no points, but jobs above $100 need escrow.",
 };
 
 const CASE_EXPLORER = "https://base-sepolia.blockscout.com/address/";
@@ -65,6 +66,8 @@ export interface ReportInput {
   judged: Map<string, ContractCase | null>;
   /** Links the contract verified: other wallet -> description. */
   proven: Record<string, string>;
+  /** Signal links the contract verified (cap the limit at $100, cost no points). */
+  verifiedSignals?: Record<string, string>;
   /** Link-builder signals (Nansen + chain history). */
   signals: WalletLink[];
   /** Cases of each proven linked wallet, with what the contract stored for them. */
@@ -73,6 +76,7 @@ export interface ReportInput {
 
 export function buildReport(input: ReportInput) {
   const { wallet, score, proven } = input;
+  const verifiedSignals = input.verifiedSignals ?? {};
   const cluster = new Set(Object.keys(proven));
   let juryWins = 0;
 
@@ -128,19 +132,35 @@ export function buildReport(input: ReportInput) {
         });
       return {
         wallet: other,
+        tier: "proven" as const,
         proven: true,
         countsInGrade: true,
-        evidence: seen?.evidence[0]?.description ?? "first-funding proof verified on-chain by GenLayer validators",
+        effect: "same owner: its losses count here, and wins against it are fake",
+        evidence: seen?.evidence[0]?.description ?? `${proven[other]}, verified on-chain by GenLayer validators`,
         evidenceTx: seen?.evidence[0]?.txHash ?? null,
         inheritedLosses: losses,
       };
     }),
-    ...[...new Set(input.signals.filter((l) => !cluster.has(l.other)).map((l) => l.other))].map((other) => {
+    ...Object.keys(verifiedSignals)
+      .filter((other) => !cluster.has(other))
+      .map((other) => ({
+        wallet: other,
+        tier: "signal" as const,
+        proven: false,
+        countsInGrade: true,
+        effect: "possible same owner: no points lost, but jobs above $100 need escrow",
+        evidence: `${verifiedSignals[other]}, verified on-chain by GenLayer validators`,
+        evidenceTx: null,
+        inheritedLosses: [],
+      })),
+    ...[...new Set(input.signals.filter((l) => !cluster.has(l.other) && !(l.other in verifiedSignals)).map((l) => l.other))].map((other) => {
       const ls = input.signals.filter((l) => l.other === other);
       return {
         wallet: other,
+        tier: "hint" as const,
         proven: false,
         countsInGrade: false,
+        effect: "a hint from Nansen or wallet history; not verified on-chain, does not count",
         evidence: ls.map((l) => `${l.type.replaceAll("_", " ")}: ${l.evidence[0]?.description ?? ""}`).join("; "),
         evidenceTx: ls[0]?.evidence[0]?.txHash ?? null,
         inheritedLosses: [],
@@ -162,5 +182,6 @@ export function buildReport(input: ReportInput) {
     linkedWallets,
     signals: input.signals,
     proven,
+    verifiedSignals,
   };
 }

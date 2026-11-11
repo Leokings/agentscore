@@ -1,6 +1,6 @@
 # AgentScore v8: safer links, and three more link kinds
 
-Status: **proposal, waiting for approval (2026-11-11)**. Builds on v7
+Status: **approved 2026-11-11 and deployed as v8.1 at `0xC7CBE19697ce01581b9F32514014A8ABC0f03A76`**, with two changes during the build (the signal effect, section 2; no judgment without a jury, section 8.1). Builds on v7
 (`0xF1a3D4079b19968D31FC47326849906C9F03EB89`, [DESIGN.md](DESIGN.md)). Follows the design
 checkpoint in `Genlayer/GENLAYER_PORTAL_SUBMISSION_GUIDE.md` section 8: nothing below is built
 until this is approved.
@@ -28,11 +28,16 @@ and with an effect on the score that matches how sure the evidence is.
 | Tier | What qualifies | Effect on the score |
 |---|---|---|
 | **Proven** | The evidence needs a signature from the agent's own wallet, or happened before the wallet existed for anyone else (its very first money) | As in v7: inherits the linked wallet's losses; wins against it are fake wins |
-| **Signal** | An outsider could create it, but only by spending real money | Flag `POSSIBLE_SAME_OWNER`; approval limit drops to $0 (escrow) **unless the agent has at least one jury win that counts**. No points lost, no inherited losses |
+| **Signal** | An outsider could create it, but only by spending real money | Flag `POSSIBLE_SAME_OWNER`; the approval limit is **capped at $100** (the C-grade limit) whatever the grade. No points lost, no inherited losses |
 
-So the worst a successful smear can do with a signal is make payers use escrow with an agent
-that has no jury record yet, which protects them anyway, and the agent clears it with one real
-jury win.
+So the worst a successful smear can do with a signal is make payers use escrow for jobs above
+$100, which protects them anyway: the agent keeps its grade, its points and its small jobs.
+
+*Changed during the build (approved 2026-11-11):* the first version said "escrow unless the agent
+has a jury win". Under the scoring table that almost never changed anything: an agent without a
+counted jury win already needs escrow (unless all its jury cases were neutral), and one with a
+win was exempt, so a signal would only have been a warning. The $100 cap bites for every agent
+with a limit above $100.
 
 **Faking must cost money.** Every payment used as evidence must be at least a minimum amount:
 
@@ -98,7 +103,7 @@ start one. A refund after a real job looks the same, which is why this stays a s
   `contractAddress` / creation checks for kind B.
 - New storage `wallet_signals` beside `wallet_links`, so signals never feed inheritance or fake
   wins.
-- `get_score`: adds flag `POSSIBLE_SAME_OWNER`, count `signal_links`, and the escrow rule from
+- `get_score`: adds flag `POSSIBLE_SAME_OWNER`, count `signal_links`, and the $100 cap from
   section 2. Points are computed exactly as in v7.
 - `get_links` returns proven links; new view `get_signals` returns signal links.
 - Unchanged: case judging, jury/default/settlement handling, the scoring table, error codes.
@@ -110,13 +115,14 @@ start one. A refund after a real job looks the same, which is why this stays a s
 Every check is a deterministic RPC read at a pinned block, compared with exact equality, as in
 v6/v7: no LLM is involved in links. Each proof needs at most about 10 calls in one batch, within
 the public node's 25 requests per second. Rate-limited calls are already treated as `[TRANSIENT]`
-(v7). Historical-balance reads are the one new dependency; if a node stops serving old state, a
-proof fails closed with `[EXTERNAL]` and nothing is stored.
+(v7). Historical-balance reads are the one new dependency; if a node stops serving old state, the
+read fails as `[TRANSIENT] rpc_call_error` and nothing is stored.
 
 ## 6. What v8 deliberately does not do
 
 - **Fade old signals.** A view has no trustworthy clock, so "older than 180 days" cannot be
-  computed deterministically. Signals stay until the agent earns a jury win.
+  computed deterministically. A signal stays until the pair is proven (then it becomes a proven
+  link) or forever.
 - **"Most of its money went to C" rules.** Validators can only check the transactions a proof
   cites, not scan a wallet's whole history.
 - **Nansen labels inside the contract.** An API key cannot live in a public contract. Nansen
@@ -142,6 +148,20 @@ Live demo on a fresh v8 deployment: the 18 v7 steps again, plus staged on Base S
 deployment link, and expected failures for dust-before-funding, a below-minimum payment and an
 infrastructure cash-out wallet. The `operated_by` demo (deploying a Safe) is last and optional.
 
+## 8.1 Change after the first v8 deployment: no judgment without a jury (v8.1)
+
+The first v8 deployment (`0x07b633032CF870deca9829b85F3177cd7Fcca4A3`) passed every new link step
+live, but staged case 20 finalized as `MAJORITY_DISAGREE` and stored nothing. It was decided by
+default judgment, so its only "reasoning" is Internet Court's stock text ("Resolved by default -
+only dispute initiator submitted evidence"); validators were still asked whether the loser failed
+to deliver, and with nothing to judge, they split (the leader said yes, the others no). v7 had
+agreed on the same case only by chance, so every future default judgment carried this risk.
+
+v8.1 (approved 2026-11-11): a case decided by default or settlement is **never sent to
+validators**. Who prevailed comes from the chain, and a loss without a jury is **MINOR by rule**:
+only a jury's reasoning can make a loss material or severe. Jury cases are unchanged. Effect on the
+staged data: agent Y's loss (and the one wallet N inherits) is −8 instead of −20.
+
 ## 9. Distinctiveness
 
 Same contract, a deeper version of its own mechanism. Close matches remain different: Sybil
@@ -156,8 +176,8 @@ About one to two days: (1) the first-funding fix and the two tiers, (2) shared d
 and loops, (3) `operated_by` if time allows. Then redeploy, re-judge all cases with the keeper,
 re-run the live demo, update the manifest, API and website.
 
-## Decisions needed
+## Decisions (2026-11-11)
 
-1. Approve the two tiers and their effects (section 2).
-2. Approve the minimums: 0.001 ETH on Base mainnet, 0.00001 ETH on Base Sepolia.
-3. Include `operated_by` (multisig) now, or leave it for later.
+1. Two tiers: approved; signal effect changed to the $100 cap during the build (section 2).
+2. Minimums: approved, 0.001 ETH on Base mainnet and 0.00001 ETH on Base Sepolia.
+3. `operated_by` (multisig): included, built last.

@@ -2,9 +2,13 @@
 """AgentScore: a ruling counts once per owner, not once per wallet.
 
 Validators judge what each finalized Internet Court ruling means for each party. Anyone can
-add chain-verified proof that two wallets share an owner. Grades are derived by ordinary code
-from both registries: wins against same-owner wallets never raise a grade, and losses follow
-the owner to every proven linked wallet.
+add chain-verified evidence that two wallets share an owner, in two tiers: proven links (the
+evidence needs the wallet's own signature, or is its very first money in) and signals (an
+outsider could create them, but only by paying real money). Grades are derived by ordinary code:
+wins against proven same-owner wallets never raise a grade, losses follow the owner to every
+proven linked wallet, and a signal caps the escrow-free limit at $100 without costing points.
+Only Internet Court's AI jury produces findings: a case decided by default or settlement is never
+sent to validators, and a loss in it counts as minor.
 """
 
 from genlayer import *
@@ -61,6 +65,21 @@ MAX_CASES_PER_WALLET = 100
 # exchange, faucet or payout service, not an owner, so it cannot link wallets. The number comes
 # from the funding transaction's own nonce, so every validator sees the same value.
 MAX_FUNDER_NONCE = 1000
+MAX_SIGNALS_PER_WALLET = 30
+# While any signal exists, the approval limit is capped at the C-grade limit, whatever the grade:
+# a signal could have been bought by an outsider, so it never costs points, but large jobs need escrow.
+SIGNAL_LIMIT_CAP = 100
+# Every payment used as link evidence must be at least this much, so faking a link costs real
+# money (paid to the victim). Test ETH has no value: on Base Sepolia this only filters dust.
+MIN_LINK_VALUE_WEI = {"base": 10**15, "base-sepolia": 10**13}  # 0.001 ETH, 0.00001 ETH
+# Base produces a block every 2 seconds.
+CASHOUT_WINDOW_BLOCKS = 30 * 24 * 1800  # both payments to the cash-out wallet within 30 days
+LOOP_WINDOW_BLOCKS = 24 * 1800  # the money comes back within a day
+LOOP_MIN_RETURN_PERCENT = 80
+# Safe multisig: execTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes)
+# and its ExecutionSuccess(bytes32,uint256) event.
+SAFE_EXEC_SELECTOR = "6a761202"
+SAFE_EXEC_SUCCESS_TOPIC = "0x442e715f626346e8c54381002da614f62bee8d27386535b2521ec8540898556e"
 
 # --- Judgment allowlists and the deterministic scoring table ----------------------------
 
@@ -75,10 +94,13 @@ LOSS_PENALTY = {"MINOR": 8, "MATERIAL": 20, "SEVERE": 40}
 GRADE_TABLE = (("A", 80, 5000), ("B", 65, 1000), ("C", 50, 100), ("D", 30, 0))
 # A wallet with no judged cases and no inherited losses is unknown: shown as C, but needs escrow.
 NO_HISTORY_GRADE, NO_HISTORY_LIMIT = "C", 0
-# Only first-funding evidence counts: it is anchored to the wallet's own nonce-0 transaction, so a
-# stranger cannot create it. (A plain payment can be sent to anyone, so it proves nothing about
-# ownership and was removed after the first live run.)
-LINK_KINDS = ("first_funded_by", "shared_first_funder")
+# Proven links need the wallet's own signature, or are its very first money in, so a stranger
+# cannot create them; they carry losses and expose fake wins. Signals can be created by an
+# outsider who pays at least the minimum; they only require escrow until the agent has a jury win.
+# (A plain payment proves nothing, so "paid" was removed after the first live run.)
+PROVEN_KINDS = ("first_funded_by", "shared_first_funder", "deployed_by", "shared_deployer", "operated_by")
+SIGNAL_KINDS = ("shared_cashout", "closed_loop")
+LINK_KINDS = PROVEN_KINDS + SIGNAL_KINDS
 
 
 def _fail(code: str) -> NoReturn:
@@ -298,6 +320,30 @@ def _hex_int(value: Any) -> int:
         _external("rpc_bad_response")
 
 
+def _safe_v1_signers(data: str) -> list[str]:
+    """Owners who approved a Safe execTransaction by sending it themselves.
+
+    In the `signatures` argument, a 65-byte entry with v == 1 means "approved by the address in r",
+    which the Safe only accepts when that address is an owner and either sent the transaction or
+    pre-approved it on-chain. Returns those addresses, sorted; [] if the input is not decodable.
+    """
+    try:
+        body = bytes.fromhex(data[10:])
+        offset = int.from_bytes(body[9 * 32 : 10 * 32], "big")
+        length = int.from_bytes(body[offset : offset + 32], "big")
+        sigs = body[offset + 32 : offset + 32 + length]
+        if length % 65 != 0 or len(sigs) != length:
+            return []
+        out = []
+        for i in range(0, length, 65):
+            chunk = sigs[i : i + 65]
+            if chunk[64] == 1 and chunk[:12] == bytes(12):
+                out.append("0x" + chunk[12:32].hex())
+        return sorted(set(out))
+    except Exception:
+        return []
+
+
 def _fetch_txs(network: str, hashes: list[str]) -> dict[str, dict[str, Any]]:
     """Reads transactions and their receipts from a Base RPC node, keeping only stable fields."""
     payload: list[dict[str, Any]] = []
@@ -315,14 +361,58 @@ def _fetch_txs(network: str, hashes: list[str]) -> dict[str, dict[str, Any]]:
         if not isinstance(receipt, dict) or receipt.get("status") != "0x1":
             _fail("link_tx_failed_or_pending")
         sender, receiver = tx.get("from"), tx.get("to")
+        created = receipt.get("contractAddress")
+        data = str(tx.get("input") or "0x").lower()
+        selector = data[2:10] if len(data) >= 10 else ""
+        to = receiver.lower() if _is_hex(receiver, 40) else ""
+        safe_ok = selector == SAFE_EXEC_SELECTOR and any(
+            isinstance(log, dict)
+            and str(log.get("address", "")).lower() == to
+            and isinstance(log.get("topics"), list)
+            and log["topics"][:1] == [SAFE_EXEC_SUCCESS_TOPIC]
+            for log in receipt.get("logs") or []
+        )
         out[h] = {
             "from": sender.lower() if _is_hex(sender, 40) else "",
-            "to": receiver.lower() if _is_hex(receiver, 40) else "",
+            "to": to,
             "value": _hex_int(tx.get("value")),
             "nonce": _hex_int(tx.get("nonce")),
             "block": _hex_int(tx.get("blockNumber")),
+            # Set only for a contract-creation transaction (`to` empty).
+            "creates": created.lower() if not to and _is_hex(created, 40) else "",
+            # Owners who ran a successful Safe execTransaction by sending it themselves.
+            "safe_signers": _safe_v1_signers(data) if safe_ok else [],
         }
     return out
+
+
+def _fetch_balances(network: str, queries: list[tuple[str, int]]) -> dict[str, int]:
+    """Historical native balances, keyed "wallet@block". Pinned blocks make the answer stable."""
+    if not queries:
+        return {}
+    payload = [
+        {"jsonrpc": "2.0", "id": i + 1, "method": "eth_getBalance", "params": [w, hex(b)]} for i, (w, b) in enumerate(queries)
+    ]
+    by_id = _rpc_post(NETWORK_RPC[network], payload)
+    return {f"{w}@{b}": _hex_int(by_id[i + 1].get("result")) for i, (w, b) in enumerate(queries)}
+
+
+def _fetch_link_evidence(network: str, hashes: list[str], pair: tuple[str, str]) -> dict[str, Any]:
+    """The cited transactions, plus each funded wallet's balance just before and at its funding.
+
+    A transfer to one of the two wallets may be its first funding, so its balance is read at the
+    block before the transfer and at the transfer's block: 0 and at most the amount means nothing
+    else had arrived by then, i.e. it was the wallet's first money in.
+    """
+    txs = _fetch_txs(network, hashes)
+    queries: list[tuple[str, int]] = []
+    for h in hashes:
+        t = txs[h]
+        if t["to"] in pair and t["value"] > 0 and t["block"] > 0:
+            for q in ((t["to"], t["block"] - 1), (t["to"], t["block"])):
+                if q not in queries:
+                    queries.append(q)
+    return {"txs": txs, "balances": _fetch_balances(network, queries)}
 
 
 def _exact_validator(fetch: Any) -> Any:
@@ -361,9 +451,9 @@ def _case_evidence(case: str) -> dict[str, Any]:
     return gl.vm.run_nondet_unsafe(fetch, _exact_validator(fetch))
 
 
-def _tx_evidence(network: str, hashes: list[str]) -> dict[str, dict[str, Any]]:
-    def fetch() -> dict[str, dict[str, Any]]:
-        return _fetch_txs(network, hashes)
+def _link_evidence(network: str, hashes: list[str], pair: tuple[str, str]) -> dict[str, Any]:
+    def fetch() -> dict[str, Any]:
+        return _fetch_link_evidence(network, hashes, pair)
 
     return gl.vm.run_nondet_unsafe(fetch, _exact_validator(fetch))
 
@@ -493,18 +583,31 @@ def _normalize_proof(proof_json: Any) -> dict[str, str]:
     return out
 
 
-def _verified_link(kind: str, subject: str, other: str, txs: dict[str, dict[str, Any]], proof: dict[str, str]) -> str | None:
-    """Returns a short description if the transactions prove the claimed link, otherwise None."""
+def _verified_link(kind: str, subject: str, other: str, evidence: dict[str, Any], proof: dict[str, str]) -> str | None:
+    """Returns a short description if the cited evidence proves the claimed link, otherwise None.
 
+    Deterministic: reads only the transactions and balances the leader and validators agreed on.
+    """
     network = proof.get("network", "base-sepolia")
+    txs = evidence["txs"]
+    balances = evidence["balances"]
+    minimum = MIN_LINK_VALUE_WEI[network]
+
+    def tx(key: str) -> dict[str, Any] | None:
+        return txs.get(proof.get(key, ""))
+
+    def not_infrastructure(t: dict[str, Any], code: str) -> None:
+        # The sender had already sent more than MAX_FUNDER_NONCE transactions: an exchange,
+        # faucet, relayer or payout service, never an owner.
+        if t["nonce"] > MAX_FUNDER_NONCE:
+            _fail(code)
 
     def first_funding(wallet: str, funder: str, funding_key: str, first_tx_key: str) -> bool:
-        funding, first = txs.get(proof.get(funding_key, "")), txs.get(proof.get(first_tx_key, ""))
+        funding, first = tx(funding_key), tx(first_tx_key)
         if funding is None or first is None:
             return False
-        # The wallet could not send its first transaction before it held gas, so a native-value
-        # transfer mined before (or with) its nonce-0 transaction is its first funding. Later dust
-        # sent by a stranger can never satisfy this.
+        # The wallet could not send its first transaction before it held gas, so a transfer mined
+        # before (or with) its nonce-0 transaction funded it.
         matched = (
             funding["from"] == funder
             and funding["to"] == wallet
@@ -513,9 +616,27 @@ def _verified_link(kind: str, subject: str, other: str, txs: dict[str, dict[str,
             and first["nonce"] == 0
             and funding["block"] <= first["block"]
         )
-        if matched and funding["nonce"] > MAX_FUNDER_NONCE:
-            _fail("funder_is_infrastructure")
-        return matched
+        if not matched:
+            return False
+        not_infrastructure(funding, "funder_is_infrastructure")
+        if funding["value"] < minimum:
+            _fail("funding_below_minimum")
+        # It must also be the wallet's first money in: nothing before it, nothing else with it.
+        # Dust sent ahead of the real funding therefore breaks the link instead of creating one.
+        before = balances.get(f"{wallet}@{funding['block'] - 1}")
+        at = balances.get(f"{wallet}@{funding['block']}")
+        if before != 0 or at is None or at > funding["value"]:
+            _fail("not_first_money_in")
+        return True
+
+    def direct_deployment(contract: str, deployer: str, key: str) -> bool:
+        t = tx(key)
+        if t is None:
+            return False
+        if t["creates"] != contract or t["from"] != deployer:
+            return False
+        not_infrastructure(t, "deployer_is_infrastructure")
+        return True
 
     if kind == "first_funded_by":
         if first_funding(subject, other, "funding_tx", "subject_first_tx"):
@@ -523,16 +644,92 @@ def _verified_link(kind: str, subject: str, other: str, txs: dict[str, dict[str,
         if first_funding(other, subject, "funding_tx", "other_first_tx"):
             return f"subject sent the other wallet its first funds ({network})"
         return None
+
     if kind == "shared_first_funder":
-        funder = proof.get("funder", "")
+        funder = proof.get("funder", "").lower()
         if (
             _is_hex(funder, 40)
-            and funder.lower() not in (subject, other)
-            and first_funding(subject, funder.lower(), "subject_funding_tx", "subject_first_tx")
-            and first_funding(other, funder.lower(), "other_funding_tx", "other_first_tx")
+            and funder not in (subject, other)
+            and first_funding(subject, funder, "subject_funding_tx", "subject_first_tx")
+            and first_funding(other, funder, "other_funding_tx", "other_first_tx")
         ):
             return f"both were first funded by the same wallet ({network})"
         return None
+
+    if kind == "deployed_by":
+        # The wallet is a contract created directly by the other wallet (which signed it).
+        # Factory deployments have a contract as sender and never match an ordinary deployer.
+        t = tx("creation_tx")
+        if t is not None and t["creates"] and t["creates"] not in (subject, other):
+            _fail("not_a_direct_deployment")
+        if direct_deployment(subject, other, "creation_tx"):
+            return f"other wallet deployed the subject's contract ({network})"
+        if direct_deployment(other, subject, "creation_tx"):
+            return f"subject deployed the other wallet's contract ({network})"
+        if t is not None and not t["creates"]:
+            _fail("not_a_direct_deployment")
+        return None
+
+    if kind == "shared_deployer":
+        a, b = tx("subject_creation_tx"), tx("other_creation_tx")
+        if a is None or b is None or not a["creates"] or not b["creates"]:
+            _fail("not_a_direct_deployment")
+        deployer = a["from"]
+        if (
+            deployer
+            and deployer == b["from"]
+            and deployer not in (subject, other)
+            and direct_deployment(subject, deployer, "subject_creation_tx")
+            and direct_deployment(other, deployer, "other_creation_tx")
+        ):
+            return f"both contracts were deployed by the same wallet ({network})"
+        return None
+
+    if kind == "operated_by":
+        # An owner ran a successful Safe transaction by sending it itself. Being listed as an
+        # owner proves nothing (anyone can list anyone), so only an executed transaction counts.
+        t = tx("exec_tx")
+        if t is None:
+            return None
+        for safe, operator in ((subject, other), (other, subject)):
+            if t["to"] == safe and t["from"] == operator:
+                if operator not in t["safe_signers"]:
+                    _fail("not_a_safe_owner_execution")
+                not_infrastructure(t, "operator_is_infrastructure")
+                return f"one wallet ran a transaction on the other's multisig as an owner ({network})"
+        return None
+
+    if kind == "shared_cashout":
+        a, b, c = tx("subject_tx"), tx("other_tx"), tx("cashout_tx")
+        if a is None or b is None or c is None:
+            return None
+        wallet = a["to"]
+        if not (a["from"] == subject and b["from"] == other and wallet and b["to"] == wallet and wallet not in (subject, other)):
+            return None
+        if a["value"] < minimum or b["value"] < minimum:
+            _fail("payment_below_minimum")
+        if abs(a["block"] - b["block"]) > CASHOUT_WINDOW_BLOCKS:
+            _fail("cashout_payments_too_far_apart")
+        # A transaction sent by the cash-out wallet after both payments shows how many it had
+        # sent by then: an exchange or payout service has sent far more than an owner's wallet.
+        if c["from"] != wallet or c["block"] < max(a["block"], b["block"]):
+            return None
+        not_infrastructure(c, "cashout_wallet_is_infrastructure")
+        return f"both sent money to the same wallet within 30 days ({network})"
+
+    if kind == "closed_loop":
+        out, back = tx("out_tx"), tx("back_tx")
+        if out is None or back is None:
+            return None
+        if not (out["from"] == subject and out["to"] == other and back["from"] == other and back["to"] == subject):
+            return None
+        if out["value"] < minimum:
+            _fail("payment_below_minimum")
+        if back["value"] * 100 < out["value"] * LOOP_MIN_RETURN_PERCENT or not 0 <= back["block"] - out["block"] <= LOOP_WINDOW_BLOCKS:
+            _fail("loop_too_small_or_slow")
+        not_infrastructure(back, "loop_wallet_is_infrastructure")
+        return f"money went to the other wallet and most of it came back within a day ({network})"
+
     return None
 
 
@@ -544,6 +741,9 @@ class AgentScore(gl.Contract):
     wallet_cases: TreeMap[str, str]
     # wallet -> JSON object {other wallet: description} of proven same-owner links (stored both ways)
     wallet_links: TreeMap[str, str]
+    # wallet -> JSON object {other wallet: description} of signal links (stored both ways); they
+    # never carry losses or expose fake wins, they only require escrow (see get_score)
+    wallet_signals: TreeMap[str, str]
 
     def __init__(self) -> None:
         pass
@@ -564,7 +764,15 @@ class AgentScore(gl.Contract):
 
         for case in targets:
             evidence = _case_evidence(case)
-            judgment = _judge(evidence)
+            if evidence["resolution"] == "jury":
+                judgment = _judge(evidence)
+            else:
+                # No jury: a default judgment or a settlement carries no findings to judge (its only
+                # reasoning is Internet Court's stock text), so validators are not asked. Who
+                # prevailed comes from the chain, and a loss without a jury is MINOR by rule: only
+                # a jury's reasoning can make a loss material or severe.
+                roles = [p["role"] for p in evidence["parties"]]
+                judgment = _outcomes({"prevailing": evidence["prevailing_role"], "deception": False, "non_delivery": False}, roles)
             parties = [{**p, **judgment[p["role"]]} for p in evidence["parties"]]
             record = {"case_id": evidence["case_id"], "case_type": evidence["case_type"], "resolution": evidence["resolution"], "parties": parties}
             self.cases[case] = json.dumps(record, sort_keys=True)
@@ -599,22 +807,35 @@ class AgentScore(gl.Contract):
             _fail("invalid_proof_json")
         proof = {k: (v.lower() if k.endswith("_tx") else v) for k, v in proof.items()}
 
+        signal = kind in SIGNAL_KINDS
+        store = self.wallet_signals if signal else self.wallet_links
+        limit = MAX_SIGNALS_PER_WALLET if signal else MAX_LINKS_PER_WALLET
         links_a = json.loads(self.wallet_links.get(a, "{}"))
-        links_b = json.loads(self.wallet_links.get(b, "{}"))
-        if b in links_a:
+        signals_a = json.loads(self.wallet_signals.get(a, "{}"))
+        # A proven link already says more than any signal; a signal may later be proven.
+        if b in links_a or (signal and b in signals_a):
             _fail("link_already_proven")
-        if len(links_a) >= MAX_LINKS_PER_WALLET or len(links_b) >= MAX_LINKS_PER_WALLET:
+        mine = json.loads(store.get(a, "{}"))
+        theirs = json.loads(store.get(b, "{}"))
+        if len(mine) >= limit or len(theirs) >= limit:
             _fail("wallet_link_limit")
 
-        txs = _tx_evidence(network, hashes)
-        description = _verified_link(kind, a, b, txs, proof)
+        evidence = _link_evidence(network, hashes, (a, b))
+        description = _verified_link(kind, a, b, evidence, proof)
         if description is None:
             _fail("link_not_proven")
 
-        links_a[b] = description
-        links_b[a] = description
-        self.wallet_links[a] = json.dumps(links_a, sort_keys=True)
-        self.wallet_links[b] = json.dumps(links_b, sort_keys=True)
+        mine[b] = description
+        theirs[a] = description
+        store[a] = json.dumps(mine, sort_keys=True)
+        store[b] = json.dumps(theirs, sort_keys=True)
+        if not signal and b in signals_a:
+            # Upgraded from a signal to a proven link.
+            signals_b = json.loads(self.wallet_signals.get(b, "{}"))
+            del signals_a[b]
+            signals_b.pop(a, None)
+            self.wallet_signals[a] = json.dumps(signals_a, sort_keys=True)
+            self.wallet_signals[b] = json.dumps(signals_b, sort_keys=True)
         return description
 
     # ------------------------------------------------------------------ views
@@ -629,6 +850,11 @@ class AgentScore(gl.Contract):
     @gl.public.view
     def get_links(self, wallet: str) -> dict[str, str]:
         return json.loads(self.wallet_links.get(_addr(wallet), "{}"))
+
+    @gl.public.view
+    def get_signals(self, wallet: str) -> dict[str, str]:
+        """Signal links: an outsider could create them by paying, so they only require escrow."""
+        return json.loads(self.wallet_signals.get(_addr(wallet), "{}"))
 
     @gl.public.view
     def get_stats(self) -> dict[str, int]:
@@ -687,6 +913,9 @@ class AgentScore(gl.Contract):
             flags.append("UNCLEAR_RULINGS")
         if uncontested_wins:
             flags.append("UNCONTESTED_WINS")
+        signals = json.loads(self.wallet_signals.get(subject, "{}"))
+        if signals:
+            flags.append("POSSIBLE_SAME_OWNER")
 
         # History that can be trusted: a jury ruling, a loss (nobody fakes a loss) or a caught fake
         # win. Uncontested wins alone do not lift a wallet out of the no-history escrow rule.
@@ -700,6 +929,10 @@ class AgentScore(gl.Contract):
                 if points >= threshold:
                     grade, limit = g, approve
                     break
+        # A signal (shared cash-out, closed loop) could have been bought by an outsider, so it never
+        # costs points; but jobs above the cap need escrow while it stands.
+        if signals:
+            limit = min(limit, SIGNAL_LIMIT_CAP)
 
         return {
             "wallet": subject,
@@ -718,5 +951,6 @@ class AgentScore(gl.Contract):
                 "inherited_cases": inherited_cases,
                 "unclear": unclear,
                 "linked_wallets": len(cluster),
+                "signal_links": len(signals),
             },
         }

@@ -9,6 +9,39 @@ export type ProofNetwork = keyof typeof NETWORK_RPC;
 
 /** Must match MAX_FUNDER_NONCE in contracts/agent_score.py. */
 export const MAX_FUNDER_NONCE = 1000;
+/** Must match MIN_LINK_VALUE_WEI in contracts/agent_score.py. */
+export const MIN_LINK_VALUE_WEI: Record<ProofNetwork, bigint> = { base: 10n ** 15n, "base-sepolia": 10n ** 13n };
+
+/** A wallet's native balance at the end of each block, read the way the contract reads it. */
+export async function balancesAt(network: ProofNetwork, wallet: Address, blocks: number[]): Promise<Map<number, bigint>> {
+  const payload = blocks.map((b, i) => ({ jsonrpc: "2.0", id: i + 1, method: "eth_getBalance", params: [wallet, `0x${b.toString(16)}`] }));
+  const res = await fetch(NETWORK_RPC[network], {
+    method: "POST",
+    headers: { "content-type": "application/json", "user-agent": "agentscore-prover" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`${network} RPC ${res.status}`);
+  const items = (await res.json()) as Array<{ id: number; result?: string; error?: { message?: string } }>;
+  const out = new Map<number, bigint>();
+  for (const it of items) {
+    if (!it.result) throw new Error(`${network} balance read failed: ${it.error?.message ?? "no result"}`);
+    out.set(blocks[it.id - 1]!, BigInt(it.result));
+  }
+  return out;
+}
+
+/**
+ * v8 rule: the funding must be at least the network minimum and the wallet's first money in
+ * (balance 0 the block before, nothing more than the funding by the end of its block).
+ */
+export async function checkFirstMoneyIn(network: ProofNetwork, wallet: Address, funding: ChainTx): Promise<FundingCheck> {
+  if (funding.value < MIN_LINK_VALUE_WEI[network]) return { ok: false, reason: "funding is below the minimum amount" };
+  const b = await balancesAt(network, wallet, [funding.block - 1, funding.block]);
+  if (b.get(funding.block - 1) !== 0n || (b.get(funding.block) ?? 0n) > funding.value) {
+    return { ok: false, reason: "it was not the wallet's first money in (something arrived before or with it)" };
+  }
+  return { ok: true };
+}
 
 export interface ChainTx {
   hash: TxHash;

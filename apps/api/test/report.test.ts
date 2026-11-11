@@ -94,6 +94,19 @@ describe("report", () => {
     expect(report.advice).toMatch(/up to \$100/);
   });
 
+  it("puts verified signals in their own tier, between proven links and hints", () => {
+    const CASHOUT_PEER = a(0x77);
+    const r = buildReport({
+      wallet: ME, score: scored({ flags: ["POSSIBLE_SAME_OWNER"] }), cases: [], judged: new Map(), proven: {},
+      verifiedSignals: { [CASHOUT_PEER]: "both sent money to the same wallet within 30 days (base-sepolia)" },
+      signals: [{ ...signal, other: CASHOUT_PEER }], linkedCases: new Map(),
+    });
+    expect(r.linkedWallets).toHaveLength(1); // the hint about the same wallet is folded into the signal
+    expect(r.linkedWallets[0]).toMatchObject({ wallet: CASHOUT_PEER, tier: "signal", countsInGrade: true, inheritedLosses: [] });
+    expect(r.linkedWallets[0]!.effect).toMatch(/above \$100 need escrow/);
+    expect(r.flags[0]!.meaning).toMatch(/\$100/);
+  });
+
   it("shows a case the contract has not judged yet as not counting", () => {
     const fresh = courtCase(9, CLIENT, ME);
     const r = buildReport({ wallet: ME, score: scored(), cases: [fresh], judged: new Map(), proven: {}, signals: [], linkedCases: new Map() });

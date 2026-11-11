@@ -1,21 +1,47 @@
-{"label":"00-deploy","tx":"0x6dc40dd9305820a8ce84c3cd52913a1c8fcc50355f4d768bec88c59c492210b3","contract":"0xF1a3D4079b19968D31FC47326849906C9F03EB89","status":"FINALIZED","leader":"SUCCESS"}
-{"label":"01-judge-case15","tx":"0x5cab6abb155c6e053c8570f3d823333ee3b52fb26f4bc9d589a15d2e7e341c3a","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":1,"error":""}
-{"label":"02-judge-case16","tx":"0x0dc6ba2d3ef6215fb70430b966296db39e2fbfb39bfba5d6db893cb5fe7e19a0","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":1,"error":""}
-{"label":"03-judge-trade-case0","tx":"0x87c5200ccfc678b9a9455b1220f5efa157d5c00cbaed7c4884a09b6e136e9ebc","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":1,"error":""}
-{"label":"04-judge-trade-case1","tx":"0x6c4ba948b74862275e4280ecda11986fbaee2048aebe279ccd2871fab96c65fe","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":2,"error":""}
-{"label":"05-prove-link-first-funded","tx":"0xdd52b9578f0de78ad36b5555e2b96d05b6060be4d9cc1bf10d7adb290640c635","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":0,"error":""}
-{"label":"06-EXPECTED-replay-judged-case","tx":"0xdc1194eb8cff15d7b098b218f2bc0e1af303b4fd719b1e62ec9936bc80035063","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":0,"error":"[EXPECTED] case_already_judged"}
-{"label":"07-EXPECTED-not-an-internet-court-case","tx":"0x5a8ee3e79f941e7c37f9e2499842a1268dce00ef319c866cd1bba3b4678aac6a","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":0,"error":"[EXPECTED] case_not_registered"}
-{"label":"08-EXPECTED-case-not-ruled","tx":"0x1720965b940581e70b02b34df8f085867445709864983b458bce87cfda32eb1c","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":2,"error":"[EXPECTED] case_not_ruled"}
-{"label":"09-EXPECTED-forged-funding-direction","tx":"0x4673f196cb8b5f10856df20477f2b9c4ab50080c797898afa64e6fd979decb96","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":0,"error":"[EXPECTED] link_not_proven"}
-{"label":"10-EXPECTED-replay-proven-link","tx":"0xacd7d8685be1887d253931447d719d637bb4c87bb70cc50c4146bb37adcee8dc","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":0,"error":"[EXPECTED] link_already_proven"}
-{"label":"11-EXPECTED-payment-is-not-a-link","tx":"0x4e8fb2814763795aed1cbef1fdb6f9629bba90c6c319183c274a5eaf632cd4b1","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":0,"error":"[EXPECTED] unknown_link_kind"}
-{"label":"12-EXPECTED-faucet-is-not-an-owner","tx":"0x7dc9a2d267dbfea1282cf3876c23b10834d0613a6fdd7f64f66cb5f54e6e5e56","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":0,"error":"[EXPECTED] funder_is_infrastructure"}
-{"label":"13-judge-staged-fake-win-case19","tx":"0x14b787434b23fc884cbafb172dc799e94f0e26c56f9a4649b14fbf1fb6e813ce","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":1,"error":""}
-{"label":"14-judge-staged-loss-case20","tx":"0x325068f926fdea4991d1bac84da0bc469eb89b78d34656febecaef1d0e10386f","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":0,"error":""}
-{"label":"15-prove-link-sock-funded-by-agent","tx":"0x90a1d667281248b2036abd5f63e38503114a15a67794df26132885a3af750a6c","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":0,"error":""}
-{"label":"16-prove-link-successor-funded-by-loser","tx":"0xb54d726f44a6c8266413e8128395a88e141d886d4e1406405a4aa4624e8a00ed","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":0,"error":""}
-{"label":"17-prove-mainnet-link-found-by-nansen","tx":"0x1da6b2c223859e35b2e37452dd8a33683870eb4e371c536ca830f7a9b6c2d6a6","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":0,"error":""}
+{"label":"00-deploy","tx":"0x132995c302a7c904450f085d10c1220a1f7b3a613676c1a183e43b4043abe69f","contract":"0xC7CBE19697ce01581b9F32514014A8ABC0f03A76","status":"FINALIZED","leader":"SUCCESS"}
+{"label":"01-judge-case15","tx":"0xbe2b5dadf96a248ba90afc27cc1f99ea6ca8f772660383cc12c1c736b185b607","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":1,"error":""}
+{"label":"02-judge-case16","tx":"0xa5967521a1411f46c8028b14e8e999d8da3a6fd82112814fa66092552bfd19b4","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":0,"error":""}
+{"label":"03-judge-trade-case0","tx":"0x101df74a186ba7f8a50ddba92c8567620ace92b185120f40ed8f0f64ed84e85b","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":1,"error":""}
+{"label":"04-judge-trade-case1","tx":"0xdb1a58b21f9abf41d3c964bf461bb9032fa0816f511d772cfc0466d0ed2bfc18","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":1,"error":""}
+{"label":"05-prove-link-first-funded","tx":"0x48de9b75014125e13053e68bdb03179ed5774ff856fbf8382c81d8e2b847b0a1","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":0,"error":""}
+{"label":"06-EXPECTED-replay-judged-case","tx":"0xb45aff8ab85b569a405c059c8028bbd65af4f11b19887d180b518b5f98cc1fe6","status":"FINALIZED","leader":"ERROR","agree":4,"disagree":0,"error":"[EXPECTED] case_already_judged"}
+{"label":"07-EXPECTED-not-an-internet-court-case","tx":"0x486acaac8094a4698341bcb73eb53aa931e6bd6e19ccd93f7358035d0fe97630","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":2,"error":"[EXPECTED] case_not_registered"}
+{"label":"08-EXPECTED-case-not-ruled","tx":"0x779605bebcd6905732d7fcce5335c8e2bcf5db36cf6da55ddeb735ffba452e6b","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":1,"error":"[EXPECTED] case_not_ruled"}
+{"label":"09-EXPECTED-forged-funding-direction","tx":"0x43f6504d58a8754677d7be9d6f9ed2c99ccad22c1e3f9b54286eedf9ee112dbb","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":0,"error":"[EXPECTED] link_not_proven"}
+{"label":"10-EXPECTED-replay-proven-link","tx":"0x95f3f677234c47827042e5d450db910fa223bf9761d8165808797d992dbd68db","status":"FINALIZED","leader":"ERROR","agree":4,"disagree":0,"error":"[EXPECTED] link_already_proven"}
+{"label":"11-EXPECTED-payment-is-not-a-link","tx":"0x722a4573bb21c2c58a0b3ecde39172a0a1975b9737192053fcec0945d82de240","status":"FINALIZED","leader":"ERROR","agree":4,"disagree":0,"error":"[EXPECTED] unknown_link_kind"}
+{"label":"12-EXPECTED-faucet-is-not-an-owner","tx":"0xff4b262ffc41bf0539ad58731e593e086dfb409255ccf1813b1c08660c655f6b","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":0,"error":"[EXPECTED] funder_is_infrastructure"}
+{"label":"13-judge-staged-fake-win-case19","tx":"0xb83d8ac03e1feb7f719738d4b40f2105068eb1c4216bc9be932f694af5203724","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":1,"error":""}
+{"label":"14-judge-staged-loss-case20","tx":"0x6ee08958d44c89447b7db30636e3191425b535981130e629d01213feb8114cf1","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":0,"error":""}
+{"label":"15-prove-link-sock-funded-by-agent","tx":"0x2101d4dc5aab9d9096fbefbb3e829068ca59b23349bcf9ccf00f974c5e4c4fb8","status":"FINALIZED","leader":"SUCCESS","agree":4,"disagree":0,"error":""}
+{"label":"16-prove-link-successor-funded-by-loser","tx":"0xb69b3a83598ff226ae537aadab7d70b239675b9154009affd2c8480b659837fc","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":0,"error":""}
+{"label":"17-prove-mainnet-link-found-by-nansen","tx":"0xac5cacddc165992f66d0e8749c16685bcbd265c607f1cbc47c76423bb4dad0bf","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":0,"error":""}
+{"label":"18-prove-signal-shared-cashout","tx":"0x91f9c0147f2ffe0fb83119b2d16c428596c346cc55a78841e445223f46ad54fc","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":0,"error":""}
+{"label":"19-prove-signal-closed-loop","tx":"0x2c3bb70f0f1db617d70f269b98e84f50cbbae337327dd9a9adcf1c0e9cd647d9","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":0,"error":""}
+{"label":"20-prove-direct-deployment","tx":"0xb82d130282da3738e575fa534b3a0d806551cc3f5261df0ee8a2ba8b0cf7d0f8","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":0,"error":""}
+{"label":"21-prove-multisig-operator","tx":"0x7a6348bbd5a265a0c69c82c2ed9cb2bd56bdc8896c46a4832484915b513b63b8","status":"FINALIZED","leader":"SUCCESS","agree":3,"disagree":0,"error":""}
+{"label":"22-EXPECTED-dust-breaks-owner-link","tx":"0x5b30a33a2f6d18c3a2cf55e3bcb55343000d5e100881e883de2c0839ebe58379","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":0,"error":"[EXPECTED] not_first_money_in"}
+{"label":"23-EXPECTED-dust-is-below-minimum","tx":"0x90a70160a9702b4e8971c3c1edfce8e768be5c7caa142a8661ff1a20206fe055","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":0,"error":"[EXPECTED] funding_below_minimum"}
+{"label":"24-EXPECTED-call-is-not-a-deployment","tx":"0x2e52017addad4e3cab2f19c3fa73c4d042ae05984d0066dd1312e61f0047da79","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":0,"error":"[EXPECTED] not_a_direct_deployment"}
+{"label":"25-EXPECTED-loop-below-minimum","tx":"0xe39171f28722aa442f54076bb8062832930b250435875629d6848027f102d6d4","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":0,"error":"[EXPECTED] payment_below_minimum"}
+{"label":"26-EXPECTED-cashout-to-infrastructure","tx":"0x9680c8f6630b4a8a9a08f3c0348003351ba252e833afa182f7946c3d51427a8c","status":"FINALIZED","leader":"ERROR","agree":3,"disagree":0,"error":"[EXPECTED] cashout_wallet_is_infrastructure"}
+--- get_signals 0x2db38a6500c1d42805bfd78cbcdcc733f3a606b4
+{
+  '0xdb759ac329dc83699e9eeb0d137c5aa3e1da9ee1': 'both sent money to the same wallet within 30 days (base-sepolia)'
+}
+--- get_signals 0xdb759ac329dc83699e9eeb0d137c5aa3e1da9ee1
+{
+  '0x2db38a6500c1d42805bfd78cbcdcc733f3a606b4': 'both sent money to the same wallet within 30 days (base-sepolia)',
+  '0xf3eb4c1be455924db320fde576ff8004028905ec': 'money went to the other wallet and most of it came back within a day (base-sepolia)'
+}
+--- get_links 0x22cc2831ad3a7eb136186f086fc35100f4852cda
+{
+  '0x2db38a6500c1d42805bfd78cbcdcc733f3a606b4': "other wallet deployed the subject's contract (base-sepolia)"
+}
+--- get_links 0xd1c49adf45900e7378577f7a113ab10d35acf7f4
+{
+  '0x2db38a6500c1d42805bfd78cbcdcc733f3a606b4': "one wallet ran a transaction on the other's multisig as an owner (base-sepolia)"
+}
 --- get_stats
 { judged_cases: 6 }
 
@@ -128,7 +154,7 @@
       address: '0x9a88ebbba9e7f52acaf296ae7706f9b16affad69',
       outcome: 'UNFAVORABLE',
       role: 'partyA',
-      severity: 'MATERIAL'
+      severity: 'MINOR'
     },
     {
       address: '0x5a5160eec0435cc20309735715b44898a46b8032',
@@ -169,6 +195,7 @@
     linked_wallets: 0,
     loss_penalty: 8,
     ruled_cases: 4,
+    signal_links: 0,
     unclear: 1,
     uncontested_wins: 0,
     wins: 2
@@ -189,6 +216,7 @@
     linked_wallets: 0,
     loss_penalty: 16,
     ruled_cases: 2,
+    signal_links: 0,
     unclear: 0,
     uncontested_wins: 0,
     wins: 0
@@ -209,6 +237,7 @@
     linked_wallets: 0,
     loss_penalty: 0,
     ruled_cases: 0,
+    signal_links: 0,
     unclear: 0,
     uncontested_wins: 0,
     wins: 0
@@ -229,6 +258,7 @@
     linked_wallets: 1,
     loss_penalty: 0,
     ruled_cases: 0,
+    signal_links: 0,
     unclear: 0,
     uncontested_wins: 0,
     wins: 0
@@ -249,6 +279,7 @@
     linked_wallets: 1,
     loss_penalty: 0,
     ruled_cases: 0,
+    signal_links: 0,
     unclear: 0,
     uncontested_wins: 0,
     wins: 0
@@ -269,6 +300,7 @@
     linked_wallets: 1,
     loss_penalty: 0,
     ruled_cases: 1,
+    signal_links: 0,
     unclear: 0,
     uncontested_wins: 0,
     wins: 0
@@ -289,6 +321,7 @@
     linked_wallets: 1,
     loss_penalty: 8,
     ruled_cases: 1,
+    signal_links: 0,
     unclear: 0,
     uncontested_wins: 0,
     wins: 0
@@ -307,15 +340,16 @@
     inherited_penalty: 0,
     jury_cases: 0,
     linked_wallets: 1,
-    loss_penalty: 20,
+    loss_penalty: 8,
     ruled_cases: 1,
+    signal_links: 0,
     unclear: 0,
     uncontested_wins: 0,
     wins: 0
   },
   flags: [],
   grade: 'D',
-  points: 30,
+  points: 42,
   wallet: '0x9a88ebbba9e7f52acaf296ae7706f9b16affad69'
 }
 --- get_score 0x5a5160eec0435cc20309735715b44898a46b8032
@@ -329,6 +363,7 @@
     linked_wallets: 0,
     loss_penalty: 0,
     ruled_cases: 1,
+    signal_links: 0,
     unclear: 0,
     uncontested_wins: 1,
     wins: 0
@@ -344,18 +379,19 @@
   counts: {
     fake_wins: 0,
     inherited_cases: 1,
-    inherited_penalty: 20,
+    inherited_penalty: 8,
     jury_cases: 0,
     linked_wallets: 1,
     loss_penalty: 0,
     ruled_cases: 0,
+    signal_links: 0,
     unclear: 0,
     uncontested_wins: 0,
     wins: 0
   },
   flags: [ 'INHERITED_LOSSES' ],
   grade: 'D',
-  points: 30,
+  points: 42,
   wallet: '0x9c985f2536587966f087e2677c81e386d4ab797c'
 }
 --- get_score 0xb5fe6011cee8974c24c630afdf3c15f5620925b7
@@ -369,6 +405,7 @@
     linked_wallets: 1,
     loss_penalty: 0,
     ruled_cases: 0,
+    signal_links: 0,
     unclear: 0,
     uncontested_wins: 0,
     wins: 0

@@ -1,0 +1,187 @@
+{
+  "network": "base-sepolia",
+  "operator": "0xEAa24431285FE4939e8595AA3a555Bfb657D4002",
+  "wallets": {
+    "v8P": "0x2dB38a6500C1d42805BFd78CBCdcc733f3a606b4",
+    "v8Q": "0xdB759ac329dc83699E9eEb0D137c5aA3e1da9Ee1",
+    "v8C": "0xf3eB4C1BE455924db320fdE576Ff8004028905Ec",
+    "v8D": "0xbe140023285e7cf5D622632D4C8253384eCFeE05",
+    "contractK": "0x22cc2831ad3a7eb136186f086fc35100f4852cda",
+    "safe": "0xd1c49adf45900E7378577F7a113AB10D35aCF7f4",
+    "busyWallet": "0x625d8a65134079f8faaac39a7947c73d93c6ac39"
+  },
+  "steps": {
+    "fund:P": {
+      "tx": "0x6b8e7bac7b02bcaaf167373cbfa739cd40dcc087e1d214bcbb48fe9ae7cbf67c",
+      "block": 57349258
+    },
+    "fund:Q": {
+      "tx": "0xf1130f6846344c80d7a5e1dce0fe363288dcf9b95d4dda63a627e070e61c2049",
+      "block": 57349266
+    },
+    "fund:C": {
+      "tx": "0x25161149ed2a4ab53c7fffec5d59f62cd605caccd7cf6c5e75d2be55d7136f3d",
+      "block": 57349278
+    },
+    "cashout:P->C": {
+      "tx": "0x7592c0e544361b141161522a5d00b9fc1eca583a37e46900403471db4293a632",
+      "block": 57349289
+    },
+    "cashout:Q->C": {
+      "tx": "0x4e09607f2975023f06894234e27045f8ce9e87a80c72d268fcf6fa8e7838766e",
+      "block": 57349300
+    },
+    "cashout:C-tx": {
+      "tx": "0x1e45ab0fa40176a3ec8ea07cc6d975e661556881b100d0662ac3e77428519d9b",
+      "block": 57349311
+    },
+    "loop:Q->C": {
+      "tx": "0x67ce1decc59d0ae6f0c37b5c7cd650ea093a26691b377f7763dbc6b7f378834c",
+      "block": 57349322
+    },
+    "loop:C->Q": {
+      "tx": "0x150dedbd8e301435b4cd1b18a15bd12694818b614b789a4ffd9d2891c4c0a552",
+      "block": 57349330
+    },
+    "deploy:K": {
+      "tx": "0x3a711aa566f5030d965eff5c37940941ed5150062310b1efcd586562b24da136",
+      "block": 57349341
+    },
+    "call:K": {
+      "tx": "0xe7e4e684743b062ed27375d2052d4ee43b6eca82f679b55c5b6f7f1fa23f53d0",
+      "block": 57349352
+    },
+    "safe:create": {
+      "tx": "0x9a09ef8e4b282cc5cc5dacddd7e81b9f6c053279fa4053a3d65e2f5e278a71c4",
+      "block": 57349361
+    },
+    "safe:exec": {
+      "tx": "0x0fe5acd850f2598712eb4fa5315fec46cfc18d3252de8161dcfceb9d2e203880",
+      "block": 57349372
+    },
+    "dust:operator->D": {
+      "tx": "0xff654e2bb4efc7d91356f428caadf8cadb2c705258705bc2c48c8700613a8f49",
+      "block": 57349380
+    },
+    "fund:P->D": {
+      "tx": "0xa661aaf11fbf7dbc7e1fdf05debcf59061406735a3f5d6161123a706d890532a",
+      "block": 57349388
+    },
+    "D:first-tx": {
+      "tx": "0xd39ec0fc3299645bb1393aaef4b39fc272f088ac6cf1b7966e663a1274012e3c",
+      "block": 57349396
+    },
+    "smallloop:D->P": {
+      "tx": "0xcba757df4cf386d91341ba2a6c5ca13db5fb09be8ad13a9629ecb58d4d2332d0",
+      "block": 57349404
+    },
+    "smallloop:P->D": {
+      "tx": "0xd3c9a6b7e9d69c12853dae03700d0b24c9779761f58e98dc8bab3ee1e12ffc21",
+      "block": 57349415
+    },
+    "infra:P->bot": {
+      "tx": "0x8bfbc1d2a0fad0574d1ae7ee4294fe027f12bacb681a31bd669b02eeced1d31e",
+      "block": 57349424
+    },
+    "infra:D->bot": {
+      "tx": "0x19a859f0d0a5829e9b0faf2f498eb587e86dfd40d108f5383bde58202a356c98",
+      "block": 57349435
+    },
+    "infra:bot-tx": {
+      "tx": "0xceddbc5491c4596290171f80aef42f53dc942ca91b067fb70d656d7ffcc4b727",
+      "block": 57349835
+    }
+  },
+  "pending": {},
+  "proofs": {
+    "shared-cashout-signal": {
+      "subject": "0x2dB38a6500C1d42805BFd78CBCdcc733f3a606b4",
+      "other": "0xdB759ac329dc83699E9eEb0D137c5aA3e1da9Ee1",
+      "kind": "shared_cashout",
+      "proof": {
+        "subject_tx": "0x7592c0e544361b141161522a5d00b9fc1eca583a37e46900403471db4293a632",
+        "other_tx": "0x4e09607f2975023f06894234e27045f8ce9e87a80c72d268fcf6fa8e7838766e",
+        "cashout_tx": "0x1e45ab0fa40176a3ec8ea07cc6d975e661556881b100d0662ac3e77428519d9b"
+      },
+      "expect": "stored as a signal"
+    },
+    "closed-loop-signal": {
+      "subject": "0xdB759ac329dc83699E9eEb0D137c5aA3e1da9Ee1",
+      "other": "0xf3eB4C1BE455924db320fdE576Ff8004028905Ec",
+      "kind": "closed_loop",
+      "proof": {
+        "out_tx": "0x67ce1decc59d0ae6f0c37b5c7cd650ea093a26691b377f7763dbc6b7f378834c",
+        "back_tx": "0x150dedbd8e301435b4cd1b18a15bd12694818b614b789a4ffd9d2891c4c0a552"
+      },
+      "expect": "stored as a signal"
+    },
+    "deployed-by": {
+      "subject": "0x22cc2831ad3a7eb136186f086fc35100f4852cda",
+      "other": "0x2dB38a6500C1d42805BFd78CBCdcc733f3a606b4",
+      "kind": "deployed_by",
+      "proof": {
+        "creation_tx": "0x3a711aa566f5030d965eff5c37940941ed5150062310b1efcd586562b24da136"
+      },
+      "expect": "stored as proven"
+    },
+    "operated-by": {
+      "subject": "0xd1c49adf45900E7378577F7a113AB10D35aCF7f4",
+      "other": "0x2dB38a6500C1d42805BFd78CBCdcc733f3a606b4",
+      "kind": "operated_by",
+      "proof": {
+        "exec_tx": "0x0fe5acd850f2598712eb4fa5315fec46cfc18d3252de8161dcfceb9d2e203880"
+      },
+      "expect": "stored as proven"
+    },
+    "EXPECTED-dust-breaks-owner-link": {
+      "subject": "0xbe140023285e7cf5D622632D4C8253384eCFeE05",
+      "other": "0x2dB38a6500C1d42805BFd78CBCdcc733f3a606b4",
+      "kind": "first_funded_by",
+      "proof": {
+        "funding_tx": "0xa661aaf11fbf7dbc7e1fdf05debcf59061406735a3f5d6161123a706d890532a",
+        "subject_first_tx": "0xd39ec0fc3299645bb1393aaef4b39fc272f088ac6cf1b7966e663a1274012e3c"
+      },
+      "expect": "not_first_money_in"
+    },
+    "EXPECTED-dust-is-below-minimum": {
+      "subject": "0xbe140023285e7cf5D622632D4C8253384eCFeE05",
+      "other": "0xEAa24431285FE4939e8595AA3a555Bfb657D4002",
+      "kind": "first_funded_by",
+      "proof": {
+        "funding_tx": "0xff654e2bb4efc7d91356f428caadf8cadb2c705258705bc2c48c8700613a8f49",
+        "subject_first_tx": "0xd39ec0fc3299645bb1393aaef4b39fc272f088ac6cf1b7966e663a1274012e3c"
+      },
+      "expect": "funding_below_minimum"
+    },
+    "EXPECTED-call-is-not-a-deployment": {
+      "subject": "0x22cc2831ad3a7eb136186f086fc35100f4852cda",
+      "other": "0xdB759ac329dc83699E9eEb0D137c5aA3e1da9Ee1",
+      "kind": "deployed_by",
+      "proof": {
+        "creation_tx": "0xe7e4e684743b062ed27375d2052d4ee43b6eca82f679b55c5b6f7f1fa23f53d0"
+      },
+      "expect": "not_a_direct_deployment"
+    },
+    "EXPECTED-loop-below-minimum": {
+      "subject": "0xbe140023285e7cf5D622632D4C8253384eCFeE05",
+      "other": "0x2dB38a6500C1d42805BFd78CBCdcc733f3a606b4",
+      "kind": "closed_loop",
+      "proof": {
+        "out_tx": "0xcba757df4cf386d91341ba2a6c5ca13db5fb09be8ad13a9629ecb58d4d2332d0",
+        "back_tx": "0xd3c9a6b7e9d69c12853dae03700d0b24c9779761f58e98dc8bab3ee1e12ffc21"
+      },
+      "expect": "payment_below_minimum"
+    },
+    "EXPECTED-cashout-to-infrastructure": {
+      "subject": "0x2dB38a6500C1d42805BFd78CBCdcc733f3a606b4",
+      "other": "0xbe140023285e7cf5D622632D4C8253384eCFeE05",
+      "kind": "shared_cashout",
+      "proof": {
+        "subject_tx": "0x8bfbc1d2a0fad0574d1ae7ee4294fe027f12bacb681a31bd669b02eeced1d31e",
+        "other_tx": "0x19a859f0d0a5829e9b0faf2f498eb587e86dfd40d108f5383bde58202a356c98",
+        "cashout_tx": "0xceddbc5491c4596290171f80aef42f53dc942ca91b067fb70d656d7ffcc4b727"
+      },
+      "expect": "cashout_wallet_is_infrastructure"
+    }
+  }
+}

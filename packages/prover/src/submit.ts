@@ -1,5 +1,5 @@
 import type { Address } from "@agentscore/shared";
-import { StudioNetChain } from "./chain.js";
+import { linkStored, StudioNetChain } from "./chain.js";
 import type { LinkProof } from "./discover.js";
 
 export interface SubmitResult {
@@ -17,5 +17,6 @@ export async function submitProof(p: LinkProof, contract: Address, privateKey: `
   const chain = new StudioNetChain(contract, privateKey);
   const outcome = await chain.proveLink(p);
   const links = await chain.links(p.subject);
-  return { tx: outcome.tx, stored: p.other in links, ...(outcome.error ? { error: outcome.error } : {}), links };
+  const stored = await linkStored(chain, p);
+  return { tx: outcome.tx, stored, ...(outcome.error ? { error: outcome.error } : {}), links };
 }
