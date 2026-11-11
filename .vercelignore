@@ -2,7 +2,7 @@
 .env
 .env.*
 !.env.example
-data/
+/data/
 # Not needed to build or run the website and API.
 .venv/
 .pytest_cache/
