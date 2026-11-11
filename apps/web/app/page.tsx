@@ -212,23 +212,23 @@ export default function Home() {
                 <table className="w-full text-left text-sm">
                   <thead className="text-[var(--muted)]">
                     <tr>
-                      <th className="py-2 pr-4 font-medium">Case</th>
-                      <th className="py-2 pr-4 font-medium">Result</th>
-                      <th className="py-2 pr-4 font-medium">Decided by</th>
-                      <th className="py-2 pr-4 font-medium">Effect on score</th>
+                      <th className="whitespace-nowrap py-2 pr-4 font-medium">Case</th>
+                      <th className="whitespace-nowrap py-2 pr-4 font-medium">Result</th>
+                      <th className="whitespace-nowrap py-2 pr-4 font-medium">Decided by</th>
+                      <th className="whitespace-nowrap py-2 pr-4 font-medium">Effect on score</th>
                       <th className="py-2 font-medium">Claim and reasoning</th>
                     </tr>
                   </thead>
                   <tbody>
                     {r.cases.map((c) => (
                       <tr key={c.address} className="border-t border-[var(--border)] align-top">
-                        <td className="py-3 pr-4">
+                        <td className="whitespace-nowrap py-3 pr-4 [overflow-wrap:normal]">
                           <a href={c.explorer} target="_blank" rel="noreferrer" className="font-mono hover:text-[var(--accent)]">
                             #{c.id}
                           </a>
                           <div className="text-xs text-[var(--muted)]">{c.role}</div>
                         </td>
-                        <td className="py-3 pr-4 font-medium capitalize" style={{ color: c.result === "won" ? "var(--good)" : c.result === "lost" ? "var(--bad)" : "var(--muted)" }}>
+                        <td className="whitespace-nowrap py-3 pr-4 font-medium capitalize [overflow-wrap:normal]" style={{ color: c.result === "won" ? "var(--good)" : c.result === "lost" ? "var(--bad)" : "var(--muted)" }}>
                           {c.result}
                         </td>
                         <td className="py-3 pr-4">
@@ -236,7 +236,7 @@ export default function Home() {
                             {decidedLabel(c.decidedBy)}
                           </span>
                         </td>
-                        <td className="min-w-[10rem] py-3 pr-4 text-xs" style={{ color: effectColor(c.effect) }}>
+                        <td className="min-w-[11rem] py-3 pr-4 text-xs [overflow-wrap:normal]" style={{ color: effectColor(c.effect) }}>
                           {c.effect}
                         </td>
                         <td className="min-w-[14rem] py-3 text-[var(--muted)]">
