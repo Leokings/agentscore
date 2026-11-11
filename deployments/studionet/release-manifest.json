@@ -1,0 +1,1033 @@
+{
+  "project": "AgentScore",
+  "network": {
+    "name": "studionet",
+    "chain_id": 61999,
+    "rpc": "https://studio.genlayer.com/api",
+    "explorer": "https://genlayer-explorer.vercel.app"
+  },
+  "contract": {
+    "address": "0xC7CBE19697ce01581b9F32514014A8ABC0f03A76",
+    "file": "contracts/agent_score.py",
+    "runner": "1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6",
+    "sha256": "06b2abc17ae36e16c67846cfcc8ea786197b121c5f0fa22a3cca78921c3f3f50",
+    "git_blob": "fde044916c01f9b7c6b3aa9a6de5a0c67e46d315",
+    "git_commit": "4b218f21f977101f532ca2fc20738ca04fd9a65e",
+    "git_blob_at_commit": "fde044916c01f9b7c6b3aa9a6de5a0c67e46d315",
+    "git_clean_for_contract": true,
+    "constructor_args": [],
+    "deploy_tx": "0x132995c302a7c904450f085d10c1220a1f7b3a613676c1a183e43b4043abe69f",
+    "deployed_source_identical": true,
+    "deployed_sha256": "06b2abc17ae36e16c67846cfcc8ea786197b121c5f0fa22a3cca78921c3f3f50"
+  },
+  "deployer": "0x797d3b25fb2cca0ff93f60df1910267f3822d655",
+  "toolchain": {
+    "node": "v24.19.0",
+    "genlayer_cli": "0.39.2",
+    "genlayer_js": "1.1.8",
+    "genvm_linter": "0.11.0",
+    "genlayer_test": "0.29.2"
+  },
+  "probe": {
+    "file": "contracts/probe/web_probe.py",
+    "address": "0xbfCc46A498b882bcF9eFc45d9a7291f147d9C079",
+    "deploy_tx": "0x7d8fae59269169d9fb5470fa6c4d708464ae4d3ad480b063d200d83c94ffa36d",
+    "probe_tx": "0xb6648ac0aafcfc7492bdf6769a88f523eccfcea172e641e64ca5565a8c16e350",
+    "result": "Both FINALIZED with leader SUCCESS. GenVM reached the Base Sepolia RPC (POST eth_call returned agreements(0)) and Blockscout (GET transaction)."
+  },
+  "superseded_deployments": [
+    {
+      "address": "0x4a12008D8EaebE3c17B7C3aa69B4ef8D585169BC",
+      "deploy_tx": "0xf5e3083f6fa87f4cf3bcb7fb6c1d0a2a63ccebde9618312c47551f02a1e436d2",
+      "attempt_tx": "0x718d3c8ef05e19a1d1968abcc171692fbd6a13f3455368eb6f6120bb837e57d7",
+      "why": "judge_cases rejected the CLI's Address-typed arguments ([EXPECTED] invalid_address). Fixed by accepting calldata Address values."
+    },
+    {
+      "address": "0x1112e434dAB571d6BEEB36BDEdAF615aAE33D49A",
+      "deploy_tx": "0x3f7a4c709e7c5afc052f230df14f4620adad63c44afcc71e87498d8cd4549960",
+      "attempt_tx": "0x8112b64972d78b2eae7f5358075103c33589724929210080371fcc2c1bf8ccc3",
+      "why": "Case 15 finalized as MAJORITY_DISAGREE and stored nothing: per-party outcome + 3-level severity was too loose for different models to match exactly. Fixed by taking the winner from the on-chain verdict and asking validators two yes/no findings."
+    },
+    {
+      "address": "0x5d212eEd9134eF1799486377fDb16B96b46AFF0a",
+      "deploy_tx": "0x90cd66d7fa7ae3da1e4d59548f505017ef801e63d7ceaf33467705dd71c3de7e",
+      "attempt_tx": "0x27d8a90807893cb68a51553ab09695d7d619d58d4f965b6d81161e3e4a2ac57c",
+      "why": "Operator error: the link proof was passed double-encoded, so the contract rejected it ([EXPECTED] invalid_proof_json). The CLI also turns 64-hex strings into integers, so prove_link now accepts the CLI's decoded dict as well. Cases 15, 16 and trade cases 0 and 1 had been judged successfully on this deployment (3/3 agree each)."
+    },
+    {
+      "address": "0xFC9f3DFce2f9B5B3A7Ed24Fbc26c1987cD41E649",
+      "deploy_tx": "0xb8c2c52657002b2337f77845ce36f4cb919bc653e5112d6d4fe0cb9ab53c29f5",
+      "evidence": "deployments/studionet/superseded/v4/",
+      "why": "Full demo ran (all 11 steps FINALIZED, 3/3 agree), but the read-back exposed a design flaw: 0x05e7 inherited 0xce41's losses only because 0xce41 had paid it, and anyone can pay anyone, so a 'paid' link let a bad wallet smear an honest one. The 'paid' kind was removed; only first-funding proofs anchored to the wallet's nonce-0 transaction remain. Step 09 on v4 also hit link_already_proven instead of the intended forgery check, because the pair had just been linked (operator ordering mistake)."
+    },
+    {
+      "address": "0x88F8cbBA953da2D934EDb94975F5281a3Cb06B91",
+      "deploy_tx": "0x88b48e1d0cd4e7f82e4a5bdb50c2f4c6bb796c4bed61fe4d9a7aae97a5a146f1",
+      "git_commit": "8f11d7d55ee1cddf6dd3fe5d197091bcbbe429ad",
+      "evidence": "deployments/studionet/superseded/v5/ (full demo, 12/12 steps proof, own release manifest)",
+      "why": "Worked as designed, replaced to (1) prove links on Base mainnet as well as Base Sepolia, reading transactions from the public Base RPC nodes instead of Blockscout, so Nansen-discovered mainnet funding can be verified; (2) add the exchange/faucet guard: v5 would have accepted a 'shared first funder' link between two strangers funded by the same faucet (a real case: both sides of Internet Court case 14 were funded by a faucet that had sent 18,881 transactions); (3) apply the user's new scoring table and require escrow for wallets with no history."
+    },
+    {
+      "address": "0x07bf2207852FE8F47DDeE26C4f4F0B206D259e74",
+      "deploy_tx": "0xd51eca9436d7c6c19f79a638c40e3864d243273c16cdd79214e8409c796a73ee",
+      "git_commit": "3d1fd935d1055654edf475de710fa81fa0a2c7b2",
+      "evidence": "deployments/studionet/superseded/v6/ (13/13 demo steps proof, keeper passes, staged abuses and their scores, own release manifest)",
+      "why": "Worked as designed, replaced because (1) it counted default judgments and settlements as jury rulings: Internet Court's jury relay had stopped delivering verdicts, so every new case was decided without a jury, and two colluding wallets with no provable link could have minted wins for free; (2) it read a rate-limited RPC call (the public Base node allows 25 requests per second and counts every call in a batch) as a missing field, which could store a permanent unsupported_case_type or link_tx_not_found instead of retrying."
+    },
+    {
+      "address": "0xF1a3D4079b19968D31FC47326849906C9F03EB89",
+      "deploy_tx": "0x6dc40dd9305820a8ce84c3cd52913a1c8fcc50355f4d768bec88c59c492210b3",
+      "git_commit": "5b3983587cc1767ddedcd3d200461826581af564",
+      "evidence": "deployments/studionet/superseded/v7/ (18/18 demo steps proof, keeper pass judging all 16 ruled cases, own release manifest)",
+      "why": "Worked as designed, replaced to (1) close a first-funding gap: v7 accepted any payment that arrived before a wallet's first transaction, so a stranger who saw an unused address could send dust first and prove 'first funded by me'; v8 also requires the funding to be the wallet's first money in (historical balance 0 before) and above a minimum amount; (2) put the remaining link kinds on-chain in two tiers: proven (direct deployer, shared deployer, multisig operator) and signals that only cap the escrow-free limit at $100 (shared cash-out, closed loop)."
+    },
+    {
+      "address": "0x07b633032CF870deca9829b85F3177cd7Fcca4A3",
+      "deploy_tx": "0x689c06e1b096017477adc7dc6f6e3db982b0ec71e13c1a26304e435c0dabbb18",
+      "git_commit": null,
+      "evidence": "deployments/studionet/superseded/v8-first-attempt/ (26 steps; all v8 link steps as intended)",
+      "why": "First v8 deployment, never committed separately: its source is the v8.1 file without the no-jury branch in judge_cases. Every new link step worked live (4 links stored, 5 attacks rejected with the intended errors), but staged case 20, decided by default judgment, finalized as MAJORITY_DISAGREE: validators were asked whether the loser failed to deliver with only Internet Court's stock default-judgment text to go on, and split. v8.1 never sends a case without a jury to validators; a loss in it is MINOR by rule."
+    }
+  ],
+  "steps": [
+    {
+      "label": "00-deploy",
+      "tx": "0x132995c302a7c904450f085d10c1220a1f7b3a613676c1a183e43b4043abe69f",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "agree",
+        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "agree",
+        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree",
+        "0xD0eD149D26E76cf49fB588c970E608E44Dd4DAB8": "idle",
+        "0xf1EAD5E5f876eae701eF1881b42861079cd9A287": "idle"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "01-judge-case15",
+      "tx": "0xbe2b5dadf96a248ba90afc27cc1f99ea6ca8f772660383cc12c1c736b185b607",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "agree",
+        "0x0cf3809a31B0c7E0742d126451aDE1977e3748D2": "agree",
+        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "disagree",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "idle"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "02-judge-case16",
+      "tx": "0xa5967521a1411f46c8028b14e8e999d8da3a6fd82112814fa66092552bfd19b4",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x29300188B54F5BFEE91542595611603b4B201008": "idle",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "idle",
+        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "agree",
+        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree",
+        "0xD0eD149D26E76cf49fB588c970E608E44Dd4DAB8": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "03-judge-trade-case0",
+      "tx": "0x101df74a186ba7f8a50ddba92c8567620ace92b185120f40ed8f0f64ed84e85b",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "agree",
+        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "idle",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree",
+        "0xD0eD149D26E76cf49fB588c970E608E44Dd4DAB8": "disagree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "04-judge-trade-case1",
+      "tx": "0xdb1a58b21f9abf41d3c964bf461bb9032fa0816f511d772cfc0466d0ed2bfc18",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x29300188B54F5BFEE91542595611603b4B201008": "disagree",
+        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "agree",
+        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "idle",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree",
+        "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "05-prove-link-first-funded",
+      "tx": "0x48de9b75014125e13053e68bdb03179ed5774ff856fbf8382c81d8e2b847b0a1",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x29300188B54F5BFEE91542595611603b4B201008": "agree",
+        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "agree",
+        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "idle",
+        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "agree",
+        "0xe1626534791FC675ED813Cc2C89C427866526113": "idle"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "06-EXPECTED-replay-judged-case",
+      "tx": "0xb45aff8ab85b569a405c059c8028bbd65af4f11b19887d180b518b5f98cc1fe6",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] case_already_judged",
+      "votes": {
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "agree",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "idle",
+        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "agree",
+        "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "agree",
+        "0xf1EAD5E5f876eae701eF1881b42861079cd9A287": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "07-EXPECTED-not-an-internet-court-case",
+      "tx": "0x486acaac8094a4698341bcb73eb53aa931e6bd6e19ccd93f7358035d0fe97630",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] case_not_registered",
+      "votes": {
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "agree",
+        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "agree",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "disagree",
+        "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "disagree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "08-EXPECTED-case-not-ruled",
+      "tx": "0x779605bebcd6905732d7fcce5335c8e2bcf5db36cf6da55ddeb735ffba452e6b",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] case_not_ruled",
+      "votes": {
+        "0x29300188B54F5BFEE91542595611603b4B201008": "agree",
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "agree",
+        "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "disagree",
+        "0xD0eD149D26E76cf49fB588c970E608E44Dd4DAB8": "agree",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "idle"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "09-EXPECTED-forged-funding-direction",
+      "tx": "0x43f6504d58a8754677d7be9d6f9ed2c99ccad22c1e3f9b54286eedf9ee112dbb",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] link_not_proven",
+      "votes": {
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "agree",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "agree",
+        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "idle",
+        "0xc675c2B7E1F066B7c1D2fe54EF7B76C91CdFa5F4": "idle",
+        "0xf1EAD5E5f876eae701eF1881b42861079cd9A287": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "10-EXPECTED-replay-proven-link",
+      "tx": "0x95f3f677234c47827042e5d450db910fa223bf9761d8165808797d992dbd68db",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] link_already_proven",
+      "votes": {
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "idle",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "agree",
+        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "agree",
+        "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "agree",
+        "0xe1626534791FC675ED813Cc2C89C427866526113": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "11-EXPECTED-payment-is-not-a-link",
+      "tx": "0x722a4573bb21c2c58a0b3ecde39172a0a1975b9737192053fcec0945d82de240",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] unknown_link_kind",
+      "votes": {
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "agree",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "agree",
+        "0xc675c2B7E1F066B7c1D2fe54EF7B76C91CdFa5F4": "agree",
+        "0xe1626534791FC675ED813Cc2C89C427866526113": "idle",
+        "0xf1EAD5E5f876eae701eF1881b42861079cd9A287": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "12-EXPECTED-faucet-is-not-an-owner",
+      "tx": "0xff4b262ffc41bf0539ad58731e593e086dfb409255ccf1813b1c08660c655f6b",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] funder_is_infrastructure",
+      "votes": {
+        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "agree",
+        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "agree",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "idle",
+        "0xe1626534791FC675ED813Cc2C89C427866526113": "idle",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "13-judge-staged-fake-win-case19",
+      "tx": "0xb83d8ac03e1feb7f719738d4b40f2105068eb1c4216bc9be932f694af5203724",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x29300188B54F5BFEE91542595611603b4B201008": "agree",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "idle",
+        "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "agree",
+        "0xc675c2B7E1F066B7c1D2fe54EF7B76C91CdFa5F4": "agree",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "disagree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "14-judge-staged-loss-case20",
+      "tx": "0x6ee08958d44c89447b7db30636e3191425b535981130e629d01213feb8114cf1",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "agree",
+        "0x29300188B54F5BFEE91542595611603b4B201008": "idle",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "idle",
+        "0x709a1dDECA594C16AB3864A00Eaa2BB1Cd9b5305": "agree",
+        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "15-prove-link-sock-funded-by-agent",
+      "tx": "0x2101d4dc5aab9d9096fbefbb3e829068ca59b23349bcf9ccf00f974c5e4c4fb8",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "agree",
+        "0x0cf3809a31B0c7E0742d126451aDE1977e3748D2": "agree",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "idle",
+        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "agree",
+        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "16-prove-link-successor-funded-by-loser",
+      "tx": "0xb69b3a83598ff226ae537aadab7d70b239675b9154009affd2c8480b659837fc",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x0cf3809a31B0c7E0742d126451aDE1977e3748D2": "idle",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "agree",
+        "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "agree",
+        "0xc675c2B7E1F066B7c1D2fe54EF7B76C91CdFa5F4": "idle",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "17-prove-mainnet-link-found-by-nansen",
+      "tx": "0xac5cacddc165992f66d0e8749c16685bcbd265c607f1cbc47c76423bb4dad0bf",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "idle",
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "agree",
+        "0x29300188B54F5BFEE91542595611603b4B201008": "agree",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "idle",
+        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "18-prove-signal-shared-cashout",
+      "tx": "0x91f9c0147f2ffe0fb83119b2d16c428596c346cc55a78841e445223f46ad54fc",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x29300188B54F5BFEE91542595611603b4B201008": "agree",
+        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "idle",
+        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "idle",
+        "0xD0eD149D26E76cf49fB588c970E608E44Dd4DAB8": "agree",
+        "0xf1EAD5E5f876eae701eF1881b42861079cd9A287": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "19-prove-signal-closed-loop",
+      "tx": "0x2c3bb70f0f1db617d70f269b98e84f50cbbae337327dd9a9adcf1c0e9cd647d9",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x0174b4D7494Be33F46B76976f6c9F94004F1b27f": "agree",
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "idle",
+        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "idle",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "agree",
+        "0xc675c2B7E1F066B7c1D2fe54EF7B76C91CdFa5F4": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "20-prove-direct-deployment",
+      "tx": "0xb82d130282da3738e575fa534b3a0d806551cc3f5261df0ee8a2ba8b0cf7d0f8",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "idle",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "agree",
+        "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "agree",
+        "0xD0eD149D26E76cf49fB588c970E608E44Dd4DAB8": "idle",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "21-prove-multisig-operator",
+      "tx": "0x7a6348bbd5a265a0c69c82c2ed9cb2bd56bdc8896c46a4832484915b513b63b8",
+      "expected_failure": false,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "leader_error": null,
+      "votes": {
+        "0x29300188B54F5BFEE91542595611603b4B201008": "idle",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "agree",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "idle",
+        "0xD0eD149D26E76cf49fB588c970E608E44Dd4DAB8": "agree",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "22-EXPECTED-dust-breaks-owner-link",
+      "tx": "0x5b30a33a2f6d18c3a2cf55e3bcb55343000d5e100881e883de2c0839ebe58379",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] not_first_money_in",
+      "votes": {
+        "0x29300188B54F5BFEE91542595611603b4B201008": "agree",
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "idle",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "idle",
+        "0xc675c2B7E1F066B7c1D2fe54EF7B76C91CdFa5F4": "agree",
+        "0xe83D7241D0FF0f1f808B9ab3cb06dD2565bDc605": "agree"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "23-EXPECTED-dust-is-below-minimum",
+      "tx": "0x90a70160a9702b4e8971c3c1edfce8e768be5c7caa142a8661ff1a20206fe055",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] funding_below_minimum",
+      "votes": {
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "agree",
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "agree",
+        "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "agree",
+        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "idle",
+        "0xc675c2B7E1F066B7c1D2fe54EF7B76C91CdFa5F4": "idle"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "24-EXPECTED-call-is-not-a-deployment",
+      "tx": "0x2e52017addad4e3cab2f19c3fa73c4d042ae05984d0066dd1312e61f0047da79",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] not_a_direct_deployment",
+      "votes": {
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "agree",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "idle",
+        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "agree",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "agree",
+        "0xf1EAD5E5f876eae701eF1881b42861079cd9A287": "idle"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "25-EXPECTED-loop-below-minimum",
+      "tx": "0xe39171f28722aa442f54076bb8062832930b250435875629d6848027f102d6d4",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] payment_below_minimum",
+      "votes": {
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "agree",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "idle",
+        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "agree",
+        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "agree",
+        "0xc675c2B7E1F066B7c1D2fe54EF7B76C91CdFa5F4": "idle"
+      },
+      "counts_as_proof": true
+    },
+    {
+      "label": "26-EXPECTED-cashout-to-infrastructure",
+      "tx": "0x9680c8f6630b4a8a9a08f3c0348003351ba252e833afa182f7946c3d51427a8c",
+      "expected_failure": true,
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "leader_error": "[EXPECTED] cashout_wallet_is_infrastructure",
+      "votes": {
+        "0x29300188B54F5BFEE91542595611603b4B201008": "agree",
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "agree",
+        "0x37CD8552B86b2B662eCfb69C4A1253dBE41EB4C1": "agree",
+        "0x711353514049EAc21213834ADd07eF552aF394E6": "idle",
+        "0x8f1abcAF0fF10678Af925f83b2Bb8b3534c4b94b": "idle"
+      },
+      "counts_as_proof": true
+    }
+  ],
+  "readbacks": {
+    "get_signals 0x2db38a6500c1d42805bfd78cbcdcc733f3a606b4": "{\n  '0xdb759ac329dc83699e9eeb0d137c5aa3e1da9ee1': 'both sent money to the same wallet within 30 days (base-sepolia)'\n}",
+    "get_signals 0xdb759ac329dc83699e9eeb0d137c5aa3e1da9ee1": "{\n  '0x2db38a6500c1d42805bfd78cbcdcc733f3a606b4': 'both sent money to the same wallet within 30 days (base-sepolia)',\n  '0xf3eb4c1be455924db320fde576ff8004028905ec': 'money went to the other wallet and most of it came back within a day (base-sepolia)'\n}",
+    "get_links 0x22cc2831ad3a7eb136186f086fc35100f4852cda": "{\n  '0x2db38a6500c1d42805bfd78cbcdcc733f3a606b4': \"other wallet deployed the subject's contract (base-sepolia)\"\n}",
+    "get_links 0xd1c49adf45900e7378577f7a113ab10d35acf7f4": "{\n  '0x2db38a6500c1d42805bfd78cbcdcc733f3a606b4': \"one wallet ran a transaction on the other's multisig as an owner (base-sepolia)\"\n}",
+    "get_stats": "{ judged_cases: 6 }",
+    "get_case 0x32cb0d3e1671088caafe62e7cbce1b875876a035": "{\n  case_id: 15,\n  case_type: 'Agreement',\n  parties: [\n    {\n      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',\n      outcome: 'FAVORABLE',\n      role: 'partyA',\n      severity: 'NONE'\n    },\n    {\n      address: '0xce413ffe2628b60cdaf4413d63d7838b8d4309ac',\n      outcome: 'UNFAVORABLE',\n      role: 'partyB',\n      severity: 'MINOR'\n    }\n  ],\n  resolution: 'jury'\n}",
+    "get_case 0x4f0e52342241539f5b4d1cc25dc4c6531049e44c": "{\n  case_id: 16,\n  case_type: 'Agreement',\n  parties: [\n    {\n      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',\n      outcome: 'FAVORABLE',\n      role: 'partyA',\n      severity: 'NONE'\n    },\n    {\n      address: '0xce413ffe2628b60cdaf4413d63d7838b8d4309ac',\n      outcome: 'UNFAVORABLE',\n      role: 'partyB',\n      severity: 'MINOR'\n    }\n  ],\n  resolution: 'jury'\n}",
+    "get_case 0x778e3528940849432619142a8d7ac172486353bf": "{\n  case_id: 0,\n  case_type: 'TradeFxSettlement',\n  parties: [\n    {\n      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',\n      outcome: 'UNCLEAR',\n      role: 'exporter',\n      severity: 'NONE'\n    },\n    {\n      address: '0x942c20d078f7417ad67e96714310da8068850b77',\n      outcome: 'UNCLEAR',\n      role: 'importer',\n      severity: 'NONE'\n    }\n  ],\n  resolution: 'jury'\n}",
+    "get_case 0xab772bb1d873ed851b6f1150100f085b36a1ca02": "{\n  case_id: 1,\n  case_type: 'TradeFxSettlement',\n  parties: [\n    {\n      address: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87',\n      outcome: 'UNFAVORABLE',\n      role: 'exporter',\n      severity: 'MINOR'\n    },\n    {\n      address: '0x942c20d078f7417ad67e96714310da8068850b77',\n      outcome: 'FAVORABLE',\n      role: 'importer',\n      severity: 'NONE'\n    }\n  ],\n  resolution: 'jury'\n}",
+    "get_case 0xb7a08ff8e092023eb7169f42a554261c3b0ebc9a": "{\n  case_id: 19,\n  case_type: 'Agreement',\n  parties: [\n    {\n      address: '0x36b26d2df45a2838e6fe0f8b3c97cd0033a124cc',\n      outcome: 'FAVORABLE',\n      role: 'partyA',\n      severity: 'NONE'\n    },\n    {\n      address: '0x2f7d415a7ec68fe94c589c8ba6d4959e6ac899ae',\n      outcome: 'UNFAVORABLE',\n      role: 'partyB',\n      severity: 'MINOR'\n    }\n  ],\n  resolution: 'default'\n}",
+    "get_case 0xcc955bfe47fca91d2f0f9e45ca773bc8556d65cd": "{\n  case_id: 20,\n  case_type: 'Agreement',\n  parties: [\n    {\n      address: '0x9a88ebbba9e7f52acaf296ae7706f9b16affad69',\n      outcome: 'UNFAVORABLE',\n      role: 'partyA',\n      severity: 'MINOR'\n    },\n    {\n      address: '0x5a5160eec0435cc20309735715b44898a46b8032',\n      outcome: 'FAVORABLE',\n      role: 'partyB',\n      severity: 'NONE'\n    }\n  ],\n  resolution: 'default'\n}",
+    "get_links 0x278d35035fb589195ed513507ce7e32021659250": "{\n  '0xba444be47ac0fb4738c6fcb33d19bc03e854b4b5': 'other wallet sent the subject its first funds (base-sepolia)'\n}",
+    "get_links 0xce413ffe2628b60cdaf4413d63d7838b8d4309ac": "{}",
+    "get_links 0x2f7d415a7ec68fe94c589c8ba6d4959e6ac899ae": "{\n  '0x36b26d2df45a2838e6fe0f8b3c97cd0033a124cc': 'other wallet sent the subject its first funds (base-sepolia)'\n}",
+    "get_links 0x9c985f2536587966f087e2677c81e386d4ab797c": "{\n  '0x9a88ebbba9e7f52acaf296ae7706f9b16affad69': 'other wallet sent the subject its first funds (base-sepolia)'\n}",
+    "get_links 0xb5fe6011cee8974c24c630afdf3c15f5620925b7": "{\n  '0xf171c23607b892797eb5eb4e52fc668f924df0a3': 'other wallet sent the subject its first funds (base)'\n}",
+    "get_score 0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87": "{\n  approval_limit_usd: 100,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 4,\n    linked_wallets: 0,\n    loss_penalty: 8,\n    ruled_cases: 4,\n    signal_links: 0,\n    unclear: 1,\n    uncontested_wins: 0,\n    wins: 2\n  },\n  flags: [ 'UNCLEAR_RULINGS' ],\n  grade: 'C',\n  points: 58,\n  wallet: '0xe9630ba0e3cc2d3bfc58fbe1bbde478f06e4ce87'\n}",
+    "get_score 0xce413ffe2628b60cdaf4413d63d7838b8d4309ac": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 2,\n    linked_wallets: 0,\n    loss_penalty: 16,\n    ruled_cases: 2,\n    signal_links: 0,\n    unclear: 0,\n    uncontested_wins: 0,\n    wins: 0\n  },\n  flags: [],\n  grade: 'D',\n  points: 34,\n  wallet: '0xce413ffe2628b60cdaf4413d63d7838b8d4309ac'\n}",
+    "get_score 0x05e7ec36e5d31347b7aa90c7122a6d6e24fbe1a5": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 0,\n    linked_wallets: 0,\n    loss_penalty: 0,\n    ruled_cases: 0,\n    signal_links: 0,\n    unclear: 0,\n    uncontested_wins: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0x05e7ec36e5d31347b7aa90c7122a6d6e24fbe1a5'\n}",
+    "get_score 0x278d35035fb589195ed513507ce7e32021659250": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 0,\n    linked_wallets: 1,\n    loss_penalty: 0,\n    ruled_cases: 0,\n    signal_links: 0,\n    unclear: 0,\n    uncontested_wins: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0x278d35035fb589195ed513507ce7e32021659250'\n}",
+    "get_score 0xba444be47ac0fb4738c6fcb33d19bc03e854b4b5": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 0,\n    linked_wallets: 1,\n    loss_penalty: 0,\n    ruled_cases: 0,\n    signal_links: 0,\n    unclear: 0,\n    uncontested_wins: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0xba444be47ac0fb4738c6fcb33d19bc03e854b4b5'\n}",
+    "get_score 0x36b26d2df45a2838e6fe0f8b3c97cd0033a124cc": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 1,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 0,\n    linked_wallets: 1,\n    loss_penalty: 0,\n    ruled_cases: 1,\n    signal_links: 0,\n    unclear: 0,\n    uncontested_wins: 0,\n    wins: 0\n  },\n  flags: [ 'FAKE_WINS' ],\n  grade: 'D',\n  points: 40,\n  wallet: '0x36b26d2df45a2838e6fe0f8b3c97cd0033a124cc'\n}",
+    "get_score 0x2f7d415a7ec68fe94c589c8ba6d4959e6ac899ae": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 0,\n    linked_wallets: 1,\n    loss_penalty: 8,\n    ruled_cases: 1,\n    signal_links: 0,\n    unclear: 0,\n    uncontested_wins: 0,\n    wins: 0\n  },\n  flags: [],\n  grade: 'D',\n  points: 42,\n  wallet: '0x2f7d415a7ec68fe94c589c8ba6d4959e6ac899ae'\n}",
+    "get_score 0x9a88ebbba9e7f52acaf296ae7706f9b16affad69": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 0,\n    linked_wallets: 1,\n    loss_penalty: 8,\n    ruled_cases: 1,\n    signal_links: 0,\n    unclear: 0,\n    uncontested_wins: 0,\n    wins: 0\n  },\n  flags: [],\n  grade: 'D',\n  points: 42,\n  wallet: '0x9a88ebbba9e7f52acaf296ae7706f9b16affad69'\n}",
+    "get_score 0x5a5160eec0435cc20309735715b44898a46b8032": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 0,\n    linked_wallets: 0,\n    loss_penalty: 0,\n    ruled_cases: 1,\n    signal_links: 0,\n    unclear: 0,\n    uncontested_wins: 1,\n    wins: 0\n  },\n  flags: [ 'UNCONTESTED_WINS', 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0x5a5160eec0435cc20309735715b44898a46b8032'\n}",
+    "get_score 0x9c985f2536587966f087e2677c81e386d4ab797c": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 1,\n    inherited_penalty: 8,\n    jury_cases: 0,\n    linked_wallets: 1,\n    loss_penalty: 0,\n    ruled_cases: 0,\n    signal_links: 0,\n    unclear: 0,\n    uncontested_wins: 0,\n    wins: 0\n  },\n  flags: [ 'INHERITED_LOSSES' ],\n  grade: 'D',\n  points: 42,\n  wallet: '0x9c985f2536587966f087e2677c81e386d4ab797c'\n}",
+    "get_score 0xb5fe6011cee8974c24c630afdf3c15f5620925b7": "{\n  approval_limit_usd: 0,\n  counts: {\n    fake_wins: 0,\n    inherited_cases: 0,\n    inherited_penalty: 0,\n    jury_cases: 0,\n    linked_wallets: 1,\n    loss_penalty: 0,\n    ruled_cases: 0,\n    signal_links: 0,\n    unclear: 0,\n    uncontested_wins: 0,\n    wins: 0\n  },\n  flags: [ 'NO_HISTORY' ],\n  grade: 'C',\n  points: 50,\n  wallet: '0xb5fe6011cee8974c24c630afdf3c15f5620925b7'\n}"
+  },
+  "not_proven": [
+    "Cases 0-18 are existing testnet cases on Base Sepolia created by other parties. Cases 19 and 20 were staged by this project (see staged_abuses) and every party in them is controlled by one operator; they were decided by Internet Court's default-judgment path, not by its AI jury, because the jury relay was not delivering verdicts.",
+    "The Base mainnet link (step 17) was found by Nansen and verified by validators against mainnet.base.org, but its funder has no Internet Court record, so it changes no score today.",
+    "No new case has been decided by Internet Court's AI jury since its relay stopped (last verdict at block ~39.07M): cases 15, 16 and the trade cases are older jury rulings; 19 and 20 are default judgments.",
+    "StudioNet is a test network; scores move no funds."
+  ],
+  "keeper": [
+    {
+      "log": "v8.1-first-pass.log",
+      "action": "judge_cases",
+      "case_id": 2,
+      "case": "0x43fcbf7fa4a1c8d6ca648fad163636b20bcee233",
+      "tx": "0x5770df9d52193ee7fa6dc06585dd9101609853507f81c9f177f01f03ff06d8c8",
+      "stored": true
+    },
+    {
+      "log": "v8.1-first-pass.log",
+      "action": "judge_cases",
+      "case_id": 3,
+      "case": "0xb4700d67d6cbef18011021a2a20389ea88753234",
+      "tx": "0xd86d73485a4ccf3984fece02ff5e8bb23783cffeda9fb3c03e2ce93e87ed1845",
+      "stored": true
+    },
+    {
+      "log": "v8.1-first-pass.log",
+      "action": "judge_cases",
+      "case_id": 4,
+      "case": "0xbd0db046a913817522b595cfeb922d5e2aad4268",
+      "tx": "0xd8566410d927453b42de73b5e0e8e67c31831e21518f9bfdac4fc8717aaba62b",
+      "stored": true
+    },
+    {
+      "log": "v8.1-first-pass.log",
+      "action": "judge_cases",
+      "case_id": 5,
+      "case": "0xe50a8f382b3b751dbd7053963ebabb59916f3788",
+      "tx": "0x5f9c4fc4c32d4a86782477821f721ce9eb91ab9eb56bc62b64259e92d321ca75",
+      "stored": true
+    },
+    {
+      "log": "v8.1-first-pass.log",
+      "action": "judge_cases",
+      "case_id": 6,
+      "case": "0x08fb300e1290fa3e12cded8b2bf050edd46fff73",
+      "tx": "0x57b961f96889a42ae921e2ea4cbb38f85ce65ceb69203dc89579ac2e160d703d",
+      "stored": true
+    },
+    {
+      "log": "v8.1-first-pass.log",
+      "action": "judge_cases",
+      "case_id": 7,
+      "case": "0xd42d18bea9c22e6c230b5ee116e9bcac8757a6ec",
+      "tx": "0x33871140be5f0f6219ef61171e757f819459472f7e294c002944eaa0a3f4982b",
+      "stored": true
+    },
+    {
+      "log": "v8.1-first-pass.log",
+      "action": "judge_cases",
+      "case_id": 8,
+      "case": "0x8ede7afc449cca494ff3066ab020be143d784f91",
+      "tx": "0xf54ec3e0578634e53df26aca9ee02250bce8509e033977b26b4aff02ede87c31",
+      "stored": true
+    },
+    {
+      "log": "v8.1-first-pass.log",
+      "action": "judge_cases",
+      "case_id": 9,
+      "case": "0x87b5afc78ca48d0ec62eec7816884e0220c49978",
+      "tx": "0xb07b9e700f80df0b10dd7a2031932159756f505cb20427c555070040472c9654",
+      "stored": true
+    },
+    {
+      "log": "v8.1-first-pass.log",
+      "action": "judge_cases",
+      "case_id": 10,
+      "case": "0x9bff14a32325ea103dd690e29cd3f22660321b44",
+      "tx": "0x6884baebbbef5e29122b55c3106c3e356d6fe9483697ef2832febc8fe01d8056",
+      "stored": true
+    },
+    {
+      "log": "v8.1-first-pass.log",
+      "action": "judge_cases",
+      "case_id": 11,
+      "case": "0x2d14f1ad43d90e8db1209a6ce3c1959c85b4d9e1",
+      "tx": "0x357dbb7cec6c89ed59ba8603fcd9ad277362e14926675c53a98d98e29654c4f0",
+      "stored": true
+    }
+  ],
+  "keeper_notes": "Case #9 was reported failed in first-pass.log because the StudioNet RPC returned an HTML error page while the keeper polled for the receipt; a later read-back showed the case was judged on-chain anyway. The keeper now reads back after network errors.",
+  "staged_abuses": {
+    "script": "scripts/stage-abuses.ts",
+    "network": "base-sepolia",
+    "operator": "0xEAa24431285FE4939e8595AA3a555Bfb657D4002",
+    "wallets": {
+      "hubX": "0xbbbb17FA35fF942f88c45083a8Cd0C54B5FddF07",
+      "hubY": "0x6f139fF76855D0498aeFc0fE061d27F9e8895979",
+      "hubZ": "0x0f2bF541B73C654b78613E7316E240e0f32c880b",
+      "agentX": "0x36b26d2DF45a2838E6Fe0F8B3c97Cd0033A124Cc",
+      "sockS": "0x2f7d415A7Ec68Fe94c589c8BA6D4959e6AC899Ae",
+      "agentY": "0x9A88EbBbA9e7F52aCaf296ae7706f9b16affaD69",
+      "clientZ": "0x5A5160Eec0435cc20309735715b44898A46b8032",
+      "successorN": "0x9c985F2536587966F087E2677c81E386D4AB797c"
+    },
+    "cases": {
+      "fakeWin": {
+        "id": 19,
+        "address": "0xb7a08FF8E092023eB7169f42a554261c3B0ebc9A"
+      },
+      "loss": {
+        "id": 20,
+        "address": "0xCc955bfe47FcA91D2f0F9E45Ca773bC8556d65cd"
+      }
+    },
+    "base_sepolia_txs": {
+      "fund:hubX": {
+        "tx": "0xfb42b7c2183baf7c7ef6911ccdc8b3d8f6d051710ba31471c96e21c7ae5249c0",
+        "block": 57086695
+      },
+      "fund:hubY": {
+        "tx": "0x950c84c1d0df0e279173ea19c49d96c650c8c643aa262536e40ce09188744fe6",
+        "block": 57086706
+      },
+      "fund:hubZ": {
+        "tx": "0x297e76b9fd214f67c7ecdc990da57e392496e85f2fc57759b8684fdb3601f49a",
+        "block": 57086718
+      },
+      "fund:agentX": {
+        "tx": "0x4b821bb6d9a82df99b81ef99cb66cedcc9cb2fb3e4f772bbe9abf55fe02b52b2",
+        "block": 57086729
+      },
+      "fund:agentY": {
+        "tx": "0x9abc4f86882fe4f9c4b0ae965d86752e5a48c98c1fed0132d1c89e1603f7ca1d",
+        "block": 57086740
+      },
+      "fund:clientZ": {
+        "tx": "0x2ee0a2fe342c4a331b16be433f18429f69ec44c4b0553590bfe87be519de86a6",
+        "block": 57086751
+      },
+      "fund:sockS": {
+        "tx": "0x0e4bb6cd8f7d691963a7bc9ed4a5258996c0c0b5357740698710c29ca0d5cdb0",
+        "block": 57086762
+      },
+      "fakeWin:create": {
+        "tx": "0x83a21985e227a85e20f4d6a9a79ad13f8cedb67bf7e21d6825ec5cacc94f5bd9",
+        "block": 57086770
+      },
+      "fakeWin:accept": {
+        "tx": "0x736c13a977a2dab4614acb93421ce768d1ce1285bef7640b80433fe092ab8cc0",
+        "block": 57086780
+      },
+      "fakeWin:dispute": {
+        "tx": "0x5dd805bcf7b50e195aa5b5d8f704fc38e34e7122012a81091cd2cfd33fe60f16",
+        "block": 57086793
+      },
+      "fakeWin:evidence": {
+        "tx": "0x6734ad31c147dfcc74c7a60a2b45f7910fd1833452d6e2cbb92aace7e239cf72",
+        "block": 57086804
+      },
+      "fakeWin:resolve": {
+        "tx": "0xaf5cfaaf54cfc6ca7c5dfbe99851ad8a0de2526cbab83c4a573a6d3032bd1e0f",
+        "block": 57086975
+      },
+      "loss:create": {
+        "tx": "0xd08b6a1262b67ddf1677177f9865beb56dc7ce0739e93692764d492ed82e74cf",
+        "block": 57086986
+      },
+      "loss:accept": {
+        "tx": "0xf94463a78393289119870279a81eab2074f2045f95b3e5f6c7d9d0358a91a431",
+        "block": 57086997
+      },
+      "loss:dispute": {
+        "tx": "0x917a5e3d1b9c73f8ac1bd82ee0467e250e1260b13b3caf64fe0fc3de43fe49a4",
+        "block": 57087005
+      },
+      "loss:evidence": {
+        "tx": "0xb02db2c13fc9c49896c4a02753dc97d4ec86237eb9b2a6000721c4449cccccc1",
+        "block": 57087017
+      },
+      "loss:resolve": {
+        "tx": "0x1c57b972ff44b2871502901107e667b19f1de11eda8aa23db446750527dee354",
+        "block": 57087191
+      },
+      "fund:successorN": {
+        "tx": "0x1d20cd311a57712a2bac0f166e89769d1d3c42b8e70ef81ae0c2172aa82f0ebb",
+        "block": 57087202
+      },
+      "successorN:firstTx": {
+        "tx": "0xc27de800b994be165bd65db76b3cf040ae338cdd1b01e37c8fc7a49ba495b311",
+        "block": 57087210
+      }
+    },
+    "resolution": "Internet Court's jury relay had not delivered a verdict since block ~39.07M (case 18's dispute of 2026-11-09 was still pending), so both cases were resolved through Agreement.resolveByDefault(): one side disputed and submitted evidence, the other stayed silent.",
+    "expected": {
+      "agentX": "won case 19 against sockS, a wallet agentX itself first funded: the win must count as fake (FAKE_WINS), not as a win",
+      "agentY": "lost case 20 to clientZ: one loss",
+      "successorN": "first funded by agentY after that loss, no cases of its own: must inherit agentY's loss (INHERITED_LOSSES) instead of scoring as a clean new wallet",
+      "clientZ": "won case 20 by default judgment against an unlinked wallet: an uncontested win (UNCONTESTED_WINS), so no points and escrow still required (NO_HISTORY)"
+    },
+    "scores": {
+      "agentX": {
+        "wallet": "0x36b26d2DF45a2838E6Fe0F8B3c97Cd0033A124Cc",
+        "grade": "D",
+        "points": 40,
+        "approval_limit_usd": 0,
+        "flags": [
+          "FAKE_WINS"
+        ],
+        "wins": 1,
+        "uncontested_wins": 0,
+        "fake_wins": 1,
+        "inherited_cases": 0
+      },
+      "sockS": {
+        "wallet": "0x2f7d415A7Ec68Fe94c589c8BA6D4959e6AC899Ae",
+        "grade": "D",
+        "points": 42,
+        "approval_limit_usd": 0,
+        "flags": [],
+        "wins": 0,
+        "uncontested_wins": 0,
+        "fake_wins": 0,
+        "inherited_cases": 0
+      },
+      "agentY": {
+        "wallet": "0x9A88EbBbA9e7F52aCaf296ae7706f9b16affaD69",
+        "grade": "D",
+        "points": 42,
+        "approval_limit_usd": 0,
+        "flags": [],
+        "wins": 0,
+        "uncontested_wins": 0,
+        "fake_wins": 0,
+        "inherited_cases": 0
+      },
+      "clientZ": {
+        "wallet": "0x5A5160Eec0435cc20309735715b44898A46b8032",
+        "grade": "C",
+        "points": 50,
+        "approval_limit_usd": 0,
+        "flags": [
+          "UNCONTESTED_WINS",
+          "NO_HISTORY"
+        ],
+        "wins": 0,
+        "uncontested_wins": 1,
+        "fake_wins": 0,
+        "inherited_cases": 0
+      },
+      "successorN": {
+        "wallet": "0x9c985F2536587966F087E2677c81E386D4AB797c",
+        "grade": "D",
+        "points": 42,
+        "approval_limit_usd": 0,
+        "flags": [
+          "INHERITED_LOSSES"
+        ],
+        "wins": 0,
+        "uncontested_wins": 0,
+        "fake_wins": 0,
+        "inherited_cases": 1
+      }
+    }
+  },
+  "staged_v8_links": {
+    "script": "scripts/stage-v8-links.ts",
+    "network": "base-sepolia",
+    "operator": "0xEAa24431285FE4939e8595AA3a555Bfb657D4002",
+    "wallets": {
+      "v8P": "0x2dB38a6500C1d42805BFd78CBCdcc733f3a606b4",
+      "v8Q": "0xdB759ac329dc83699E9eEb0D137c5aA3e1da9Ee1",
+      "v8C": "0xf3eB4C1BE455924db320fdE576Ff8004028905Ec",
+      "v8D": "0xbe140023285e7cf5D622632D4C8253384eCFeE05",
+      "contractK": "0x22cc2831ad3a7eb136186f086fc35100f4852cda",
+      "safe": "0xd1c49adf45900E7378577F7a113AB10D35aCF7f4",
+      "busyWallet": "0x625d8a65134079f8faaac39a7947c73d93c6ac39"
+    },
+    "base_sepolia_txs": {
+      "fund:P": {
+        "tx": "0x6b8e7bac7b02bcaaf167373cbfa739cd40dcc087e1d214bcbb48fe9ae7cbf67c",
+        "block": 57349258
+      },
+      "fund:Q": {
+        "tx": "0xf1130f6846344c80d7a5e1dce0fe363288dcf9b95d4dda63a627e070e61c2049",
+        "block": 57349266
+      },
+      "fund:C": {
+        "tx": "0x25161149ed2a4ab53c7fffec5d59f62cd605caccd7cf6c5e75d2be55d7136f3d",
+        "block": 57349278
+      },
+      "cashout:P->C": {
+        "tx": "0x7592c0e544361b141161522a5d00b9fc1eca583a37e46900403471db4293a632",
+        "block": 57349289
+      },
+      "cashout:Q->C": {
+        "tx": "0x4e09607f2975023f06894234e27045f8ce9e87a80c72d268fcf6fa8e7838766e",
+        "block": 57349300
+      },
+      "cashout:C-tx": {
+        "tx": "0x1e45ab0fa40176a3ec8ea07cc6d975e661556881b100d0662ac3e77428519d9b",
+        "block": 57349311
+      },
+      "loop:Q->C": {
+        "tx": "0x67ce1decc59d0ae6f0c37b5c7cd650ea093a26691b377f7763dbc6b7f378834c",
+        "block": 57349322
+      },
+      "loop:C->Q": {
+        "tx": "0x150dedbd8e301435b4cd1b18a15bd12694818b614b789a4ffd9d2891c4c0a552",
+        "block": 57349330
+      },
+      "deploy:K": {
+        "tx": "0x3a711aa566f5030d965eff5c37940941ed5150062310b1efcd586562b24da136",
+        "block": 57349341
+      },
+      "call:K": {
+        "tx": "0xe7e4e684743b062ed27375d2052d4ee43b6eca82f679b55c5b6f7f1fa23f53d0",
+        "block": 57349352
+      },
+      "safe:create": {
+        "tx": "0x9a09ef8e4b282cc5cc5dacddd7e81b9f6c053279fa4053a3d65e2f5e278a71c4",
+        "block": 57349361
+      },
+      "safe:exec": {
+        "tx": "0x0fe5acd850f2598712eb4fa5315fec46cfc18d3252de8161dcfceb9d2e203880",
+        "block": 57349372
+      },
+      "dust:operator->D": {
+        "tx": "0xff654e2bb4efc7d91356f428caadf8cadb2c705258705bc2c48c8700613a8f49",
+        "block": 57349380
+      },
+      "fund:P->D": {
+        "tx": "0xa661aaf11fbf7dbc7e1fdf05debcf59061406735a3f5d6161123a706d890532a",
+        "block": 57349388
+      },
+      "D:first-tx": {
+        "tx": "0xd39ec0fc3299645bb1393aaef4b39fc272f088ac6cf1b7966e663a1274012e3c",
+        "block": 57349396
+      },
+      "smallloop:D->P": {
+        "tx": "0xcba757df4cf386d91341ba2a6c5ca13db5fb09be8ad13a9629ecb58d4d2332d0",
+        "block": 57349404
+      },
+      "smallloop:P->D": {
+        "tx": "0xd3c9a6b7e9d69c12853dae03700d0b24c9779761f58e98dc8bab3ee1e12ffc21",
+        "block": 57349415
+      },
+      "infra:P->bot": {
+        "tx": "0x8bfbc1d2a0fad0574d1ae7ee4294fe027f12bacb681a31bd669b02eeced1d31e",
+        "block": 57349424
+      },
+      "infra:D->bot": {
+        "tx": "0x19a859f0d0a5829e9b0faf2f498eb587e86dfd40d108f5383bde58202a356c98",
+        "block": 57349435
+      },
+      "infra:bot-tx": {
+        "tx": "0xceddbc5491c4596290171f80aef42f53dc942ca91b067fb70d656d7ffcc4b727",
+        "block": 57349835
+      }
+    },
+    "proofs": {
+      "shared-cashout-signal": {
+        "subject": "0x2dB38a6500C1d42805BFd78CBCdcc733f3a606b4",
+        "other": "0xdB759ac329dc83699E9eEb0D137c5aA3e1da9Ee1",
+        "kind": "shared_cashout",
+        "proof": {
+          "subject_tx": "0x7592c0e544361b141161522a5d00b9fc1eca583a37e46900403471db4293a632",
+          "other_tx": "0x4e09607f2975023f06894234e27045f8ce9e87a80c72d268fcf6fa8e7838766e",
+          "cashout_tx": "0x1e45ab0fa40176a3ec8ea07cc6d975e661556881b100d0662ac3e77428519d9b"
+        },
+        "expect": "stored as a signal"
+      },
+      "closed-loop-signal": {
+        "subject": "0xdB759ac329dc83699E9eEb0D137c5aA3e1da9Ee1",
+        "other": "0xf3eB4C1BE455924db320fdE576Ff8004028905Ec",
+        "kind": "closed_loop",
+        "proof": {
+          "out_tx": "0x67ce1decc59d0ae6f0c37b5c7cd650ea093a26691b377f7763dbc6b7f378834c",
+          "back_tx": "0x150dedbd8e301435b4cd1b18a15bd12694818b614b789a4ffd9d2891c4c0a552"
+        },
+        "expect": "stored as a signal"
+      },
+      "deployed-by": {
+        "subject": "0x22cc2831ad3a7eb136186f086fc35100f4852cda",
+        "other": "0x2dB38a6500C1d42805BFd78CBCdcc733f3a606b4",
+        "kind": "deployed_by",
+        "proof": {
+          "creation_tx": "0x3a711aa566f5030d965eff5c37940941ed5150062310b1efcd586562b24da136"
+        },
+        "expect": "stored as proven"
+      },
+      "operated-by": {
+        "subject": "0xd1c49adf45900E7378577F7a113AB10D35aCF7f4",
+        "other": "0x2dB38a6500C1d42805BFd78CBCdcc733f3a606b4",
+        "kind": "operated_by",
+        "proof": {
+          "exec_tx": "0x0fe5acd850f2598712eb4fa5315fec46cfc18d3252de8161dcfceb9d2e203880"
+        },
+        "expect": "stored as proven"
+      },
+      "EXPECTED-dust-breaks-owner-link": {
+        "subject": "0xbe140023285e7cf5D622632D4C8253384eCFeE05",
+        "other": "0x2dB38a6500C1d42805BFd78CBCdcc733f3a606b4",
+        "kind": "first_funded_by",
+        "proof": {
+          "funding_tx": "0xa661aaf11fbf7dbc7e1fdf05debcf59061406735a3f5d6161123a706d890532a",
+          "subject_first_tx": "0xd39ec0fc3299645bb1393aaef4b39fc272f088ac6cf1b7966e663a1274012e3c"
+        },
+        "expect": "not_first_money_in"
+      },
+      "EXPECTED-dust-is-below-minimum": {
+        "subject": "0xbe140023285e7cf5D622632D4C8253384eCFeE05",
+        "other": "0xEAa24431285FE4939e8595AA3a555Bfb657D4002",
+        "kind": "first_funded_by",
+        "proof": {
+          "funding_tx": "0xff654e2bb4efc7d91356f428caadf8cadb2c705258705bc2c48c8700613a8f49",
+          "subject_first_tx": "0xd39ec0fc3299645bb1393aaef4b39fc272f088ac6cf1b7966e663a1274012e3c"
+        },
+        "expect": "funding_below_minimum"
+      },
+      "EXPECTED-call-is-not-a-deployment": {
+        "subject": "0x22cc2831ad3a7eb136186f086fc35100f4852cda",
+        "other": "0xdB759ac329dc83699E9eEb0D137c5aA3e1da9Ee1",
+        "kind": "deployed_by",
+        "proof": {
+          "creation_tx": "0xe7e4e684743b062ed27375d2052d4ee43b6eca82f679b55c5b6f7f1fa23f53d0"
+        },
+        "expect": "not_a_direct_deployment"
+      },
+      "EXPECTED-loop-below-minimum": {
+        "subject": "0xbe140023285e7cf5D622632D4C8253384eCFeE05",
+        "other": "0x2dB38a6500C1d42805BFd78CBCdcc733f3a606b4",
+        "kind": "closed_loop",
+        "proof": {
+          "out_tx": "0xcba757df4cf386d91341ba2a6c5ca13db5fb09be8ad13a9629ecb58d4d2332d0",
+          "back_tx": "0xd3c9a6b7e9d69c12853dae03700d0b24c9779761f58e98dc8bab3ee1e12ffc21"
+        },
+        "expect": "payment_below_minimum"
+      },
+      "EXPECTED-cashout-to-infrastructure": {
+        "subject": "0x2dB38a6500C1d42805BFd78CBCdcc733f3a606b4",
+        "other": "0xbe140023285e7cf5D622632D4C8253384eCFeE05",
+        "kind": "shared_cashout",
+        "proof": {
+          "subject_tx": "0x8bfbc1d2a0fad0574d1ae7ee4294fe027f12bacb681a31bd669b02eeced1d31e",
+          "other_tx": "0x19a859f0d0a5829e9b0faf2f498eb587e86dfd40d108f5383bde58202a356c98",
+          "cashout_tx": "0xceddbc5491c4596290171f80aef42f53dc942ca91b067fb70d656d7ffcc4b727"
+        },
+        "expect": "cashout_wallet_is_infrastructure"
+      }
+    },
+    "note": "Every wallet is controlled by one operator. The busy wallet is an unrelated Base Sepolia bot that had sent over 100,000 transactions, used as an example of infrastructure."
+  }
+}
